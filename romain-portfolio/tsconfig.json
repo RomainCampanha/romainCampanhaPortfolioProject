@@ -36,7 +36,7 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "components/ChatBubble.tsx"
-  ],
+, "components/Romain3D.tsx"  ],
   "exclude": [
     "node_modules"
   ]

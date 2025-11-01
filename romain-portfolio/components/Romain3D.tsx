@@ -7,31 +7,26 @@ import { useEffect, useRef } from "react";
 import type { Group } from "three";
 import ChatBubble from "./ChatBubble";
 
-// ✅ Typage fiable pour un <group> (toutes versions de R3F)
+// ✅ Typage sûr et compatible : pas de JSX.*, on utilise ThreeElements
 type RomainModelProps = ThreeElements["group"];
 
 function RomainModel(props: RomainModelProps) {
-  const group = useRef<Group>(null!);
+  const group = useRef<Group>(null!); // ref non-null après montage
   const { scene, animations } = useGLTF("/models/RomainSalut.glb");
   const { actions, names } = useAnimations(animations, group);
 
-  // ✅ Effet simplifié et typé correctement
   useEffect(() => {
-  if (!names || names.length === 0 || !actions) return;
+    if (!actions || !names || names.length === 0) return;
+    const name = names.find((n) => n.toLowerCase().includes("idle")) ?? names[0];
+    const action = actions[name];
+    if (!action) return;
 
-  const name = names.find((n) => n.toLowerCase().includes("idle")) ?? names[0];
-  const action = actions[name];
-  if (!action) return;
-
-  action.reset().fadeIn(0.5).play();
-
-  return () => {
-    // ne rien retourner ici (juste des effets)
-    action.fadeOut(0.3);
-    // optionnel : arrêter/nettoyer l’action après le fade
-    // action.stop();
-  };
-}, [actions, names]);
+    action.reset().fadeIn(0.5).play();
+    return () => {
+      action.fadeOut(0.3);
+      // optionnel : action.stop();
+    };
+  }, [actions, names]);
 
   return (
     <group ref={group} {...props}>
@@ -42,25 +37,21 @@ function RomainModel(props: RomainModelProps) {
 
 export default function Romain3D() {
   return (
-    <Canvas camera={{ position: [-0.4, 0.5, 3.2] }}>
+    <Canvas 
+      className="w-full h-full"
+      style={{ display: 'block', background: 'transparent' }}   // ✅
+      gl={{ alpha: true }}                                      // ✅
+      onCreated={(state) => state.gl.setClearColor(0x000000, 0)}// ✅ transparence sûre
+      camera={{ position: [-0.1, 0, 1.6] }} >
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
-
-      <RomainModel position={[-0.8, 0, 0]} />
-
-      <Html position={[0.9, 0.2, 0]} transform distanceFactor={2}>
-        <ChatBubble
-          text={`Salut, je m'appelle Romain,\nBienvenue chez moi !`}
-          typingSpeed={90}
-          loop
-          loopDelay={2000}
-          className="whitespace-pre-line max-w-[220px]"
-        />
-      </Html>
-
       <OrbitControls enableZoom={false} />
+      {/* décale ton perso à gauche */}
+      <RomainModel position={[0, 0, 0]} />
+      
     </Canvas>
   );
 }
 
+// Préchargement
 useGLTF.preload("/models/RomainSalut.glb");
