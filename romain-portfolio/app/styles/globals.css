@@ -5,6 +5,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 
 .font-orbitron { font-family: var(--font-orbitron), ui-sans-serif, system-ui; }
@@ -24,7 +26,7 @@
 }
 
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -48,4 +50,46 @@ body {
   40%  { box-shadow: 0 0 28px rgba(255,0,195,0.35); transform: scale(1.01); }
   100% { box-shadow: 0 0 0 rgba(255,0,195,0.0); transform: scale(1); }
 }
+
+.safe-top { padding-top: var(--safe-top); }
+.safe-bottom { padding-bottom: var(--safe-bottom); }
 .animate-glow { animation: glowPulse 600ms ease-out; }
+
+@layer components {
+  /* Style de base de la bulle (si tu veux garder le tien, ok) */
+  .bubble {
+    @apply relative rounded-3xl px-6 py-4 text-white;
+  }
+
+  /* Pointe à GAUCHE (desktop) */
+  .arrow-left::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-60%, -50%); /* décale dehors */
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    /* couleur = bord droit */
+    border-right: 16px solid #FF00C3;
+    filter: drop-shadow(0 0 12px rgba(255, 0, 195, 0.35));
+  }
+
+  /* Pointe en BAS (mobile) */
+  .arrow-bottom::before {
+    content: "";
+    position: absolute;
+    left: 40px;       /* ajuste l’offset horizontal si besoin */
+    bottom: 0;
+    transform: translateY(70%); /* décale dehors */
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    /* couleur = bord haut */
+    border-top: 16px solid #FF00C3;
+    filter: drop-shadow(0 0 12px rgba(255, 0, 195, 0.35));
+  }
+}
