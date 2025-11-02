@@ -8,41 +8,54 @@ import { ParcoursBubbles } from "../components/ParcoursBubbles";
 
 export default function Home() {
   const trackRef = useRef<HTMLElement | null>(null);
-  const progress = useTrackScrollProgress(trackRef); // 0..1 pendant la piste
+  const progress = useTrackScrollProgress(trackRef);
   const showParcours = progress > 0.35;
-  const overlayVisible = progress < 1; // cache le hero fixe quand la piste est finie
+  const overlayVisible = progress < 1;
   const phase: "intro" | "run" = progress >= 0.4 ? "run" : "intro";
 
   return (
-    <main
-      className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]"
-    >
-      {/* HERO FIXE — visible seulement durant la piste */}
+    <main className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]">
+      {/* HERO FIXE */}
       <div
         className={
           "fixed inset-0 flex items-center justify-center transition-opacity duration-300 " +
           (overlayVisible ? "opacity-100" : "opacity-0 pointer-events-none")
         }
-        // On laisse passer le scroll au body :
         style={{ pointerEvents: overlayVisible ? "none" : "none" }}
       >
-        {/* Tout ce qui doit rester cliquable reprend pointer-events */}
         <div className="container mx-auto px-4 pointer-events-auto">
           <div className="flex flex-col md:flex-row md:items-center gap-8">
-            {/* 3D piloté par progress */}
-            <div className="order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]">
-              <div
-                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]
-                           md:translate-x-[15%] lg:translate-x-[20%]
-                           transition-transform duration-500"
-              >
+            
+            {/* 3D - Position différente sur mobile quand parcours visible */}
+            <div className={`
+              order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]
+              transition-all duration-700 ease-in-out
+              ${showParcours 
+                ? 'md:translate-x-[15%] lg:translate-x-[20%]' // Desktop: position normale
+                : 'md:translate-x-[15%] lg:translate-x-[20%]' // Desktop: position normale
+              }
+            `}>
+              <div className={`
+                mx-auto w-full max-w-[720px]
+                transition-all duration-700 ease-in-out
+                ${showParcours
+                  ? 'h-[30vh] md:h-[70vh]' // Mobile: plus petit quand parcours visible
+                  : 'h-[60vh] md:h-[70vh]' // Mobile: taille normale au début
+                }
+              `}>
                 <Romain3D progress={progress} phase={phase} />
               </div>
             </div>
 
-            {/* Intro vs Parcours superposés (pas d’effondrement) */}
-            <div className="order-1 md:order-2 w-full md:w-1/2 flex md:justify-start justify-center">
+            {/* Bulles - Layout adapté mobile */}
+            <div className={`
+              order-1 md:order-2 w-full md:w-1/2 
+              flex md:justify-start justify-center
+              transition-all duration-700 ease-in-out
+              ${showParcours ? 'items-start' : 'items-center'}
+            `}>
               <div className="relative w-full md:w-auto min-h-[120px] md:min-h-[240px]">
+                
                 {/* Intro */}
                 <div
                   className={`absolute inset-0 flex justify-center md:justify-start transition-opacity duration-300
@@ -56,7 +69,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Parcours */}
+                {/* Parcours - Positionnées en haut sur mobile */}
                 <div
                   className={`absolute inset-0 flex justify-center md:justify-start transition-opacity duration-300
                               ${showParcours ? "opacity-100" : "opacity-0 pointer-events-none"}`}
@@ -66,7 +79,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Spacer pour garder la hauteur */}
+                {/* Spacer */}
                 <div className="invisible md:min-w-[22rem] md:max-w-[28rem]">
                   <ChatBubble text="." />
                 </div>
@@ -74,7 +87,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bouton Explorer (reste cliquable) */}
+          {/* Bouton Explorer */}
           <div className="absolute bottom-[5dvh] left-1/2 -translate-x-1/2 z-10">
             <button
               onClick={() =>
@@ -92,12 +105,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 🎯 PISTE DE SCROLL – c’est elle qui génère le progress, pas l’UI */}
+      {/* PISTE DE SCROLL */}
       <section ref={trackRef} className="relative h-[160dvh]" />
 
-      {/* Section suivante – même fond (pas de changement de couleur) */}
+      {/* Section suivante */}
       <section id="section-2" className="w-full min-h-dvh" />
-
     </main>
   );
 }
