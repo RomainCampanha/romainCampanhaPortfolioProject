@@ -11,7 +11,7 @@ export default function Home() {
   const progress = useTrackScrollProgress(trackRef); // 0..1 pendant la piste
   const showParcours = progress > 0.35;
   const overlayVisible = progress < 1; // cache le hero fixe quand la piste est finie
-  const phase: "intro" | "run" = progress >= 0.98 ? "run" : "intro";
+  const phase: "intro" | "run" = progress >= 0.4 ? "run" : "intro";
 
   return (
     <main
