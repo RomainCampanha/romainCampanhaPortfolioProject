@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, ThreeElements, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -20,7 +20,6 @@ type Romain3DProps = {
 
 type ModelProps = {
   url: string;
-  pick: "intro" | "run";
   isMobile: boolean;
   position: [number, number, number];
 };
@@ -48,29 +47,25 @@ function Rig({ progress = 0 }: { progress?: number }) {
     const target = new THREE.Vector3().lerpVectors(startPos, endPos, t);
     camera.position.lerp(target, 0.12);
     
-    if (isMobile && t > 0.3) {
-      console.log('Mobile Camera:', camera.position.toArray(), 'Progress:', t.toFixed(2));
-    }
-    
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
   });
   return null;
 }
 
-function Model({ url, pick, isMobile, position }: ModelProps) {
+function Model({ url, isMobile, position }: ModelProps) {
   const group = useRef<Group>(null!);
+  const currentY = useRef(position[1]); // Position Y actuelle (pour lerp)
+  
   const { scene, animations } = useGLTF(url);
   const { actions, names } = useAnimations(animations, group);
 
+  // Cherche l'animation d'intro (salut/wave)
   const chosenName = useMemo(() => {
-    const rx =
-      pick === "intro"
-        ? /idle|breath|stand|wave|greet|hello/i
-        : /run|jog|walk|sprint|locomotion/i;
+    const rx = /idle|breath|stand|wave|greet|hello|salut/i;
     const found = names.find((n) => rx.test(n));
     return found ?? names[0];
-  }, [names, pick]);
+  }, [names]);
 
   useEffect(() => {
     const action = chosenName ? actions[chosenName] : undefined;
@@ -81,8 +76,19 @@ function Model({ url, pick, isMobile, position }: ModelProps) {
     };
   }, [actions, chosenName]);
 
+  // Anime la transition de position
+  useFrame(() => {
+    if (!group.current) return;
+    
+    // Lerp vers la position cible
+    const targetY = position[1];
+    currentY.current += (targetY - currentY.current) * 0.08; // Transition douce
+    
+    group.current.position.y = currentY.current;
+  });
+
   return (
-    <group ref={group} position={position}>
+    <group ref={group} position={[position[0], currentY.current, position[2]]}>
       <primitive object={scene} scale={1.2} position={[0, -1.1, 0]} />
     </group>
   );
@@ -92,10 +98,8 @@ export default function Romain3D({
   progress = 0,
   phase = "intro",
 }: Romain3DProps) {
-  const url =
-    phase === "run"
-      ? "/models/Animation_Running_withSkin.glb"
-      : "/models/RomainSalut.glb";
+  // Toujours le même modèle (intro)
+  const url = "/models/RomainSalut.glb";
 
   const [isMobile, setIsMobile] = useState(false);
   
@@ -120,15 +124,13 @@ export default function Romain3D({
       <Rig progress={progress} />
 
       <Model 
-        key={url} 
         url={url} 
-        pick={phase} 
         position={
           isMobile 
             ? phase === "intro" 
-              ? [0, 0.1, 0]      // Home mobile : normal
-              : [0, -0.5, 0]   // Parcours mobile : plus bas
-            : [0, 0, 0]        // Desktop : normal
+              ? [0, 0.1, 0]      // Home mobile : position normale
+              : [0, -0.5, 0]     // Parcours mobile : plus bas
+            : [0, 0, 0]          // Desktop : normal
         }
         isMobile={isMobile}
       />
@@ -137,4 +139,3 @@ export default function Romain3D({
 }
 
 useGLTF.preload("/models/RomainSalut.glb");
-useGLTF.preload("/models/Animation_Running_withSkin.glb");
