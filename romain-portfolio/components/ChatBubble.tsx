@@ -126,10 +126,10 @@ export default function ChatBubble({
         className, // <- ex: "arrow-bottom md:arrow-left"
       ].join(" ")}
     >
-      <p className="whitespace-pre-wrap leading-relaxed">
-        {safeText.slice(0, index)}
-        {showCursor && !isDone && <span className="animate-caret">|</span>}
-      </p>
+      <p className="whitespace-normal break-words hyphens-auto leading-relaxed">
+  {safeText.slice(0, index)}
+  {showCursor && !isDone && <span className="animate-caret">|</span>}
+</p>
 
       {/* Indice de skip */}
       {//skipOnClick && !skipped && !isDone && (
