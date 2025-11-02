@@ -3,69 +3,59 @@
 
 import { Canvas, ThreeElements, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 
-// === Paramètres caméra (on conserve TON orientation de départ) ===
-const START_POS = new THREE.Vector3(-0.1, 0, 3);   // proche
-const END_POS   = new THREE.Vector3(-0.1, 0.0, 3.2); // dézoom quand progress=1 (ajuste si tu veux)
+// On conserve TON orientation caméra de départ
+const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
+const END_POS   = new THREE.Vector3(-0.1, 0.0, 3.2); // dézoom max
 
-type RomainModelProps = ThreeElements["group"];
-type Romain3DProps = { progress?: number }; // 0..1
+type Romain3DProps = {
+  progress?: number;                // 0..1
+  phase?: "intro" | "run";          // choisit le glb + anim
+};
+type ModelProps = ThreeElements["group"] & {
+  url: string;
+  pick: "intro" | "run";
+};
 
 function Rig({ progress = 0 }: { progress?: number }) {
   const { camera } = useThree();
-
   useFrame(() => {
-    // Lerp caméra entre START_POS et END_POS selon le progress (0..1)
-    const target = new THREE.Vector3().lerpVectors(START_POS, END_POS, THREE.MathUtils.clamp(progress, 0, 1));
-    // Lerp doux à chaque frame pour éviter les à-coups
+    const t = THREE.MathUtils.clamp(progress, 0, 1);
+    const target = new THREE.Vector3().lerpVectors(START_POS, END_POS, t);
     camera.position.lerp(target, 0.12);
-    // Regarde le centre (ajuste si tu veux viser plus haut, ex: lookAt(0, 1.2, 0))
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
   });
-
   return null;
 }
 
-function RomainModel({ progress = 0, ...props }: RomainModelProps & { progress?: number }) {
+function Model({ url, pick, ...props }: ModelProps) {
   const group = useRef<Group>(null!);
-  const { scene, animations } = useGLTF("/models/RomainSalut.glb");
+  const { scene, animations } = useGLTF(url);
   const { actions, names } = useAnimations(animations, group);
 
-  // Choix des anims
-  const idleName = names.find((n) => /idle|breath|stand/i.test(n)) ?? names[0];
-  const altName  = names.find((n) => /wave|walk|talk|point/i.test(n)) ?? names[names.length - 1];
+  // Choix d’animation robuste par phase, avec fallback au 1er clip
+  const chosenName = useMemo(() => {
+    const rx =
+      pick === "intro"
+        ? /idle|breath|stand|wave|greet|hello/i
+        : /run|jog|walk|sprint|locomotion/i;
+    const found = names.find((n) => rx.test(n));
+    return found ?? names[0]; // fallback: premier clip du GLB
+  }, [names, pick]);
 
-  // Lance l'idle une seule fois au montage
   useEffect(() => {
-    const idle = actions[idleName];
-    if (!idle) return;
-    idle.reset().fadeIn(0.4).play();
-    return () => { idle.fadeOut(0.2); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actions, idleName]); // actions est stable côté drei; pas de dépendances superflues
-
-  // Switch d'anim en franchissant un seuil, sans clignoter
-  const isAltRef = useRef(false);
-  useEffect(() => {
-    const threshold = 0.25; // ajuste le palier de switch
-    const wantAlt = progress >= threshold;
-    if (wantAlt === isAltRef.current) return;
-
-    const idle = actions[idleName];
-    const alt  = actions[altName];
-    if (wantAlt) {
-      alt?.reset().fadeIn(0.3).play();
-      idle?.fadeOut(0.2);
-    } else {
-      idle?.reset().fadeIn(0.3).play();
-      alt?.fadeOut(0.2);
-    }
-    isAltRef.current = wantAlt;
-  }, [progress, actions, idleName, altName]);
+    const action = chosenName ? actions[chosenName] : undefined;
+    if (!action) return;
+    action.reset().fadeIn(0.3).play();
+    return () => {
+      action.fadeOut(0.2);
+      // action.stop(); // optionnel
+    };
+  }, [actions, chosenName]);
 
   return (
     <group ref={group} {...props}>
@@ -74,9 +64,19 @@ function RomainModel({ progress = 0, ...props }: RomainModelProps & { progress?:
   );
 }
 
-export default function Romain3D({ progress = 0 }: Romain3DProps) {
+export default function Romain3D({
+  progress = 0,
+  phase = "intro",
+}: Romain3DProps) {
+  // Map phase -> GLB
+  const url =
+    phase === "run"
+      ? "/models/Animation_Running_withSkin.glb"
+      : "/models/RomainSalut.glb";
+
   return (
     <Canvas
+      key={phase} // ⬅️ remonte proprement le canvas+mixers quand la phase change
       className="w-full h-full"
       style={{ display: "block", background: "transparent" }}
       gl={{ alpha: true }}
@@ -86,15 +86,15 @@ export default function Romain3D({ progress = 0 }: Romain3DProps) {
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
 
-      {/* 👉 Pas d'OrbitControls = pas de rotation au doigt/scroll.
-          Si tu veux les garder mais verrouillés : 
-          <OrbitControls enabled={false} enableZoom={false} enableRotate={false} enablePan={false} /> */}
-
+      {/* Pas d'OrbitControls : pas de rotation au doigt */}
       <Rig progress={progress} />
-      <RomainModel progress={progress} position={[0, 0, 0]} />
+
+      {/* Important: key=url pour forcer le remount du modèle quand on change de GLB */}
+      <Model key={url} url={url} pick={phase} position={[0, 0, 0]} />
     </Canvas>
   );
 }
 
-// Préchargement
+// Préchargement des deux GLB
 useGLTF.preload("/models/RomainSalut.glb");
+useGLTF.preload("/models/Animation_Running_withSkin.glb");

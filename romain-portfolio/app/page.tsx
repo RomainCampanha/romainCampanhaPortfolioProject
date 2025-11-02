@@ -11,6 +11,7 @@ export default function Home() {
   const progress = useTrackScrollProgress(trackRef); // 0..1 pendant la piste
   const showParcours = progress > 0.35;
   const overlayVisible = progress < 1; // cache le hero fixe quand la piste est finie
+  const phase: "intro" | "run" = progress >= 0.98 ? "run" : "intro";
 
   return (
     <main
@@ -35,7 +36,7 @@ export default function Home() {
                            md:translate-x-[15%] lg:translate-x-[20%]
                            transition-transform duration-500"
               >
-                <Romain3D progress={progress} />
+                <Romain3D progress={progress} phase={phase} />
               </div>
             </div>
 
