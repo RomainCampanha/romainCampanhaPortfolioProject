@@ -1,4 +1,3 @@
-// app/components/Romain3D.tsx
 "use client";
 
 import { Canvas, ThreeElements, useFrame, useThree } from "@react-three/fiber";
@@ -7,14 +6,14 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 
-// On conserve TON orientation caméra de départ
 const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
-const END_POS   = new THREE.Vector3(-0.1, 0.0, 3.2); // dézoom max
+const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
 
 type Romain3DProps = {
-  progress?: number;                // 0..1
-  phase?: "intro" | "run";          // choisit le glb + anim
+  progress?: number;
+  phase?: "intro" | "run";
 };
+
 type ModelProps = ThreeElements["group"] & {
   url: string;
   pick: "intro" | "run";
@@ -37,14 +36,13 @@ function Model({ url, pick, ...props }: ModelProps) {
   const { scene, animations } = useGLTF(url);
   const { actions, names } = useAnimations(animations, group);
 
-  // Choix d’animation robuste par phase, avec fallback au 1er clip
   const chosenName = useMemo(() => {
     const rx =
       pick === "intro"
         ? /idle|breath|stand|wave|greet|hello/i
         : /run|jog|walk|sprint|locomotion/i;
     const found = names.find((n) => rx.test(n));
-    return found ?? names[0]; // fallback: premier clip du GLB
+    return found ?? names[0];
   }, [names, pick]);
 
   useEffect(() => {
@@ -53,7 +51,6 @@ function Model({ url, pick, ...props }: ModelProps) {
     action.reset().fadeIn(0.3).play();
     return () => {
       action.fadeOut(0.2);
-      // action.stop(); // optionnel
     };
   }, [actions, chosenName]);
 
@@ -68,7 +65,6 @@ export default function Romain3D({
   progress = 0,
   phase = "intro",
 }: Romain3DProps) {
-  // Map phase -> GLB
   const url =
     phase === "run"
       ? "/models/Animation_Running_withSkin.glb"
@@ -76,7 +72,6 @@ export default function Romain3D({
 
   return (
     <Canvas
-      key={phase} // ⬅️ remonte proprement le canvas+mixers quand la phase change
       className="w-full h-full"
       style={{ display: "block", background: "transparent" }}
       gl={{ alpha: true }}
@@ -86,15 +81,13 @@ export default function Romain3D({
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
 
-      {/* Pas d'OrbitControls : pas de rotation au doigt */}
       <Rig progress={progress} />
 
-      {/* Important: key=url pour forcer le remount du modèle quand on change de GLB */}
+      {/* Utilise key sur le Model au lieu du Canvas */}
       <Model key={url} url={url} pick={phase} position={[0, 0, 0]} />
     </Canvas>
   );
 }
 
-// Préchargement des deux GLB
 useGLTF.preload("/models/RomainSalut.glb");
 useGLTF.preload("/models/Animation_Running_withSkin.glb");
