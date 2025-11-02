@@ -8,25 +8,24 @@ import { ParcoursBubbles } from "../components/ParcoursBubbles";
 
 export default function Home() {
   const trackRef = useRef<HTMLElement | null>(null);
-  const progress = useTrackScrollProgress(trackRef); // 0..1 pendant la piste
+  const progress = useTrackScrollProgress(trackRef);
   const showParcours = progress > 0.35;
-  const overlayVisible = progress < 1; // cache le hero fixe quand la piste est finie
+  const overlayVisible = progress < 1;
   const phase: "intro" | "run" = progress >= 0.4 ? "run" : "intro";
 
+  // Masque l'indicateur sur la page parcours
+  const showScrollIndicator = progress < 0.35;
+
   return (
-    <main
-      className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]"
-    >
-      {/* HERO FIXE — visible seulement durant la piste */}
+    <main className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]">
+      {/* HERO FIXE */}
       <div
         className={
           "fixed inset-0 flex items-center justify-center transition-opacity duration-300 " +
           (overlayVisible ? "opacity-100" : "opacity-0 pointer-events-none")
         }
-        // On laisse passer le scroll au body :
         style={{ pointerEvents: overlayVisible ? "none" : "none" }}
       >
-        {/* Tout ce qui doit rester cliquable reprend pointer-events */}
         <div className="container mx-auto px-4 pointer-events-auto">
           <div className="flex flex-col md:flex-row md:items-center gap-8">
             {/* 3D piloté par progress */}
@@ -40,7 +39,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Intro vs Parcours superposés (pas d’effondrement) */}
+            {/* Intro vs Parcours superposés */}
             <div className="order-1 md:order-2 w-full md:w-1/2 flex md:justify-start justify-center">
               <div className="relative w-full md:w-auto min-h-[120px] md:min-h-[240px]">
                 {/* Intro */}
@@ -66,7 +65,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Spacer pour garder la hauteur */}
+                {/* Spacer */}
                 <div className="invisible md:min-w-[22rem] md:max-w-[28rem]">
                   <ChatBubble text="." />
                 </div>
@@ -74,30 +73,68 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bouton Explorer (reste cliquable) */}
-          <div className="absolute bottom-[5dvh] left-1/2 -translate-x-1/2 z-10">
-            <button
-              onClick={() =>
-                document.getElementById("section-2")?.scrollIntoView({ behavior: "smooth" })
-              }
-              className="px-6 py-3 rounded-2xl text-white font-semibold
-                         bg-gradient-to-r from-[#FF00C3] to-[#7C3AED]
-                         shadow-[0_0_24px_rgba(255,0,195,.35)]
-                         hover:scale-[1.05] active:scale-[0.98]
-                         transition-transform duration-200 ease-out backdrop-blur-sm"
+          {/* Indicateur de scroll animé */}
+          {showScrollIndicator && (
+            <div 
+              className="absolute bottom-[1dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3
+                         transition-opacity duration-500"
+              style={{ opacity: showScrollIndicator ? 1 : 0 }}
             >
-              Explorer
-            </button>
-          </div>
+              {/* Texte "Explorer" */}
+              <span className="text-white/80 font-semibold text-lg tracking-wide font-orbitron">
+                Explorer
+              </span>
+              
+              {/* Flèche animée */}
+              <svg 
+                className="w-8 h-8 text-white/70 animate-bounce cursor-pointer
+                           hover:text-white hover:scale-110 transition-all duration-300"
+                onClick={() =>
+                  document.getElementById("section-2")?.scrollIntoView({ behavior: "smooth" })
+                }
+                fill="none" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="2.5" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+            </div>
+          )}
+
+          {/* Flèche seule quand on arrive sur parcours */}
+          {!showScrollIndicator && progress < 0.8 && (
+            <div 
+              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10
+                         transition-opacity duration-500"
+            >
+              <svg 
+                className="w-8 h-8 text-white/50 animate-bounce cursor-pointer
+                           hover:text-white/70 hover:scale-110 transition-all duration-300"
+                onClick={() =>
+                  window.scrollTo({ top: window.innerHeight * 2, behavior: "smooth" })
+                }
+                fill="none" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="2.5" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 🎯 PISTE DE SCROLL – c’est elle qui génère le progress, pas l’UI */}
+      {/* PISTE DE SCROLL */}
       <section ref={trackRef} className="relative h-[160dvh]" />
 
-      {/* Section suivante – même fond (pas de changement de couleur) */}
+      {/* Section suivante */}
       <section id="section-2" className="w-full min-h-dvh" />
-
     </main>
   );
 }
