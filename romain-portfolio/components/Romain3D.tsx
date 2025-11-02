@@ -1,4 +1,3 @@
-// app/components/Romain3D.tsx
 "use client";
 
 import { Canvas, ThreeElements, useFrame, useThree } from "@react-three/fiber";
@@ -15,6 +14,7 @@ type Romain3DProps = {
   phase?: "intro" | "run";           // choisit le glb
   forceClip?: string;                // ex. "Run" ou "Running"
 };
+
 type ModelProps = ThreeElements["group"] & {
   url: string;
   pick: "intro" | "run";
