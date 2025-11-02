@@ -92,4 +92,13 @@ body {
     border-top: 16px solid #FF00C3;
     filter: drop-shadow(0 0 12px rgba(255, 0, 195, 0.35));
   }
+
+  @layer components {
+  .bubble-card {
+    @apply rounded-2xl p-4 md:p-5 text-white/90
+           bg-white/10 border border-white/15 backdrop-blur
+           leading-relaxed break-words;
+  }
+}
+
 }
