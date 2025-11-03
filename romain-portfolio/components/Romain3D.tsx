@@ -110,13 +110,16 @@ export default function Romain3D({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // FOV plus large sur mobile pour mieux cadrer
+  const fov = isMobile ? 48 : 45;
+
   return (
     <Canvas
       className="w-full h-full"
       style={{ display: "block", background: "transparent" }}
       gl={{ alpha: true }}
       onCreated={(state) => state.gl.setClearColor(0x000000, 0)}
-      camera={{ position: START_POS.toArray() as [number, number, number], fov: 45 }}
+      camera={{ position: START_POS.toArray() as [number, number, number], fov }}
     >
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
@@ -129,7 +132,7 @@ export default function Romain3D({
           isMobile 
             ? phase === "intro" 
               ? [0, 0.1, 0]      // Home mobile : position normale
-              : [0, -0.5, 0]     // Parcours mobile : plus bas
+              : [0, -0.5, 0]     // Parcours mobile : légèrement plus bas (ajusté pour voir les pieds)
             : [0, 0, 0]          // Desktop : normal
         }
         isMobile={isMobile}
