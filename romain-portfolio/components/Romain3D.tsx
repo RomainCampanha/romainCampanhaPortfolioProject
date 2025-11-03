@@ -11,7 +11,7 @@ const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
 
 // Positions spécifiques pour mobile
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 2.8);
-const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.5);
+const END_POS_MOBILE = new THREE.Vector3(0, 0, 4);
 
 type Romain3DProps = {
   progress?: number;

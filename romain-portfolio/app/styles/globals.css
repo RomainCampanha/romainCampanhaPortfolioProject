@@ -89,6 +89,21 @@ body {
     filter: drop-shadow(0 0 12px rgba(255, 0, 195, 0.35));
   }
 
+  /* Pointe à DROITE (pour bulle parcours desktop) */
+  .arrow-right::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(60%, -50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 16px solid #FF00C3;
+    filter: drop-shadow(0 0 12px rgba(255, 0, 195, 0.35));
+  }
+
   /* Pointe en BAS (mobile) */
   .arrow-bottom::before {
     content: "";

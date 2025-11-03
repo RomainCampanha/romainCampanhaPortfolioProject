@@ -16,6 +16,19 @@ export default function Home() {
   // Masque l'indicateur sur la page parcours
   const showScrollIndicator = progress < 0.35;
 
+  // Animation de sortie des bulles (commence à 50% du scroll, finit à 100%)
+  const exitProgress = Math.max(0, (progress - 0.5) / 0.5); // 0 à 1 entre 50% et 100%
+  
+  // Calcul des positions de sortie pour chaque bulle (séquence plus lente)
+  const bubble1Exit = Math.min(1, exitProgress * 2); // Sort en premier (plus lent)
+  const bubble2Exit = Math.min(1, Math.max(0, (exitProgress - 0.4) * 2)); // Sort en deuxième (plus lent)
+  const bubble3Exit = Math.min(1, Math.max(0, (exitProgress - 0.7) * 2)); // Sort en dernier (plus lent)
+
+  // Debug (à retirer après test)
+  if (progress > 0.6) {
+    console.log('Progress:', progress.toFixed(2), '| Exit:', exitProgress.toFixed(2), '| B1:', bubble1Exit.toFixed(2));
+  }
+
   return (
     <main className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]">
       {/* HERO FIXE */}
@@ -40,8 +53,8 @@ export default function Home() {
             </div>
 
             {/* Intro vs Parcours superposés */}
-            <div className="order-1 md:order-2 w-full md:w-1/2 flex md:justify-start justify-center">
-              <div className="relative w-full md:w-auto min-h-[120px] md:min-h-[240px]">
+            <div className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start">
+              <div className="relative w-full md:w-auto min-h-[120px] md:min-h-[240px] flex justify-center md:block">
                 {/* Intro */}
                 <div
                   className={`absolute inset-0 flex justify-center md:justify-start transition-opacity duration-300
@@ -57,11 +70,43 @@ export default function Home() {
 
                 {/* Parcours */}
                 <div
-                  className={`absolute inset-0 flex justify-center md:justify-start transition-opacity duration-300
+                  className={`absolute inset-0 transition-opacity duration-300
                               ${showParcours ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                 >
-                  <div className="w-full md:w-auto md:min-w-[22rem] md:max-w-[28rem]">
-                    <ParcoursBubbles show />
+                  {/* Mobile : Bulles avec animation de sortie */}
+                  <div className="flex md:hidden justify-center items-start h-full">
+                    <div className="w-[90%]">
+                      <ParcoursBubbles 
+                        show 
+                        bubble1Exit={bubble1Exit}
+                        bubble2Exit={bubble2Exit}
+                        bubble3Exit={bubble3Exit}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Desktop : Bulles avec animation de sortie vers la droite */}
+                  <div className="hidden md:block">
+                    {/* Bulle "Voici mon parcours pro" - Décalée à GAUCHE du personnage */}
+                    <div className="absolute left-0 -translate-x-[230%] top-0">
+                      <div className="w-[280px]">
+                        <ChatBubble
+                          text="Voici mon parcours pro ! 🚀"
+                          className="arrow-right md:-translate-y-12"
+                          loop={true}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Bulles parcours - Position normale, alignées avec bulle intro */}
+                    <div className="min-w-[22rem] max-w-[28rem] md:-translate-y-0">
+                      <ParcoursBubbles 
+                        show 
+                        bubble1Exit={bubble1Exit}
+                        bubble2Exit={bubble2Exit}
+                        bubble3Exit={bubble3Exit}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -76,7 +121,7 @@ export default function Home() {
           {/* Indicateur de scroll animé */}
           {showScrollIndicator && (
             <div 
-              className="absolute bottom-[1dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3
+              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3
                          transition-opacity duration-500"
               style={{ opacity: showScrollIndicator ? 1 : 0 }}
             >
