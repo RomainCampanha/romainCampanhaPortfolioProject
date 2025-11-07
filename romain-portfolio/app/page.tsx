@@ -176,7 +176,7 @@ export default function Home() {
       </div>
 
       {/* PISTE DE SCROLL */}
-      <section ref={trackRef} className="relative h-[160dvh]" />
+      <section ref={trackRef} className="relative h-[300dvh]" />
 
       {/* Section suivante */}
       <section id="section-2" className="w-full min-h-dvh" />
