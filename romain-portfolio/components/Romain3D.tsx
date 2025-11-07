@@ -9,13 +9,15 @@ import type { Group } from "three";
 const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
 const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
 
-// Positions spécifiques pour mobile
-const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 2.8);
-const END_POS_MOBILE = new THREE.Vector3(0, 0, 4);
+// Positions spécifiques pour mobile (caméra plus reculée pour voir les pieds)
+const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
+const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.5);
 
 type Romain3DProps = {
   progress?: number;
   phase?: "intro" | "run";
+  modelUrl?: string;
+  theme?: "home" | "hobby";
 };
 
 type ModelProps = {
@@ -87,9 +89,12 @@ function Model({ url, isMobile, position }: ModelProps) {
     group.current.position.y = currentY.current;
   });
 
+  // Scale plus grand sur mobile pour mieux voir le perso
+  const modelScale = isMobile ? 1.5 : 1.2;
+
   return (
     <group ref={group} position={[position[0], currentY.current, position[2]]}>
-      <primitive object={scene} scale={1.2} position={[0, -1.1, 0]} />
+      <primitive object={scene} scale={modelScale} position={[0, -1.1, 0]} />
     </group>
   );
 }
@@ -97,9 +102,11 @@ function Model({ url, isMobile, position }: ModelProps) {
 export default function Romain3D({
   progress = 0,
   phase = "intro",
+  modelUrl = "/models/RomainSalut.glb",
+  theme = "home",
 }: Romain3DProps) {
-  // Toujours le même modèle (intro)
-  const url = "/models/RomainSalut.glb";
+  // Utiliser le modèle passé en prop ou le modèle par défaut
+  const url = modelUrl;
 
   const [isMobile, setIsMobile] = useState(false);
   
@@ -110,8 +117,8 @@ export default function Romain3D({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // FOV plus large sur mobile pour mieux cadrer
-  const fov = isMobile ? 48 : 45;
+  // FOV plus large sur mobile pour voir le perso en entier même quand il est bas
+  const fov = isMobile ? 55 : 45;
 
   return (
     <Canvas
@@ -132,7 +139,7 @@ export default function Romain3D({
           isMobile 
             ? phase === "intro" 
               ? [0, 0.1, 0]      // Home mobile : position normale
-              : [0, -0.5, 0]     // Parcours mobile : légèrement plus bas (ajusté pour voir les pieds)
+              : [0, -0.5, 0]     // Parcours mobile : plus bas (comme avant)
             : [0, 0, 0]          // Desktop : normal
         }
         isMobile={isMobile}
@@ -142,3 +149,4 @@ export default function Romain3D({
 }
 
 useGLTF.preload("/models/RomainSalut.glb");
+useGLTF.preload("/models/RomainVacanceSalut.glb");

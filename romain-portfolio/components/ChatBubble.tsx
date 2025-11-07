@@ -115,15 +115,17 @@ export default function ChatBubble({
       aria-label={ariaLabel ?? "Bulle de dialogue"}
       onClick={handleSkip}
       className={[
-        // Base bulle + gradient + glow
-        "bubble", // <- défini dans globals.css (@layer components)
+        // Base bulle + glow
+        "bubble",
         "max-w-[22rem] rounded-3xl p-4 md:p-5 cursor-text select-none",
-        "bg-gradient-to-br from-[#7928CA]/90 to-[#FF00C3]/80",
         "backdrop-blur-sm text-white border border-white/20 relative",
-        "shadow-[0_0_24px_rgba(199,0,255,.25)]",
         "font-orbitron",
         pulse ? "animate-glow" : "",
-        className, // <- ex: "arrow-bottom md:arrow-left"
+        // Si className contient bg-gradient, on ne met pas le gradient par défaut
+        className?.includes("bg-gradient")
+          ? ""
+          : "bg-gradient-to-br from-[#7928CA]/90 to-[#FF00C3]/80 shadow-[0_0_24px_rgba(199,0,255,.25)]",
+        className, // Applique les classes custom en dernier pour override
       ].join(" ")}
     >
       <p className="whitespace-normal break-words hyphens-auto leading-relaxed">

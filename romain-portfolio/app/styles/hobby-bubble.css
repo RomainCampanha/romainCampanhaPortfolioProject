@@ -1,0 +1,15 @@
+/* Styles pour la bulle Hobby avec flèche orange/jaune */
+
+/* Flèche du bas (mobile) - couleur amber/orange */
+.hobby-bubble.arrow-bottom::after {
+  border-top-color: rgb(217 119 6 / 0.9) !important; /* from-amber-600/90 */
+}
+
+/* Flèche de gauche (desktop) - couleur amber/orange */
+.hobby-bubble.arrow-left::after {
+  border-right-color: rgb(217 119 6 / 0.9) !important; /* from-amber-600/90 */
+}
+
+/* Si tu veux une couleur plus jaune, utilise celle-ci à la place : */
+/* border-top-color: rgb(234 179 8 / 0.9) !important; */ /* more yellow */
+/* border-right-color: rgb(234 179 8 / 0.9) !important; */ /* more yellow */

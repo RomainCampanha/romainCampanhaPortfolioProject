@@ -125,3 +125,32 @@ body {
            leading-relaxed break-words;
   }
 }
+
+/* 🌴 Styles spécifiques pour la bulle Hobby (flèche orange/jaune) */
+/* On cible ::before ET ::after pour être sûr */
+.hobby-bubble.arrow-left::before,
+.hobby-bubble.arrow-left::after {
+  border-right-color: #F59E0B !important; /* amber-500 */
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35)) !important;
+}
+
+.hobby-bubble.arrow-right::before,
+.hobby-bubble.arrow-right::after {
+  border-left-color: #F59E0B !important; /* amber-500 */
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35)) !important;
+}
+
+.hobby-bubble.arrow-bottom::before,
+.hobby-bubble.arrow-bottom::after {
+  border-top-color: #F59E0B !important; /* amber-500 */
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35)) !important;
+}
+
+/* Cache toute flèche rose qui pourrait rester */
+.hobby-bubble::before {
+  border-color: transparent #F59E0B transparent transparent !important;
+}
+
+.hobby-bubble::after {
+  border-color: transparent #F59E0B transparent transparent !important;
+}
