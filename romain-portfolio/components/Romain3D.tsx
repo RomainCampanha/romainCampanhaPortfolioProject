@@ -11,7 +11,7 @@ const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
 
 // Positions spécifiques pour mobile (caméra plus reculée pour voir les pieds)
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
-const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.5);
+const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.4);
 
 type Romain3DProps = {
   progress?: number;
@@ -94,7 +94,7 @@ function Model({ url, isMobile, position }: ModelProps) {
 
   return (
     <group ref={group} position={[position[0], currentY.current, position[2]]}>
-      <primitive object={scene} scale={modelScale} position={[0, -1.5, 0]} />
+      <primitive object={scene} scale={modelScale} position={[0, -1.6, 0]} />
     </group>
   );
 }

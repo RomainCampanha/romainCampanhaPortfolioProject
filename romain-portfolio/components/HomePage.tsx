@@ -75,7 +75,7 @@ export default function HomePage() {
                 >
                   {/* Mobile : Bulles avec animation de sortie */}
                   <div className="flex md:hidden justify-center items-start h-full">
-                    <div className="w-[90%]">
+                    <div className="w-[90%] -translate-y-14">
                       <ParcoursBubbles 
                         show 
                         bubble1Exit={bubble1Exit}
@@ -88,7 +88,7 @@ export default function HomePage() {
                   {/* Desktop : Bulles avec animation de sortie vers la droite */}
                   <div className="hidden md:block">
                     {/* Bulle "Voici mon parcours pro" - Décalée à GAUCHE du personnage */}
-                    <div className="absolute left-0 -translate-x-[230%] top-0">
+                    <div className="absolute left-0 -translate-x-[230%] -top-12">
                       <div className="w-[280px]">
                         <ChatBubble
                           text="Voici mon parcours pro ! 🚀"
@@ -98,8 +98,8 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* Bulles parcours - Position normale, alignées avec bulle intro */}
-                    <div className="min-w-[22rem] max-w-[28rem] md:-translate-y-0">
+                    {/* Bulles parcours - Position remontée */}
+                    <div className="min-w-[22rem] max-w-[28rem] md:-translate-y-16">
                       <ParcoursBubbles 
                         show 
                         bubble1Exit={bubble1Exit}
