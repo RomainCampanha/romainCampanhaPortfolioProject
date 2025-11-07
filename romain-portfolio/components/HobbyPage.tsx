@@ -24,7 +24,7 @@ export default function HobbyPage() {
         style={{ pointerEvents: overlayVisible ? "none" : "none" }}
       >
         <div className="container mx-auto px-4 pointer-events-auto mt-16 md:mt-0">
-          <div className="flex flex-col md:flex-row md:items-center gap-8">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
             {/* 3D piloté par progress */}
             <div className="order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]">
               <div
@@ -43,7 +43,7 @@ export default function HobbyPage() {
 
             {/* Bulle de texte */}
             <div className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start">
-              <div className="relative w-full md:w-auto min-h-[120px] md:min-h-[240px] flex justify-center md:block">
+              <div className="relative w-full md:w-auto md:min-h-[240px] flex justify-center md:block">
                 <div className="md:min-w-[22rem] md:max-w-[28rem]">
                   <ChatBubble
                     text="Viens découvrir mes hobbys ! 🌴"
