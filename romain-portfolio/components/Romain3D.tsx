@@ -90,11 +90,11 @@ function Model({ url, isMobile, position }: ModelProps) {
   });
 
   // Scale plus grand sur mobile pour mieux voir le perso
-  const modelScale = isMobile ? 1.5 : 1.2;
+  const modelScale = isMobile ? 1.6 : 1.2;
 
   return (
     <group ref={group} position={[position[0], currentY.current, position[2]]}>
-      <primitive object={scene} scale={modelScale} position={[0, -1.1, 0]} />
+      <primitive object={scene} scale={modelScale} position={[0, -1.3, 0]} />
     </group>
   );
 }
@@ -140,7 +140,7 @@ export default function Romain3D({
             ? phase === "intro" 
               ? [0, 0.1, 0]      // Home mobile : position normale
               : [0, -0.5, 0]     // Parcours mobile : plus bas (comme avant)
-            : [0, 0, 0]          // Desktop : normal
+            : [0, 0.1, 0]          // Desktop : normal
         }
         isMobile={isMobile}
       />
