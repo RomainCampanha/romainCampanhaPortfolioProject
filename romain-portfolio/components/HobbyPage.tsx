@@ -122,15 +122,24 @@ export default function HobbyPage() {
             </div>
           </div>
 
-          {/* Indicateur scroll */}
+          {/* Indicateur scroll - Texte "Explorer" */}
           {showScrollIndicator && (
             <div 
-              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3"
-              style={{ opacity: showScrollIndicator ? 1 : 0 }}
+              className="absolute bottom-[9dvh] left-1/2 -translate-x-1/2 z-10"
+              style={{ opacity: showScrollIndicator ? 1 : 0, transition: "opacity 0.3s" }}
             >
               <span className="text-amber-900 font-semibold text-lg tracking-wide font-orbitron">
                 Explorer
               </span>
+            </div>
+          )}
+
+          {/* Flèche qui reste toujours visible (sauf sur carrousels) */}
+          {!showCarousels && (
+            <div 
+              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10"
+              style={{ opacity: 1, transition: "opacity 0.3s" }}
+            >
               <svg 
                 className="w-8 h-8 text-amber-900/70 animate-bounce"
                 fill="none" 

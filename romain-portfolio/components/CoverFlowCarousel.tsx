@@ -11,9 +11,8 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const dragStartX = useRef(0);
-  const dragStartY = useRef(0);
-  const isDragging = useRef(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   // Détecter mobile
   useEffect(() => {
@@ -50,88 +49,66 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [images.length]);
 
-  // Gestion du scroll (desktop uniquement)
+  // SCROLL SIMPLE - Fonctionne sur tout le conteneur
   const handleWheel = (e: React.WheelEvent) => {
-    if (isMobile) return; // Désactiver sur mobile
-    
     e.preventDefault();
+    
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     
     if (Math.abs(delta) > 10) {
       if (delta > 0) {
-        setCurrentIndex(prev => (prev + 1) % images.length);
+        goToNext();
       } else {
-        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+        goToPrev();
       }
-      setIsAutoPlaying(false);
     }
   };
 
-  // Gestion du swipe améliorée
+  // SWIPE MOBILE
   const handleTouchStart = (e: React.TouchEvent) => {
-    isDragging.current = true;
-    dragStartX.current = e.touches[0].clientX;
-    dragStartY.current = e.touches[0].clientY;
-    setIsAutoPlaying(false);
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const diffX = touchStartX.current - touchEndX;
+    const diffY = touchStartY.current - touchEndY;
 
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const diffX = dragStartX.current - currentX;
-    const diffY = dragStartY.current - currentY;
-
-    // Swipe horizontal uniquement si le mouvement est plus horizontal que vertical
+    // Si le mouvement est plus horizontal que vertical
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
       if (diffX > 0) {
-        setCurrentIndex(prev => (prev + 1) % images.length);
+        goToNext();
       } else {
-        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+        goToPrev();
       }
-      isDragging.current = false;
     }
   };
 
-  const handleTouchEnd = () => {
-    isDragging.current = false;
-  };
-
-  // Drag pour desktop
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isMobile) return;
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
+  // Fonctions de navigation
+  const goToNext = () => {
+    setCurrentIndex(prev => (prev + 1) % images.length);
     setIsAutoPlaying(false);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || isMobile) return;
-
-    const currentX = e.clientX;
-    const diff = dragStartX.current - currentX;
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        setCurrentIndex(prev => (prev + 1) % images.length);
-      } else {
-        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-      }
-      isDragging.current = false;
-    }
+  const goToPrev = () => {
+    setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+    setIsAutoPlaying(false);
   };
 
-  const handleMouseUp = () => {
-    isDragging.current = false;
+  const goToImage = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
   };
 
-  // Calculer la position et le style de chaque image avec VRAIE boucle infinie
+  // Calculer la position et le style de chaque image
   const getImageStyle = (index: number) => {
     let diff = index - currentIndex;
     const totalImages = images.length;
     
-    // Toujours prendre le chemin le plus court
+    // Chemin le plus court
     if (diff > totalImages / 2) {
       diff -= totalImages;
     } else if (diff < -totalImages / 2) {
@@ -175,40 +152,41 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
   const imageHeight = isMobile ? "400px" : "500px";
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+    <div 
+      className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Conteneur du carrousel */}
       <div
         ref={containerRef}
-        className="relative w-full flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing"
+        className="relative w-full flex-1 flex items-center justify-center"
         style={{ perspective: isMobile ? "1000px" : "1500px" }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         {images.map((imageUrl, index) => {
           const style = getImageStyle(index);
           
-          // Calculer la distance pour afficher seulement les images proches
+          // Calculer la distance
           let diff = index - currentIndex;
           const totalImages = images.length;
           if (diff > totalImages / 2) diff -= totalImages;
           else if (diff < -totalImages / 2) diff += totalImages;
           
-          // Afficher plus d'images sur desktop, moins sur mobile pour les perfs
+          // Afficher seulement les images proches
           const visibleRange = isMobile ? 3 : 4;
           const isVisible = Math.abs(diff) <= visibleRange;
 
           if (!isVisible) return null;
 
+          const isCenterImage = index === currentIndex;
+
           return (
             <div
               key={index}
-              className="absolute transition-all duration-500 ease-out"
+              className={`absolute transition-all duration-500 ease-out ${
+                !isCenterImage ? 'cursor-pointer' : 'cursor-default'
+              }`}
               style={{
                 ...style,
                 transformStyle: "preserve-3d",
@@ -216,25 +194,54 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
                 height: imageHeight,
               }}
               onClick={() => {
-                if (index !== currentIndex) {
-                  setCurrentIndex(index);
-                  setIsAutoPlaying(false);
+                if (!isCenterImage) {
+                  goToImage(index);
                 }
               }}
             >
-              <img
-                src={imageUrl}
-                alt={`Photo ${index + 1}`}
-                className="w-full h-full object-cover rounded-xl"
-                style={{
-                  boxShadow: isMobile 
-                    ? "0 15px 35px -10px rgba(0, 0, 0, 0.4)"
-                    : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                  userSelect: "none",
-                  pointerEvents: "none",
-                }}
-                draggable={false}
-              />
+              <div className="relative w-full h-full group">
+                <img
+                  src={imageUrl}
+                  alt={`Photo ${index + 1}`}
+                  className="w-full h-full object-cover rounded-xl"
+                  style={{
+                    boxShadow: isMobile 
+                      ? "0 15px 35px -10px rgba(0, 0, 0, 0.4)"
+                      : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                    userSelect: "none",
+                  }}
+                  draggable={false}
+                />
+                
+                {/* Effet hover sur images latérales (desktop uniquement) */}
+                {!isCenterImage && !isMobile && (
+                  <>
+                    {/* Bordure au hover */}
+                    <div className="absolute inset-0 rounded-xl ring-0 group-hover:ring-4 ring-amber-400/50 transition-all duration-300 pointer-events-none" />
+                    
+                    {/* Flèche directionnelle */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                        <svg 
+                          className="w-8 h-8 text-white drop-shadow-lg"
+                          fill="none" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth="2.5" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          {diff < 0 ? (
+                            <path d="M9 5l7 7-7 7" />
+                          ) : (
+                            <path d="M15 19l-7-7 7-7" />
+                          )}
+                        </svg>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
@@ -246,10 +253,7 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
           {images.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                setCurrentIndex(index);
-                setIsAutoPlaying(false);
-              }}
+              onClick={() => goToImage(index)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 index === currentIndex
                   ? "w-6 bg-amber-900"
