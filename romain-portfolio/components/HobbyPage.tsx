@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useTrackScrollProgress } from "../app/hooks/useTrackScrollProgress";
 import Romain3D from "@/components/Romain3D";
 import ChatBubble from "@/components/ChatBubble";
-import PhotoCarousel3D from "@/components/Photocarousel3d";
+import CoverFlowCarousel from "@/components/CoverFlowCarousel";
 import FuturisticTitle from "@/components/FuturisticTitle";
 import { useDestinationImages } from "@/app/hooks/useDestinationImages";
 
@@ -149,28 +149,28 @@ export default function HobbyPage() {
 
       {/* === SECTION CARROUSELS FIXE === */}
       {showCarousels && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center px-4">
+        <div className="fixed inset-0 flex flex-col items-center justify-center px-4 pt-20 md:pt-32">
           
           {/* TITRE DESTINATION */}
           <div 
-            className="mb-8 z-10"
+            className="mb-8 md:mb-16 z-10"
             style={{
               transform: `translateX(${destinationTransition * -100}%)`,
               opacity: 1 - destinationTransition,
               transition: "all 0.5s ease-out"
             }}
           >
-            <FuturisticTitle text={config.title} />
+            <FuturisticTitle text={config.title} size="large" />
           </div>
 
-          {/* CARROUSEL 3D */}
-          <div className="w-full max-w-6xl h-[60vh] md:h-[70vh]">
-            <PhotoCarousel3D images={images} rotationSpeed={0.3} />
+          {/* CARROUSEL COVER FLOW */}
+          <div className="w-full max-w-7xl h-[55vh] md:h-[60vh]">
+            <CoverFlowCarousel images={images} />
           </div>
 
-          {/* Instruction */}
-          <p className="mt-6 text-amber-900 font-orbitron text-sm md:text-base opacity-70">
-            Scroll ou swipe pour contrôler le carrousel ↕️
+          {/* Instruction - Desktop uniquement */}
+          <p className="hidden md:block mt-8 text-amber-900 font-orbitron text-sm md:text-base opacity-70">
+            Scroll horizontal pour naviguer dans les photos
           </p>
         </div>
       )}

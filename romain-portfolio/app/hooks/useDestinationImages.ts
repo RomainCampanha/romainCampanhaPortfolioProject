@@ -38,7 +38,7 @@ export function useDestinationImages(destination: Destination) {
       // Dans un vrai projet Next.js, on utiliserait fs.readdir côté serveur
       const imageUrls: string[] = [];
       
-      // Essayer de charger les images (1.jpeg, 2.jpeg, etc.)
+      // Charger 12 images
       for (let i = 1; i <= 12; i++) {
         const url = `/PhotoSitePortfolio/${destination}/${i}.jpeg`;
         imageUrls.push(url);

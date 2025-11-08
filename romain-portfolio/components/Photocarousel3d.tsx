@@ -1,203 +1,123 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import * as THREE from "three";
 
 type PhotoCarousel3DProps = {
-  images: string[]; // Chemins des images
-  rotationSpeed?: number; // Vitesse de rotation (contrôlée par scroll)
-  radius?: number; // Rayon du cercle
+  images: string[];
+  rotationSpeed?: number;
 };
 
-// Composant pour une photo individuelle
-function Photo({ 
-  position, 
-  rotation, 
-  imageUrl 
-}: { 
-  position: [number, number, number]; 
-  rotation: [number, number, number]; 
-  imageUrl: string;
-}) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  
-  useEffect(() => {
-    console.log(`🖼️ Tentative de chargement: ${imageUrl}`);
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      imageUrl,
-      (loadedTexture) => {
-        console.log(`✅ Image chargée avec succès: ${imageUrl}`);
-        // Important : configurer la texture correctement
-        loadedTexture.needsUpdate = true;
-        setTexture(loadedTexture);
-      },
-      (progress) => {
-        console.log(`⏳ Chargement en cours: ${imageUrl} - ${(progress.loaded / progress.total * 100).toFixed(0)}%`);
-      },
-      (error) => {
-        console.error(`❌ Échec de chargement: ${imageUrl}`, error);
-      }
-    );
-  }, [imageUrl]);
-  
-  if (!texture) {
-    // Placeholder gris pendant le chargement
-    return (
-      <mesh position={position} rotation={rotation}>
-        <planeGeometry args={[2, 3]} />
-        <meshBasicMaterial color="#888888" />
-      </mesh>
-    );
-  }
-  
-  return (
-    <mesh position={position} rotation={rotation}>
-      <planeGeometry args={[2, 3]} />
-      <meshBasicMaterial 
-        map={texture} 
-        side={THREE.DoubleSide}
-        toneMapped={false}
-      />
-    </mesh>
-  );
-}
-
-// Composant du carrousel qui tourne
-function CarouselRing({ 
-  images, 
-  rotationSpeed 
-}: { 
-  images: string[]; 
-  rotationSpeed: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null!);
-  const radius = 8; // Rayon du cercle
-  const photoCount = images.length;
-
-  // Rotation automatique + contrôle manuel
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += rotationSpeed * 0.01; // Rotation continue
-    }
-  });
-
-  // Calculer les positions des photos en cercle
-  const photoPositions = images.map((_, index) => {
-    const angle = (index / photoCount) * Math.PI * 2;
-    const x = Math.sin(angle) * radius;
-    const z = Math.cos(angle) * radius;
-    
-    // Rotation pour que la photo soit inclinée vers le centre
-    const rotationY = -angle;
-    
-    return {
-      position: [x, 0, z] as [number, number, number],
-      rotation: [0, rotationY, 0] as [number, number, number],
-    };
-  });
-
-  return (
-    <group ref={groupRef}>
-      {images.map((imageUrl, index) => (
-        <Photo
-          key={index}
-          position={photoPositions[index].position}
-          rotation={photoPositions[index].rotation}
-          imageUrl={imageUrl}
-        />
-      ))}
-    </group>
-  );
-}
-
-// Caméra et contrôles
-function CameraRig() {
-  const { camera } = useThree();
-  
-  useEffect(() => {
-    // Position de la caméra : de face, légèrement en hauteur
-    camera.position.set(0, 2, 12);
-    camera.lookAt(0, 0, 0);
-  }, [camera]);
-  
-  return null;
-}
-
-// Composant principal du carrousel
 export default function PhotoCarousel3D({ 
   images, 
-  rotationSpeed = 0.5, // Vitesse par défaut
-  radius = 8 
+  rotationSpeed = 0.5 
 }: PhotoCarousel3DProps) {
-  const [currentSpeed, setCurrentSpeed] = useState(rotationSpeed);
+  const [rotation, setRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [velocity, setVelocity] = useState(rotationSpeed);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMouseY = useRef(0);
 
-  // Gestion du scroll/swipe pour contrôler la vitesse
+  // Rotation automatique
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const interval = setInterval(() => {
+      if (!isDragging) {
+        setRotation(prev => prev + velocity);
+      }
+    }, 32); // ~60fps
 
-    let lastY = 0;
-    let velocity = rotationSpeed;
+    return () => clearInterval(interval);
+  }, [velocity, isDragging]);
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      // Le scroll influence la vitesse
-      velocity += e.deltaY * 0.001;
-      velocity = THREE.MathUtils.clamp(velocity, -2, 2);
-      setCurrentSpeed(velocity);
+  // Gestion du scroll
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const newVelocity = velocity + e.deltaY * 0.001;
+    setVelocity(Math.max(-2, Math.min(2, newVelocity)));
+    
+    // Retour progressif à la vitesse normale
+    setTimeout(() => {
+      setVelocity(v => v * 0.95);
+    }, 100);
+  };
 
-      // Retour progressif à la vitesse normale
-      setTimeout(() => {
-        velocity *= 0.95;
-        if (Math.abs(velocity) < 0.1) velocity = rotationSpeed;
-        setCurrentSpeed(velocity);
-      }, 100);
-    };
+  // Gestion du drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    lastMouseY.current = e.clientY;
+  };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      lastY = e.touches[0].clientY;
-    };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - lastMouseY.current;
+    setRotation(prev => prev - deltaY * 0.5);
+    lastMouseY.current = e.clientY;
+  };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      const currentY = e.touches[0].clientY;
-      const deltaY = lastY - currentY;
-      
-      velocity += deltaY * 0.01;
-      velocity = THREE.MathUtils.clamp(velocity, -2, 2);
-      setCurrentSpeed(velocity);
-      
-      lastY = currentY;
-    };
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    container.addEventListener("touchstart", handleTouchStart);
-    container.addEventListener("touchmove", handleTouchMove);
-
-    return () => {
-      container.removeEventListener("wheel", handleWheel);
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-    };
-  }, [rotationSpeed]);
+  const radius = 500; // Rayon du cercle en pixels
+  const angleStep = 360 / images.length;
 
   return (
     <div 
-      ref={containerRef} 
-      className="w-full h-full cursor-grab active:cursor-grabbing"
-      style={{ touchAction: "none" }}
+      ref={containerRef}
+      className="w-full h-full relative overflow-hidden cursor-grab active:cursor-grabbing"
+      style={{ 
+        perspective: "1200px",
+        touchAction: "none"
+      }}
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
-      <Canvas>
-        <CameraRig />
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[5, 5, 5]} intensity={1} />
-        
-        {images.length > 0 && (
-          <CarouselRing images={images} rotationSpeed={currentSpeed} />
-        )}
-      </Canvas>
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: `rotateY(${rotation}deg)`,
+          transition: isDragging ? "none" : "transform 0.1s linear"
+        }}
+      >
+        {images.map((imageUrl, index) => {
+          const angle = index * angleStep;
+          const angleRad = (angle * Math.PI) / 180;
+          const x = Math.sin(angleRad) * radius;
+          const z = Math.cos(angleRad) * radius;
+
+          return (
+            <div
+              key={index}
+              className="absolute"
+              style={{
+                transform: `translate3d(${x}px, 0, ${z}px) rotateY(${-angle}deg)`,
+                width: "300px",
+                height: "450px",
+                transformStyle: "preserve-3d"
+              }}
+            >
+              <img
+                src={imageUrl}
+                alt={`Photo ${index + 1}`}
+                className="w-full h-full object-cover rounded-lg shadow-2xl"
+                style={{
+                  backfaceVisibility: "visible",
+                  border: "8px solid white",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
+                }}
+                onError={(e) => {
+                  console.error(`Erreur chargement image: ${imageUrl}`);
+                  e.currentTarget.style.backgroundColor = "#888";
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
