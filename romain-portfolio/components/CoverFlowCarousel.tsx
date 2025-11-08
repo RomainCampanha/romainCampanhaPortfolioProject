@@ -38,10 +38,10 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-        setIsAutoPlaying(false);
+        // Auto-play continue
       } else if (e.key === "ArrowRight") {
         setCurrentIndex(prev => (prev + 1) % images.length);
-        setIsAutoPlaying(false);
+        // Auto-play continue
       }
     };
 
@@ -49,22 +49,39 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [images.length]);
 
-  // SCROLL SIMPLE - Fonctionne sur tout le conteneur
+  // SCROLL HORIZONTAL uniquement - Le scroll vertical fait descendre la page
   const handleWheel = (e: React.WheelEvent) => {
+    console.log('🎡 Wheel event:', { deltaX: e.deltaX, deltaY: e.deltaY });
+    
+    // Détecter si c'est un scroll horizontal (deltaX) ou vertical (deltaY)
+    const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+    
+    console.log('  → isHorizontalScroll?', isHorizontalScroll);
+    
+    // Si c'est un scroll vertical, laisser la page défiler normalement
+    if (!isHorizontalScroll) {
+      console.log('  → Scroll vertical, on laisse passer');
+      return; // Ne rien faire, le scroll de la page continue
+    }
+    
+    console.log('  → Scroll horizontal, on navigue dans le carousel');
+    
+    // Si c'est un scroll horizontal, naviguer dans le carousel
     e.preventDefault();
+    e.stopPropagation();
     
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    
-    if (Math.abs(delta) > 10) {
-      if (delta > 0) {
+    if (Math.abs(e.deltaX) > 10) {
+      if (e.deltaX > 0) {
+        console.log('  → Suivant');
         goToNext();
       } else {
+        console.log('  → Précédent');
         goToPrev();
       }
     }
   };
 
-  // SWIPE MOBILE
+  // SWIPE MOBILE - Uniquement horizontal
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -77,30 +94,32 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
     const diffX = touchStartX.current - touchEndX;
     const diffY = touchStartY.current - touchEndY;
 
-    // Si le mouvement est plus horizontal que vertical
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+    // Swipe HORIZONTAL uniquement (pas vertical pour le scroll de page)
+    // Le mouvement doit être nettement plus horizontal que vertical
+    if (Math.abs(diffX) > Math.abs(diffY) * 2 && Math.abs(diffX) > 60) {
       if (diffX > 0) {
         goToNext();
       } else {
         goToPrev();
       }
     }
+    // Sinon, on laisse le scroll vertical de la page se faire naturellement
   };
 
   // Fonctions de navigation
   const goToNext = () => {
     setCurrentIndex(prev => (prev + 1) % images.length);
-    setIsAutoPlaying(false);
+    // Auto-play continue
   };
 
   const goToPrev = () => {
     setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-    setIsAutoPlaying(false);
+    // Auto-play continue
   };
 
   const goToImage = (index: number) => {
     setCurrentIndex(index);
-    setIsAutoPlaying(false);
+    // Auto-play continue
   };
 
   // Calculer la position et le style de chaque image
@@ -157,12 +176,17 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      style={{
+        pointerEvents: 'auto' // Intercepte les événements
+      }}
     >
       {/* Conteneur du carrousel */}
       <div
         ref={containerRef}
         className="relative w-full flex-1 flex items-center justify-center"
-        style={{ perspective: isMobile ? "1000px" : "1500px" }}
+        style={{ 
+          perspective: isMobile ? "1000px" : "1500px"
+        }}
       >
         {images.map((imageUrl, index) => {
           const style = getImageStyle(index);
@@ -192,10 +216,16 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
                 transformStyle: "preserve-3d",
                 width: imageWidth,
                 height: imageHeight,
+                pointerEvents: 'auto', // CRITIQUE : Les images interceptent les clicks !
               }}
-              onClick={() => {
+              onClick={(e) => {
+                console.log('🖱️ CLICK détecté sur image', index);
                 if (!isCenterImage) {
+                  e.stopPropagation(); // Empêche le click de remonter à la page
+                  console.log('✅ Navigation vers', index);
                   goToImage(index);
+                } else {
+                  console.log('❌ Image centrale, pas de navigation');
                 }
               }}
             >
@@ -212,35 +242,6 @@ export default function CoverFlowCarousel({ images }: CoverFlowCarouselProps) {
                   }}
                   draggable={false}
                 />
-                
-                {/* Effet hover sur images latérales (desktop uniquement) */}
-                {!isCenterImage && !isMobile && (
-                  <>
-                    {/* Bordure au hover */}
-                    <div className="absolute inset-0 rounded-xl ring-0 group-hover:ring-4 ring-amber-400/50 transition-all duration-300 pointer-events-none" />
-                    
-                    {/* Flèche directionnelle */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
-                        <svg 
-                          className="w-8 h-8 text-white drop-shadow-lg"
-                          fill="none" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth="2.5" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
-                        >
-                          {diff < 0 ? (
-                            <path d="M9 5l7 7-7 7" />
-                          ) : (
-                            <path d="M15 19l-7-7 7-7" />
-                          )}
-                        </svg>
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           );

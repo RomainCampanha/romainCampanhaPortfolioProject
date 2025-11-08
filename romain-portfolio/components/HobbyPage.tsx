@@ -158,7 +158,13 @@ export default function HobbyPage() {
 
       {/* === SECTION CARROUSELS FIXE === */}
       {showCarousels && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center px-4 pt-20 md:pt-32">
+        <div 
+          className="fixed inset-0 flex flex-col items-center justify-center px-4 pt-20 md:pt-32"
+          style={{ 
+            zIndex: 50,
+            pointerEvents: 'none'  // Par défaut ne bloque rien
+          }}
+        >
           
           {/* TITRE DESTINATION */}
           <div 
@@ -166,21 +172,38 @@ export default function HobbyPage() {
             style={{
               transform: `translateX(${destinationTransition * -100}%)`,
               opacity: 1 - destinationTransition,
-              transition: "all 0.5s ease-out"
+              transition: "all 0.5s ease-out",
+              pointerEvents: 'none'  // Ne bloque pas les events
             }}
           >
             <FuturisticTitle text={config.title} size="large" />
           </div>
 
           {/* CARROUSEL COVER FLOW */}
-          <div className="w-full max-w-7xl h-[55vh] md:h-[60vh]">
+          <div 
+            className="w-full max-w-7xl h-[55vh] md:h-[60vh]"
+            style={{ pointerEvents: 'auto' }}  // Capture les events ici !
+          >
             <CoverFlowCarousel images={images} />
           </div>
 
-          {/* Instruction - Desktop uniquement */}
-          <p className="hidden md:block mt-8 text-amber-900 font-orbitron text-sm md:text-base opacity-70">
-            Scroll horizontal pour naviguer dans les photos
-          </p>
+          {/* Flèche vers le bas - visible pendant les carrousels */}
+          <div 
+            className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10"
+            style={{ opacity: 1, pointerEvents: 'none' }}
+          >
+            <svg 
+              className="w-8 h-8 text-amber-900/70 animate-bounce"
+              fill="none" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth="2.5" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+          </div>
         </div>
       )}
 
