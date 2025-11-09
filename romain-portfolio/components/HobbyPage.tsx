@@ -25,35 +25,74 @@ export default function HobbyPage() {
   // === PHASES CARROUSELS (35%+) ===
   const showCarousels = progress >= 0.35;
   
-  // Destinations (chaque destination = 20% de scroll)
-  // Seoul: 35-55%
-  // Toronto: 55-75%
-  // Brighton: 75-95%
+  // Destinations avec transitions fluides
+  // Chaque destination = 20% de scroll
+  // Seoul: 35-55% | Toronto: 55-75% | Brighton: 75-95%
   const destinationProgress = Math.max(0, (progress - 0.35) / 0.6); // 0 à 1 sur 60%
   
   let currentDestination: "Coree" | "Toronto" | "BrightonDubrovnik" = "Coree";
-  let destinationTransition = 0; // 0 = stable, 0-1 = transition
+  let nextDestination: "Coree" | "Toronto" | "BrightonDubrovnik" | null = null;
+  let transitionProgress = 0; // 0 à 1 pendant la transition
+  
+  // Durée de transition = 30% de chaque section (10% du total)
+  // Augmenté pour rendre la transition bien visible et fluide
+  const transitionDuration = 0.18; // 18% de la plage totale (0.6)
+  
+  // IMPORTANT : La transition doit se terminer AVANT le changement de section
+  // pour éviter le glitch de reset
   
   if (destinationProgress < 0.33) {
+    // Section Seoul (0 - 0.33)
     currentDestination = "Coree";
-    // Transition out commence à 90% de la section (30% * 0.9 = 27%)
-    if (destinationProgress > 0.27) {
-      destinationTransition = (destinationProgress - 0.27) / 0.06; // 0 à 1
+    
+    // Transition commence à 70% de la section
+    // Se termine à 0.23 + 0.18 = 0.41, mais on cap à 0.329 pour éviter le glitch
+    if (destinationProgress > 0.23 && destinationProgress < 0.329) {
+      transitionProgress = (destinationProgress - 0.23) / transitionDuration;
+      transitionProgress = Math.min(1, transitionProgress);
+      nextDestination = "Toronto";
+    } else if (destinationProgress >= 0.329) {
+      // Transition terminée mais pas encore dans la nouvelle section
+      // On reste sur Seoul mais transitionProgress = 1 (terminé)
+      transitionProgress = 1;
+      nextDestination = "Toronto";
     }
   } else if (destinationProgress < 0.66) {
+    // Section Toronto (0.33 - 0.66)
+    const localProgress = destinationProgress - 0.33;
     currentDestination = "Toronto";
-    const localProgress = (destinationProgress - 0.33) / 0.33;
-    if (localProgress > 0.9) {
-      destinationTransition = (localProgress - 0.9) / 0.1;
+    
+    // Même logique : transition de 0.23 à 0.329 (juste avant 0.33)
+    if (localProgress > 0.23 && localProgress < 0.329) {
+      transitionProgress = (localProgress - 0.23) / transitionDuration;
+      transitionProgress = Math.min(1, transitionProgress);
+      nextDestination = "BrightonDubrovnik";
+    } else if (localProgress >= 0.329) {
+      transitionProgress = 1;
+      nextDestination = "BrightonDubrovnik";
     }
   } else {
+    // Section Brighton (0.66 - 1.0)
     currentDestination = "BrightonDubrovnik";
   }
 
   const showScrollIndicator = progress < 0.1;
 
-  // Charger les images de la destination actuelle
-  const { images, config } = useDestinationImages(currentDestination);
+  // Charger les images de TOUTES les destinations (hooks doivent toujours être appelés)
+  const coreeData = useDestinationImages("Coree");
+  const torontoData = useDestinationImages("Toronto");
+  const brightonData = useDestinationImages("BrightonDubrovnik");
+
+  // Sélectionner les bonnes données selon la destination actuelle
+  const currentData = 
+    currentDestination === "Coree" ? coreeData :
+    currentDestination === "Toronto" ? torontoData :
+    brightonData;
+
+  const nextData = 
+    nextDestination === "Toronto" ? torontoData :
+    nextDestination === "BrightonDubrovnik" ? brightonData :
+    null;
 
   return (
     <main className="min-h-dvh bg-gradient-to-b from-[#FFD54F] via-[#FFF176] to-[#FFE082]">
@@ -162,29 +201,30 @@ export default function HobbyPage() {
           className="fixed inset-0 flex flex-col items-center justify-center px-4 pt-20 md:pt-32"
           style={{ 
             zIndex: 50,
-            pointerEvents: 'none'  // Par défaut ne bloque rien
+            pointerEvents: 'none'
           }}
         >
           
-          {/* TITRE DESTINATION */}
-          <div 
-            className="mb-8 md:mb-16 z-10"
-            style={{
-              transform: `translateX(${destinationTransition * -100}%)`,
-              opacity: 1 - destinationTransition,
-              transition: "all 0.5s ease-out",
-              pointerEvents: 'none'  // Ne bloque pas les events
-            }}
-          >
-            <FuturisticTitle text={config.title} size="large" />
+          {/* TITRES AVEC ANIMATION SYNCHRONIZED */}
+          <div className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden">
+            <FuturisticTitle 
+              currentTitle={currentData.config.title}
+              nextTitle={nextData?.config.title || ""}
+              transitionProgress={transitionProgress}
+              size="large"
+            />
           </div>
 
-          {/* CARROUSEL COVER FLOW */}
+          {/* CARROUSEL COVER FLOW avec rotation 3D */}
           <div 
             className="w-full max-w-7xl h-[55vh] md:h-[60vh]"
-            style={{ pointerEvents: 'auto' }}  // Capture les events ici !
+            style={{ pointerEvents: 'auto' }}
           >
-            <CoverFlowCarousel images={images} />
+            <CoverFlowCarousel 
+              images={currentData.images}
+              nextImages={nextData?.images || []}
+              transitionProgress={transitionProgress}
+            />
           </div>
 
           {/* Flèche vers le bas - visible pendant les carrousels */}
@@ -207,8 +247,8 @@ export default function HobbyPage() {
         </div>
       )}
 
-      {/* PISTE DE SCROLL */}
-      <section ref={trackRef} className="relative h-[800dvh]" />
+      {/* PISTE DE SCROLL - Plus haute = scroll plus lent et transitions plus visibles */}
+      <section ref={trackRef} className="relative h-[1400dvh]" />
     </main>
   );
 }
