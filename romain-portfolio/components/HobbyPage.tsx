@@ -25,50 +25,43 @@ export default function HobbyPage() {
   // === PHASES CARROUSELS (35%+) ===
   const showCarousels = progress >= 0.35;
   
-  // Destinations avec transitions fluides
-  // Chaque destination = 20% de scroll
-  // Seoul: 35-55% | Toronto: 55-75% | Brighton: 75-95%
+  // Destinations avec transitions fluides et synchronisées
+  // Chaque destination = 33% de scroll
+  // Seoul: 0-0.33 | Toronto: 0.33-0.66 | Brighton: 0.66-1.0
   const destinationProgress = Math.max(0, (progress - 0.35) / 0.6); // 0 à 1 sur 60%
   
   let currentDestination: "Coree" | "Toronto" | "BrightonDubrovnik" = "Coree";
   let nextDestination: "Coree" | "Toronto" | "BrightonDubrovnik" | null = null;
   let transitionProgress = 0; // 0 à 1 pendant la transition
   
-  // Durée de transition = 30% de chaque section (10% du total)
-  // Augmenté pour rendre la transition bien visible et fluide
-  const transitionDuration = 0.18; // 18% de la plage totale (0.6)
-  
-  // IMPORTANT : La transition doit se terminer AVANT le changement de section
-  // pour éviter le glitch de reset
+  // Durée de transition = les derniers 20% de chaque section pour une transition bien visible
+  const transitionDuration = 0.20;
   
   if (destinationProgress < 0.33) {
     // Section Seoul (0 - 0.33)
     currentDestination = "Coree";
     
-    // Transition commence à 70% de la section
-    // Se termine à 0.23 + 0.18 = 0.41, mais on cap à 0.329 pour éviter le glitch
-    if (destinationProgress > 0.23 && destinationProgress < 0.329) {
-      transitionProgress = (destinationProgress - 0.23) / transitionDuration;
-      transitionProgress = Math.min(1, transitionProgress);
+    // Transition commence à 0.13 et va jusqu'à 0.33
+    const transitionStart = 0.33 - transitionDuration;
+    if (destinationProgress >= transitionStart) {
+      const localProgress = destinationProgress - transitionStart;
+      transitionProgress = Math.min(1, localProgress / transitionDuration);
       nextDestination = "Toronto";
-    } else if (destinationProgress >= 0.329) {
-      // Transition terminée mais pas encore dans la nouvelle section
-      // On reste sur Seoul mais transitionProgress = 1 (terminé)
-      transitionProgress = 1;
-      nextDestination = "Toronto";
+      
+      // Quand on atteint vraiment 0.33, on force le passage à la section suivante
+      // Mais la transition est déjà complète donc pas de saccade !
     }
   } else if (destinationProgress < 0.66) {
     // Section Toronto (0.33 - 0.66)
-    const localProgress = destinationProgress - 0.33;
     currentDestination = "Toronto";
     
-    // Même logique : transition de 0.23 à 0.329 (juste avant 0.33)
-    if (localProgress > 0.23 && localProgress < 0.329) {
-      transitionProgress = (localProgress - 0.23) / transitionDuration;
-      transitionProgress = Math.min(1, transitionProgress);
-      nextDestination = "BrightonDubrovnik";
-    } else if (localProgress >= 0.329) {
-      transitionProgress = 1;
+    // Transition commence à 0.46 et va jusqu'à 0.66
+    const transitionStart = 0.66 - transitionDuration;
+    const localDestProgress = destinationProgress - 0.33;
+    
+    if (localDestProgress >= (transitionStart - 0.33)) {
+      const localProgress = destinationProgress - transitionStart;
+      transitionProgress = Math.min(1, localProgress / transitionDuration);
       nextDestination = "BrightonDubrovnik";
     }
   } else {
@@ -205,7 +198,7 @@ export default function HobbyPage() {
           }}
         >
           
-          {/* TITRES AVEC ANIMATION SYNCHRONIZED */}
+          {/* TITRES AVEC ANIMATION SYNCHRONIZED ET ROTATION 3D */}
           <div className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden">
             <FuturisticTitle 
               currentTitle={currentData.config.title}

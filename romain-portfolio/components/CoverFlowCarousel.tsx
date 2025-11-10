@@ -41,8 +41,7 @@ export default function CoverFlowCarousel({
     return () => clearInterval(interval);
   }, [isAutoPlaying, images.length, isTransitioning]);
 
-  // Réinitialiser l'index seulement quand on sort complètement de la transition
-  // et qu'on a de nouvelles images
+  // Réinitialiser l'index quand on change complètement de destination
   const prevImagesRef = useRef(images);
   useEffect(() => {
     // Si les images ont changé ET qu'on n'est plus en transition
@@ -54,7 +53,7 @@ export default function CoverFlowCarousel({
 
   // Navigation avec les flèches clavier
   useEffect(() => {
-    if (isTransitioning) return; // Pas de navigation pendant transition
+    if (isTransitioning) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
@@ -70,7 +69,7 @@ export default function CoverFlowCarousel({
 
   // SCROLL HORIZONTAL uniquement
   const handleWheel = (e: React.WheelEvent) => {
-    if (isTransitioning) return; // Pas de navigation pendant transition
+    if (isTransitioning) return;
 
     const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
     
@@ -129,8 +128,7 @@ export default function CoverFlowCarousel({
   };
 
   // Calculer la rotation globale du carousel pendant la transition
-  // 0 → 0.5 : rotation de 0° à 180° (images actuelles disparaissent)
-  // 0.5 → 1 : rotation de 180° à 360° (nouvelles images apparaissent)
+  // Synchronisé avec la rotation du titre !
   const globalRotation = transitionProgress * 360;
 
   // Calculer la position et le style de chaque image
@@ -154,26 +152,27 @@ export default function CoverFlowCarousel({
     // Rotation additionnelle pendant la transition
     let transitionRotationY = 0;
     if (isTransitioning) {
-      // Les images actuelles et nouvelles tournent ensemble
       transitionRotationY = globalRotation;
     }
     
-    // Opacité pendant la transition - Swap plus progressif
+    // Opacité pendant la transition - Transition plus fluide et synchronisée
     let transitionOpacity = 1;
     if (isTransitioning) {
       if (isNextDestination) {
-        // Nouvelles images : fade in progressif à partir de 40% jusqu'à 100%
-        if (transitionProgress < 0.4) {
+        // Nouvelles images : fade in progressif à partir de 50% jusqu'à 100%
+        // Synchronisé avec l'apparition du nouveau titre
+        if (transitionProgress < 0.5) {
           transitionOpacity = 0;
         } else {
-          transitionOpacity = (transitionProgress - 0.4) / 0.6; // 0 à 1 entre 40% et 100%
+          transitionOpacity = (transitionProgress - 0.5) / 0.5; // 0 à 1 entre 50% et 100%
         }
       } else {
-        // Anciennes images : fade out progressif de 0% à 60%
-        if (transitionProgress > 0.6) {
+        // Anciennes images : fade out progressif de 0% à 50%
+        // Synchronisé avec la disparition de l'ancien titre
+        if (transitionProgress > 0.5) {
           transitionOpacity = 0;
         } else {
-          transitionOpacity = 1 - (transitionProgress / 0.6); // 1 à 0 entre 0% et 60%
+          transitionOpacity = 1 - (transitionProgress / 0.5); // 1 à 0 entre 0% et 50%
         }
       }
     }
@@ -208,11 +207,8 @@ export default function CoverFlowCarousel({
   const imageWidth = isMobile ? "280px" : "350px";
   const imageHeight = isMobile ? "400px" : "500px";
 
-  // Déterminer quelles images afficher
-  // Dès que transitionProgress > 0.6, on affiche les nouvelles images
-  // pour éviter un swap brutal à la fin
-  const shouldShowNextImages = isTransitioning && transitionProgress > 0.6;
-  const imagesToRender = shouldShowNextImages ? nextImages : images;
+  // Toujours afficher les deux sets d'images pendant la transition pour une transition fluide
+  const imagesToRender = images;
 
   return (
     <div 
@@ -233,7 +229,7 @@ export default function CoverFlowCarousel({
         }}
       >
         {/* Images actuelles */}
-        {!isTransitioning && images.map((imageUrl, index) => {
+        {images.map((imageUrl, index) => {
           const style = getImageStyle(index, false);
           
           let diff = index - currentIndex;
@@ -252,19 +248,19 @@ export default function CoverFlowCarousel({
             <div
               key={`current-${index}`}
               className={`absolute ${
-                !isCenterImage ? 'cursor-pointer' : 'cursor-default'
+                !isCenterImage && !isTransitioning ? 'cursor-pointer' : 'cursor-default'
               }`}
               style={{
                 ...style,
                 transformStyle: "preserve-3d",
                 width: imageWidth,
                 height: imageHeight,
-                pointerEvents: 'auto',
-                transition: "transform 0.6s ease-in-out, opacity 0.6s ease-in-out",
+                pointerEvents: isTransitioning ? 'none' : 'auto',
+                transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                 willChange: "transform, opacity",
               }}
               onClick={(e) => {
-                if (!isCenterImage) {
+                if (!isCenterImage && !isTransitioning) {
                   e.stopPropagation();
                   goToImage(index);
                 }
@@ -288,102 +284,51 @@ export default function CoverFlowCarousel({
           );
         })}
 
-        {/* Images pendant transition - On affiche les deux sets superposés */}
-        {isTransitioning && (
-          <>
-            {/* Anciennes images qui disparaissent */}
-            {images.map((imageUrl, index) => {
-              const style = getImageStyle(index, false);
-              
-              let diff = index - currentIndex;
-              const totalImages = images.length;
-              if (diff > totalImages / 2) diff -= totalImages;
-              else if (diff < -totalImages / 2) diff += totalImages;
-              
-              const visibleRange = isMobile ? 3 : 4;
-              const isVisible = Math.abs(diff) <= visibleRange;
+        {/* Nouvelles images qui apparaissent pendant la transition */}
+        {isTransitioning && nextImages.map((imageUrl, index) => {
+          const style = getImageStyle(index, true);
+          
+          let diff = index - currentIndex;
+          const totalImages = nextImages.length;
+          if (diff > totalImages / 2) diff -= totalImages;
+          else if (diff < -totalImages / 2) diff += totalImages;
+          
+          const visibleRange = isMobile ? 3 : 4;
+          const isVisible = Math.abs(diff) <= visibleRange;
 
-              if (!isVisible) return null;
+          if (!isVisible) return null;
 
-              return (
-                <div
-                  key={`old-${index}`}
-                  className="absolute"
+          return (
+            <div
+              key={`new-${index}`}
+              className="absolute"
+              style={{
+                ...style,
+                transformStyle: "preserve-3d",
+                width: imageWidth,
+                height: imageHeight,
+                pointerEvents: 'none',
+                transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                willChange: "transform, opacity",
+              }}
+            >
+              <div className="relative w-full h-full">
+                <img
+                  src={imageUrl}
+                  alt={`Photo ${index + 1}`}
+                  className="w-full h-full object-cover rounded-xl"
                   style={{
-                    ...style,
-                    transformStyle: "preserve-3d",
-                    width: imageWidth,
-                    height: imageHeight,
-                    pointerEvents: 'none',
-                    transition: "transform 0.6s ease-in-out, opacity 0.6s ease-in-out",
-                    willChange: "transform, opacity",
+                    boxShadow: isMobile 
+                      ? "0 15px 35px -10px rgba(0, 0, 0, 0.4)"
+                      : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                    userSelect: "none",
                   }}
-                >
-                  <div className="relative w-full h-full">
-                    <img
-                      src={imageUrl}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-full object-cover rounded-xl"
-                      style={{
-                        boxShadow: isMobile 
-                          ? "0 15px 35px -10px rgba(0, 0, 0, 0.4)"
-                          : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                        userSelect: "none",
-                      }}
-                      draggable={false}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Nouvelles images qui apparaissent */}
-            {nextImages.map((imageUrl, index) => {
-              const style = getImageStyle(index, true);
-              
-              let diff = index - currentIndex;
-              const totalImages = nextImages.length;
-              if (diff > totalImages / 2) diff -= totalImages;
-              else if (diff < -totalImages / 2) diff += totalImages;
-              
-              const visibleRange = isMobile ? 3 : 4;
-              const isVisible = Math.abs(diff) <= visibleRange;
-
-              if (!isVisible) return null;
-
-              return (
-                <div
-                  key={`new-${index}`}
-                  className="absolute"
-                  style={{
-                    ...style,
-                    transformStyle: "preserve-3d",
-                    width: imageWidth,
-                    height: imageHeight,
-                    pointerEvents: 'none',
-                    transition: "transform 0.6s ease-in-out, opacity 0.6s ease-in-out",
-                    willChange: "transform, opacity",
-                  }}
-                >
-                  <div className="relative w-full h-full">
-                    <img
-                      src={imageUrl}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-full object-cover rounded-xl"
-                      style={{
-                        boxShadow: isMobile 
-                          ? "0 15px 35px -10px rgba(0, 0, 0, 0.4)"
-                          : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                        userSelect: "none",
-                      }}
-                      draggable={false}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </>
-        )}
+                  draggable={false}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Indicateurs de position (dots) - Mobile uniquement - Masqués pendant transition */}
