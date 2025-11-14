@@ -50,7 +50,9 @@ export default function ChatInterface() {
       // Appel à l'API
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json; charset=utf-8"  // Ajout charset
+        },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
             role: m.role,
@@ -61,9 +63,9 @@ export default function ChatInterface() {
 
       if (!response.ok) throw new Error("Erreur API");
 
-      // Lire le stream
+      // Lire le stream avec décodage UTF-8 EXPLICITE
       const reader = response.body?.getReader();
-      const decoder = new TextDecoder('utf-8');
+      const decoder = new TextDecoder('utf-8');  // ⬅️ UTF-8 explicite !
       let assistantContent = "";
       const assistantMessageId = Date.now().toString();
 
@@ -72,7 +74,8 @@ export default function ChatInterface() {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
+          // Décodage UTF-8 forcé
+          const chunk = decoder.decode(value, { stream: true });
           const lines = chunk.split("\n");
 
           for (const line of lines) {
@@ -110,6 +113,7 @@ export default function ChatInterface() {
                 }
               } catch (e) {
                 // Ignorer les erreurs de parsing
+                console.warn('Parse error:', e);
               }
             }
           }
