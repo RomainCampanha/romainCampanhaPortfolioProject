@@ -21,14 +21,13 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll vers le bas quand nouveaux messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +43,13 @@ export default function ChatInterface() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
-    setIsTyping(true);
 
     try {
-      // Appel à l'API
+      // Appel à l'API (réponse complète, pas de streaming)
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json; charset=utf-8"  // Ajout charset
+          "Content-Type": "application/json; charset=utf-8"
         },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
@@ -61,66 +59,28 @@ export default function ChatInterface() {
         }),
       });
 
-      if (!response.ok) throw new Error("Erreur API");
-
-      // Lire le stream avec décodage UTF-8 EXPLICITE
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder('utf-8');  // ⬅️ UTF-8 explicite !
-      let assistantContent = "";
-      const assistantMessageId = Date.now().toString();
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          // Décodage UTF-8 forcé
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
-
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices[0]?.delta?.content || "";
-                if (content) {
-                  assistantContent += content;
-                  
-                  // Mise à jour en temps réel
-                  setMessages((prev) => {
-                    const existing = prev.find((m) => m.id === assistantMessageId);
-                    if (existing) {
-                      return prev.map((m) =>
-                        m.id === assistantMessageId
-                          ? { ...m, content: assistantContent }
-                          : m
-                      );
-                    } else {
-                      return [
-                        ...prev,
-                        {
-                          id: assistantMessageId,
-                          role: "assistant",
-                          content: assistantContent,
-                          timestamp: new Date(),
-                        },
-                      ];
-                    }
-                  });
-                }
-              } catch (e) {
-                // Ignorer les erreurs de parsing
-                console.warn('Parse error:', e);
-              }
-            }
-          }
-        }
+      if (!response.ok) {
+        throw new Error("Erreur API");
       }
 
-      setIsTyping(false);
+      // Lire la réponse JSON complète
+      const data = await response.json();
+      
+      if (data.success && data.message) {
+        // Ajouter la réponse de l'assistant
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: data.message,
+            timestamp: new Date(),
+          },
+        ]);
+      } else {
+        throw new Error(data.error || "Erreur inconnue");
+      }
+
     } catch (error) {
       console.error("Erreur:", error);
       setMessages((prev) => [
@@ -132,7 +92,6 @@ export default function ChatInterface() {
           timestamp: new Date(),
         },
       ]);
-      setIsTyping(false);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -175,8 +134,8 @@ export default function ChatInterface() {
           ))}
         </AnimatePresence>
 
-        {/* Typing indicator */}
-        {isTyping && (
+        {/* Loading indicator (plus simple, pas de typing) */}
+        {isLoading && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

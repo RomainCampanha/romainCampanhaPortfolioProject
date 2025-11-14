@@ -1,5 +1,5 @@
 // app/api/chat/route.ts
-export const runtime = 'nodejs'; // Changé de 'edge' à 'nodejs' pour meilleure compatibilité UTF-8
+export const runtime = 'nodejs';
 
 // Prompt système qui définit la personnalité de Romain
 const SYSTEM_PROMPT = `Je m'appelle Romain, je suis né le 16 Avril 2002. Je suis né à Genève. Mon parcours pro, c'est un CFC en développement d'application entre 2017 et 2022, et un Diplôme ES en informatique de gestion entre 2023 et 2025. Je travaille chez Infomaniak en tant que Support L2 Hosting depuis mars 2023.
@@ -24,11 +24,11 @@ export async function POST(req: Request) {
       ...messages,
     ];
 
-    // Appel à OpenAI
+    // Appel à OpenAI SANS streaming
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
@@ -36,26 +36,39 @@ export async function POST(req: Request) {
         messages: messagesWithSystem,
         temperature: 0.8,
         max_tokens: 500,
-        stream: true,
+        stream: false, // ⬅️ STREAMING DÉSACTIVÉ !
       }),
     });
 
     if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI API Error:', error);
       throw new Error('Erreur OpenAI API');
     }
 
-    // Retourner le stream directement avec charset UTF-8
-    return new Response(response.body, {
-      headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
+    const data = await response.json();
+    const assistantMessage = data.choices[0]?.message?.content || "Désolé, je n'ai pas pu générer de réponse.";
+
+    // Retourner la réponse complète en JSON
+    return new Response(
+      JSON.stringify({ 
+        message: assistantMessage,
+        success: true 
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      }
+    );
   } catch (error) {
     console.error('Erreur API OpenAI:', error);
     return new Response(
-      JSON.stringify({ error: 'Erreur lors de la génération de la réponse' }),
+      JSON.stringify({ 
+        error: 'Erreur lors de la génération de la réponse',
+        success: false
+      }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
