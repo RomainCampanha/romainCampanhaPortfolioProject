@@ -17,7 +17,7 @@ type Romain3DProps = {
   progress?: number;
   phase?: "intro" | "run";
   modelUrl?: string;
-  theme?: "home" | "hobby";
+  theme?: "home" | "hobby" | "chatbot";
 };
 
 type ModelProps = {

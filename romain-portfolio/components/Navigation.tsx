@@ -1,8 +1,8 @@
 "use client";
 
 type NavigationProps = {
-  currentPage: "home" | "hobby";
-  onPageChange: (page: "home" | "hobby") => void;
+  currentPage: "home" | "hobby" | "chatbot";
+  onPageChange: (page: "home" | "hobby" | "chatbot") => void;
 };
 
 export default function Navigation({ currentPage, onPageChange }: NavigationProps) {
@@ -14,7 +14,7 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
           <button
             onClick={() => onPageChange("home")}
             className={`
-              px-6 py-2 md:px-8 md:py-2.5 rounded-lg font-orbitron text-sm md:text-base
+              px-4 md:px-6 py-2 md:py-2.5 rounded-lg font-orbitron text-sm md:text-base
               transition-all duration-300 relative
               ${
                 currentPage === "home"
@@ -33,7 +33,7 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
           <button
             onClick={() => onPageChange("hobby")}
             className={`
-              px-6 py-2 md:px-8 md:py-2.5 rounded-lg font-orbitron text-sm md:text-base
+              px-4 md:px-6 py-2 md:py-2.5 rounded-lg font-orbitron text-sm md:text-base
               transition-all duration-300 relative
               ${
                 currentPage === "hobby"
@@ -43,6 +43,25 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
             `}
           >
             Hobby
+          </button>
+
+          {/* Séparateur */}
+          <div className="h-8 w-[2px] bg-white/20 mx-1" />
+
+          {/* Bouton Chatbot */}
+          <button
+            onClick={() => onPageChange("chatbot")}
+            className={`
+              px-4 md:px-6 py-2 md:py-2.5 rounded-lg font-orbitron text-sm md:text-base
+              transition-all duration-300 relative
+              ${
+                currentPage === "chatbot"
+                  ? "bg-white/10 text-white font-semibold"
+                  : "text-white/60 hover:text-white/80 hover:bg-white/5"
+              }
+            `}
+          >
+            Chat
           </button>
         </div>
       </div>
