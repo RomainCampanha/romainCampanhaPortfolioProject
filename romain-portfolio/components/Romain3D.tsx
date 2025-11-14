@@ -13,6 +13,10 @@ const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
 const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.4);
 
+// 🎯 Positions spécifiques pour le CHATBOT (caméra plus basse et reculée pour voir les pieds)
+const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
+const CHATBOT_POS_MOBILE = new THREE.Vector3(0, -0.1, 4.2);
+
 type Romain3DProps = {
   progress?: number;
   phase?: "intro" | "run";
@@ -24,9 +28,10 @@ type ModelProps = {
   url: string;
   isMobile: boolean;
   position: [number, number, number];
+  theme?: "home" | "hobby" | "chatbot";
 };
 
-function Rig({ progress = 0 }: { progress?: number }) {
+function Rig({ progress = 0, theme = "home" }: { progress?: number; theme?: "home" | "hobby" | "chatbot" }) {
   const { camera } = useThree();
   const [isMobile, setIsMobile] = useState(false);
   
@@ -41,6 +46,16 @@ function Rig({ progress = 0 }: { progress?: number }) {
   }, []);
   
   useFrame(() => {
+    // 🎯 Si c'est le chatbot, utiliser des positions fixes spéciales
+    if (theme === "chatbot") {
+      const targetPos = isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP;
+      camera.position.lerp(targetPos, 0.12);
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+      return;
+    }
+
+    // Sinon, comportement normal (home/hobby avec progress)
     const t = THREE.MathUtils.clamp(progress, 0, 1);
     
     const startPos = isMobile ? START_POS_MOBILE : START_POS;
@@ -55,7 +70,7 @@ function Rig({ progress = 0 }: { progress?: number }) {
   return null;
 }
 
-function Model({ url, isMobile, position }: ModelProps) {
+function Model({ url, isMobile, position, theme = "home" }: ModelProps) {
   const group = useRef<Group>(null!);
   const currentY = useRef(position[1]); // Position Y actuelle (pour lerp)
   
@@ -89,8 +104,15 @@ function Model({ url, isMobile, position }: ModelProps) {
     group.current.position.y = currentY.current;
   });
 
-  // Scale plus grand sur mobile pour mieux voir le perso
-  const modelScale = isMobile ? 1.6 : 1.2;
+  // 🎯 Scale différent selon le theme
+  const modelScale = useMemo(() => {
+    if (theme === "chatbot") {
+      // Chatbot : plus grand !
+      return isMobile ? 2.3 : 1.6;
+    }
+    // Home/Hobby : scale normal
+    return isMobile ? 1.6 : 1.2;
+  }, [theme, isMobile]);
 
   return (
     <group ref={group} position={[position[0], currentY.current, position[2]]}>
@@ -120,6 +142,20 @@ export default function Romain3D({
   // FOV plus large sur mobile pour voir le perso en entier même quand il est bas
   const fov = isMobile ? 55 : 45;
 
+  // 🎯 Position du modèle spécifique pour le chatbot
+  const getModelPosition = (): [number, number, number] => {
+    if (theme === "chatbot") {
+      // Pour le chatbot, on descend le modèle pour voir les pieds
+      return isMobile ? [0, -0.3, 0] : [0, 0.2, 0];
+    }
+    
+    // Positions normales pour home/hobby
+    if (isMobile) {
+      return phase === "intro" ? [0, 0.1, 0] : [0, -0.5, 0];
+    }
+    return [0, 0.4, 0];
+  };
+
   return (
     <Canvas
       className="w-full h-full"
@@ -131,18 +167,13 @@ export default function Romain3D({
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
 
-      <Rig progress={progress} />
+      <Rig progress={progress} theme={theme} />
 
       <Model 
         url={url} 
-        position={
-          isMobile 
-            ? phase === "intro" 
-              ? [0, 0.1, 0]      // Home mobile : position normale
-              : [0, -0.5, 0]     // Parcours mobile : plus bas (comme avant)
-            : [0, 0.4, 0]          // Desktop : normal
-        }
+        position={getModelPosition()}
         isMobile={isMobile}
+        theme={theme}
       />
     </Canvas>
   );

@@ -20,15 +20,16 @@ export default function ChatbotPage() {
 
       {/* Desktop */}
       <div className="hidden md:flex h-dvh">
-        <div className="w-2/5 flex items-center justify-center relative">
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10">
+        <div className="w-2/5 flex flex-col items-center justify-center relative pt-8">
+          {/* TITRE CHAT - Repositionné pour être visible */}
+          <div className="mb-4 z-10">
             <h1 className="text-4xl lg:text-5xl font-bold font-orbitron text-white">
               Chat
             </h1>
           </div>
           
-          {/* ROMAIN 3D */}
-          <div className="w-full h-[70vh] max-w-[500px]">
+          {/* ROMAIN 3D - Hauteur augmentée pour voir les pieds */}
+          <div className="w-full h-[75vh] max-w-[500px]">
             <Romain3D
               progress={0}
               phase="intro"
@@ -40,7 +41,6 @@ export default function ChatbotPage() {
 
         <div className="w-3/5 flex items-center justify-center py-8 pr-8">
           <div className="w-full h-full max-h-[85vh] bg-black/30 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
-            {/* ⬇️ AJOUTE ChatInterface ICI au lieu du placeholder */}
             <ChatInterface />
           </div>
         </div>
