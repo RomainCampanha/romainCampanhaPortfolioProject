@@ -21,13 +21,13 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll vers le bas quand nouveaux messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +43,12 @@ export default function ChatInterface() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setIsTyping(true);
 
     try {
-      // Appel à l'API (réponse complète, pas de streaming)
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json; charset=utf-8"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
             role: m.role,
@@ -59,28 +57,70 @@ export default function ChatInterface() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Erreur API");
+      if (!response.ok) throw new Error("Erreur API");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let assistantContent = "";
+      const assistantMessageId = Date.now().toString();
+      let buffer = ""; // Buffer pour accumuler les chunks incomplets
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Ajouter au buffer
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Parser ligne par ligne (pas chunk par chunk)
+          const lines = buffer.split("\n");
+          
+          // Garder la dernière ligne incomplète dans le buffer
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6).trim();
+              if (data === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices[0]?.delta?.content || "";
+                
+                if (content) {
+                  assistantContent += content;
+                  
+                  setMessages((prev) => {
+                    const existing = prev.find((m) => m.id === assistantMessageId);
+                    if (existing) {
+                      return prev.map((m) =>
+                        m.id === assistantMessageId
+                          ? { ...m, content: assistantContent }
+                          : m
+                      );
+                    } else {
+                      return [
+                        ...prev,
+                        {
+                          id: assistantMessageId,
+                          role: "assistant",
+                          content: assistantContent,
+                          timestamp: new Date(),
+                        },
+                      ];
+                    }
+                  });
+                }
+              } catch (e) {
+                // Ignorer les erreurs de parsing
+              }
+            }
+          }
+        }
       }
 
-      // Lire la réponse JSON complète
-      const data = await response.json();
-      
-      if (data.success && data.message) {
-        // Ajouter la réponse de l'assistant
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: data.message,
-            timestamp: new Date(),
-          },
-        ]);
-      } else {
-        throw new Error(data.error || "Erreur inconnue");
-      }
-
+      setIsTyping(false);
     } catch (error) {
       console.error("Erreur:", error);
       setMessages((prev) => [
@@ -92,6 +132,7 @@ export default function ChatInterface() {
           timestamp: new Date(),
         },
       ]);
+      setIsTyping(false);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -100,7 +141,6 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-full w-full max-w-3xl mx-auto">
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 scrollbar-thin scrollbar-thumb-purple-500/30 scrollbar-track-transparent">
         <AnimatePresence>
           {messages.map((message) => (
@@ -134,8 +174,7 @@ export default function ChatInterface() {
           ))}
         </AnimatePresence>
 
-        {/* Loading indicator (plus simple, pas de typing) */}
-        {isLoading && (
+        {isTyping && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -160,7 +199,6 @@ export default function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-md p-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
@@ -187,38 +225,13 @@ export default function ChatInterface() {
                      active:scale-95"
           >
             {isLoading ? (
-              <svg
-                className="animate-spin h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
+              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
             ) : (
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             )}
           </button>
