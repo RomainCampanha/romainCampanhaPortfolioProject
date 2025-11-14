@@ -1,5 +1,5 @@
 // app/api/chat/route.ts
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'; // Changé de 'edge' à 'nodejs' pour meilleure compatibilité UTF-8
 
 // Prompt système qui définit la personnalité de Romain
 const SYSTEM_PROMPT = `Je m'appelle Romain, je suis né le 16 Avril 2002. Je suis né à Genève. Mon parcours pro, c'est un CFC en développement d'application entre 2017 et 2022, et un Diplôme ES en informatique de gestion entre 2023 et 2025. Je travaille chez Infomaniak en tant que Support L2 Hosting depuis mars 2023.
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
@@ -44,12 +44,12 @@ export async function POST(req: Request) {
       throw new Error('Erreur OpenAI API');
     }
 
-    // Retourner le stream directement
+    // Retourner le stream directement avec charset UTF-8
     return new Response(response.body, {
       headers: {
-        'Content-Type': 'text/event-stream',
+        'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
+        'Connection': 'keep-alive',
       },
     });
   } catch (error) {
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       JSON.stringify({ error: 'Erreur lors de la génération de la réponse' }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
       }
     );
   }
