@@ -63,7 +63,7 @@ export default function ChatInterface() {
 
       // Lire le stream
       const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      const decoder = new TextDecoder('utf-8');
       let assistantContent = "";
       const assistantMessageId = Date.now().toString();
 
