@@ -83,13 +83,15 @@ export default function ScrollRunnerGame({
   
   const collectiblesRef = useRef(collectiblesData);
 
-  // === TIMELINE - Sauts pré-programmés ===
+  // === TIMELINE - Sauts pré-programmés (ajustés pour sauter AVANT l'obstacle) ===
+  // Le saut dure 0.06, le pic est à la moitié (0.03)
+  // On calcule le début du saut pour que le pic coïncide avec l'obstacle
   const timeline: TimelineEvent[] = [
-    { at: 0.15, type: "jump" }, // Saut pour éviter cactus à x=400
-    { at: 0.32, type: "jump" }, // Saut pour éviter rocher à x=800
-    { at: 0.48, type: "jump" }, // Saut pour éviter cactus à x=1200
-    { at: 0.64, type: "jump" }, // Saut pour éviter montagne à x=1600
-    { at: 0.80, type: "jump" }, // Saut pour éviter rocher à x=2000
+    { at: 0.13, type: "jump" }, // Saut pour éviter cactus à x=400 (pic à 0.16)
+    { at: 0.29, type: "jump" }, // Saut pour éviter rocher à x=800 (pic à 0.32)
+    { at: 0.45, type: "jump" }, // Saut pour éviter cactus à x=1200 (pic à 0.48)
+    { at: 0.61, type: "jump" }, // Saut pour éviter montagne à x=1600 (pic à 0.64)
+    { at: 0.77, type: "jump" }, // Saut pour éviter rocher à x=2000 (pic à 0.80)
     { at: 0.95, type: "victory" }, // Atteint le micro !
   ];
 
@@ -126,11 +128,51 @@ export default function ScrollRunnerGame({
       ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
       ctx.stroke();
 
+      // === DÉCOMPTE 3-2-1-GO! (avant le démarrage du jeu) ===
+      if (scrollProgress < 0.12) {
+        let countdownText = "";
+        let countdownColor = "#FF6B6B";
+        
+        if (scrollProgress < 0.03) {
+          countdownText = "3";
+        } else if (scrollProgress < 0.06) {
+          countdownText = "2";
+        } else if (scrollProgress < 0.09) {
+          countdownText = "1";
+        } else {
+          countdownText = "GO!";
+          countdownColor = "#4CAF50";
+        }
+        
+        // Afficher le décompte au centre
+        ctx.save();
+        ctx.font = "bold 120px Orbitron, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = countdownColor;
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 20;
+        
+        // Animation de pulsation
+        const pulse = 1 + Math.sin(Date.now() / 100) * 0.1;
+        ctx.save();
+        ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        ctx.scale(pulse, pulse);
+        ctx.fillText(countdownText, 0, 20);
+        ctx.restore();
+        
+        ctx.restore();
+        
+        animationId = requestAnimationFrame(gameLoop);
+        return; // Ne pas dessiner le reste pendant le décompte
+      }
+
       // === CALCUL DE LA PROGRESSION ===
-      // scrollProgress va de 0 à 1
-      const distance = scrollProgress * TOTAL_DISTANCE; // Position dans le parcours
+      // scrollProgress va de 0 à 1, mais on commence vraiment à 0.12 après le décompte
+      // On ajuste pour que le jeu commence à 0 après le décompte
+      const adjustedProgress = Math.max(0, (scrollProgress - 0.12) / (1 - 0.12));
+      const distance = adjustedProgress * TOTAL_DISTANCE; // Position dans le parcours
       
-      // === CALCUL DU SAUT (selon la timeline) ===
+      // === CALCUL DU SAUT (selon la timeline ajustée) ===
       let jumpHeight = 0;
       
       // Vérifier si on est dans une phase de saut
@@ -139,9 +181,9 @@ export default function ScrollRunnerGame({
           const jumpStart = event.at;
           const jumpEnd = event.at + 0.06; // Durée du saut = 6% du scroll
           
-          if (scrollProgress >= jumpStart && scrollProgress <= jumpEnd) {
+          if (adjustedProgress >= jumpStart && adjustedProgress <= jumpEnd) {
             // On est en train de sauter !
-            const jumpProgress = (scrollProgress - jumpStart) / 0.06;
+            const jumpProgress = (adjustedProgress - jumpStart) / 0.06;
             // Courbe parabolique pour le saut
             jumpHeight = Math.sin(jumpProgress * Math.PI) * 100;
           }
@@ -233,12 +275,12 @@ export default function ScrollRunnerGame({
       ctx.shadowBlur = 5;
       ctx.fillText(`Score: ${score}`, 20, 40);
       
-      // Barre de progression
-      const progressPercent = scrollProgress * 100;
+      // Barre de progression (ajustée pour le décompte)
+      const progressPercent = adjustedProgress * 100;
       ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
       ctx.fillRect(20, 60, 200, 15);
       ctx.fillStyle = "#FF6B6B";
-      ctx.fillRect(20, 60, 200 * scrollProgress, 15);
+      ctx.fillRect(20, 60, 200 * adjustedProgress, 15);
       
       ctx.font = "16px Orbitron, sans-serif";
       ctx.fillText(`${Math.floor(progressPercent)}%`, 230, 72);
@@ -246,7 +288,7 @@ export default function ScrollRunnerGame({
       ctx.restore();
 
       // === VICTOIRE ===
-      if (scrollProgress >= 0.95) {
+      if (adjustedProgress >= 0.95) {
         ctx.save();
         ctx.font = "bold 60px Orbitron, sans-serif";
         ctx.textAlign = "center";
@@ -254,14 +296,14 @@ export default function ScrollRunnerGame({
         ctx.shadowColor = "#000";
         ctx.shadowBlur = 10;
         
-        const scale = Math.min(1, (scrollProgress - 0.95) / 0.05);
+        const scale = Math.min(1, (adjustedProgress - 0.95) / 0.05);
         ctx.globalAlpha = scale;
         ctx.fillText("BRAVO ! 🎉", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
         
         ctx.restore();
         
         // Déclencher la fin du jeu après un court délai
-        if (scrollProgress >= 0.98) {
+        if (adjustedProgress >= 0.98) {
           setTimeout(() => onGameComplete(), 1000);
         }
       }
@@ -291,21 +333,6 @@ export default function ScrollRunnerGame({
             height: "auto",
           }}
         />
-        
-        {/* Instructions */}
-        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 max-w-[200px]">
-          <p className="text-white font-orbitron text-xs md:text-sm leading-tight">
-            ⬇️ <span className="font-bold">Scroll</span> pour avancer !<br/>
-            🎤 Atteins le micro !
-          </p>
-        </div>
-
-        {/* Indicateur de saut */}
-        {scrollProgress > 0 && scrollProgress < 0.95 && (
-          <div className="absolute bottom-4 right-4 text-xs text-white/70 bg-black/30 px-2 py-1 rounded">
-            Le perso saute automatiquement ! 🎬
-          </div>
-        )}
       </div>
     </div>
   );
