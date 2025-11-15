@@ -8,11 +8,13 @@ import CoverFlowCarousel from "@/components/CoverFlowCarousel";
 import FuturisticTitle from "@/components/FuturisticTitle";
 import { useDestinationImages } from "@/app/hooks/useDestinationImages";
 import ScrollRunnerGame from "@/components/ScrollRunnerGame";
+import SplineChest from "@/components/Splinechest";
 
 export default function HobbyPage() {
   const trackRef = useRef<HTMLElement | null>(null);
   const progress = useTrackScrollProgress(trackRef);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [chestReached, setChestReached] = useState(false);
 
   // === PHASES D'ANIMATION ===
   
@@ -20,7 +22,7 @@ export default function HobbyPage() {
   const introMessageProgress = Math.min(1, progress / 0.12);
   const showIntroMessage = progress < 0.12;
   
-  // Phase 2 : MINI-JEU (12-35% OU jusqu'à ce que le jeu soit complété)
+  // Phase 2 : MINI-JEU (12-35%)
   const gamePhaseStart = 0.12;
   const gamePhaseEnd = 0.35;
   const showGame = progress >= gamePhaseStart && progress < gamePhaseEnd;
@@ -29,8 +31,14 @@ export default function HobbyPage() {
   // Transition de bulle intro (12-18%)
   const bubbleTransitionProgress = Math.max(0, Math.min(1, (progress - 0.12) / 0.06));
   
-  // Phase 3 : Message voyage (35%+) - Apparaît après 35% même si jeu pas fini
-  const travelMessageStart = 0.35;
+  // Phase 3 : ANIMATION SPLINE DU COFFRE (35-50%)
+  const splinePhaseStart = 0.35;
+  const splinePhaseEnd = 0.50;
+  const showSpline = progress >= splinePhaseStart && progress < splinePhaseEnd && chestReached;
+  const splineProgress = Math.max(0, Math.min(1, (progress - splinePhaseStart) / (splinePhaseEnd - splinePhaseStart)));
+  
+  // Phase 4 : Message voyage (50%+)
+  const travelMessageStart = 0.50;
   const travelMessageProgress = Math.max(0, Math.min(1, (progress - travelMessageStart) / 0.08));
   const showTravelMessage = progress >= travelMessageStart && progress < (travelMessageStart + 0.17);
   
@@ -111,7 +119,7 @@ export default function HobbyPage() {
       {/* === SECTION INTRO FIXE === */}
       <div 
         className="fixed inset-0 flex items-center justify-center pointer-events-none"
-        style={{ opacity: (showCarousels || showGame) ? 0 : 1, transition: "opacity 0.5s" }}
+        style={{ opacity: (showCarousels || showGame || showSpline) ? 0 : 1, transition: "opacity 0.5s" }}
       >
         <div className="container mx-auto px-4 mt-16 md:mt-0">
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
@@ -168,7 +176,7 @@ export default function HobbyPage() {
                   </div>
                 </div>
 
-                {/* Message voyages (après le jeu) */}
+                {/* Message voyages (après Spline) */}
                 {showTravelMessage && (
                   <div className="absolute inset-0">
                     <div className="md:min-w-[22rem] md:max-w-[28rem]">
@@ -245,10 +253,20 @@ export default function HobbyPage() {
               console.log("🎮 Jeu complété !");
               setGameCompleted(true);
             }}
+            onChestReached={() => {
+              console.log("📦 Coffre atteint !");
+              setChestReached(true);
+            }}
             scrollProgress={gameProgress}
           />
         </div>
       )}
+
+      {/* === ANIMATION SPLINE DU COFFRE === */}
+      <SplineChest 
+        scrollProgress={splineProgress}
+        visible={showSpline}
+      />
 
       {/* === SECTION CARROUSELS FIXE === */}
       {showCarousels && (
@@ -302,8 +320,8 @@ export default function HobbyPage() {
         </div>
       )}
 
-      {/* PISTE DE SCROLL - Plus longue pour inclure le jeu */}
-      <section ref={trackRef} className="relative h-[1200dvh]" />
+      {/* PISTE DE SCROLL - Plus longue pour inclure le jeu + Spline */}
+      <section ref={trackRef} className="relative h-[1400dvh]" />
     </main>
   );
 }
