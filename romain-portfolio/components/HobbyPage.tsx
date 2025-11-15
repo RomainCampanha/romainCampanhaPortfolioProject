@@ -1,75 +1,65 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTrackScrollProgress } from "../app/hooks/useTrackScrollProgress";
 import Romain3D from "@/components/Romain3D";
 import ChatBubble from "@/components/ChatBubble";
 import CoverFlowCarousel from "@/components/CoverFlowCarousel";
 import FuturisticTitle from "@/components/FuturisticTitle";
 import { useDestinationImages } from "@/app/hooks/useDestinationImages";
+import ScrollRunnerGame from "@/components/ScrollRunnerGame";
 
 export default function HobbyPage() {
   const trackRef = useRef<HTMLElement | null>(null);
   const progress = useTrackScrollProgress(trackRef);
+  const [gameCompleted, setGameCompleted] = useState(false);
 
-  // === PHASES D'ANIMATION INTRO AMÉLIORÉES ===
+  // === PHASES D'ANIMATION ===
   
   // Phase 1 : Message intro (0-12%)
   const introMessageProgress = Math.min(1, progress / 0.12);
   const showIntroMessage = progress < 0.12;
   
-  // Transition de bulle (12-18%) - La bulle disparaît avec effet pop
-  const bubbleTransitionProgress = Math.max(0, Math.min(1, (progress - 0.12) / 0.06));
-  const isTransitioningBubble = progress >= 0.12 && progress < 0.18;
+  // Phase 2 : MINI-JEU (12-35% OU jusqu'à ce que le jeu soit complété)
+  const gamePhaseStart = 0.12;
+  const gamePhaseEnd = 0.35;
+  const showGame = progress >= gamePhaseStart && progress < gamePhaseEnd;
+  const gameProgress = Math.max(0, Math.min(1, (progress - gamePhaseStart) / (gamePhaseEnd - gamePhaseStart)));
   
-  // Phase 2 : Message voyage (18-35%)
-  const travelMessageProgress = Math.max(0, Math.min(1, (progress - 0.18) / 0.08));
-  const showTravelMessage = progress >= 0.18 && progress < 0.35;
+  // Transition de bulle intro (12-18%)
+  const bubbleTransitionProgress = Math.max(0, Math.min(1, (progress - 0.12) / 0.06));
+  
+  // Phase 3 : Message voyage (35%+) - Apparaît après 35% même si jeu pas fini
+  const travelMessageStart = 0.35;
+  const travelMessageProgress = Math.max(0, Math.min(1, (progress - travelMessageStart) / 0.08));
+  const showTravelMessage = progress >= travelMessageStart && progress < (travelMessageStart + 0.17);
   
   // Animation de la première bulle (disparition)
-  // Scale down + rotation pour effet "pop"
   const introBubbleScale = showIntroMessage ? 1 : 1 - bubbleTransitionProgress * 0.5;
   const introBubbleOpacity = showIntroMessage ? 1 : 1 - bubbleTransitionProgress * 2;
-  const introBubbleRotate = bubbleTransitionProgress * 15; // Petite rotation
+  const introBubbleRotate = bubbleTransitionProgress * 15;
   
-  // Animation de la deuxième bulle (apparition)
-  // Pop in avec rebond
-  const travelBubbleScale = isTransitioningBubble 
-    ? 0.5 + (bubbleTransitionProgress * 0.5) // Pop depuis 0.5 à 1
-    : (showTravelMessage ? 1 : 0);
-  const travelBubbleOpacity = isTransitioningBubble 
-    ? bubbleTransitionProgress 
-    : (showTravelMessage ? 1 : 0);
-  const travelBubbleRotate = isTransitioningBubble 
-    ? (1 - bubbleTransitionProgress) * -15 // Rotation inverse
+  // Personnage : wave avant de partir
+  const waveProgress = Math.max(0, Math.min(1, (progress - (travelMessageStart + 0.03)) / 0.05));
+  const waveRotation = Math.sin(waveProgress * Math.PI * 2) * 8;
+  
+  // Personnage sort avec style (après message voyage)
+  const characterExitStart = travelMessageStart + 0.08;
+  const characterExitProgress = Math.max(0, Math.min(1, (progress - characterExitStart) / 0.1));
+  
+  const characterRotationY = characterExitProgress * -90;
+  const characterExitX = characterExitProgress * characterExitProgress * -150;
+  const characterScale = 1 - (characterExitProgress * 0.3);
+  const characterJump = characterExitProgress < 0.3 
+    ? Math.sin(characterExitProgress * Math.PI * 3.33) * 0.15
     : 0;
   
-  // Personnage : wave avant de partir (20-25%)
-  const waveProgress = Math.max(0, Math.min(1, (progress - 0.20) / 0.05));
-  const waveRotation = Math.sin(waveProgress * Math.PI * 2) * 8; // Petit mouvement de vague
+  // === PHASES CARROUSELS (après sortie du personnage) ===
+  const carouselsStart = characterExitStart + 0.1;
+  const showCarousels = progress >= carouselsStart;
   
-  // Personnage sort avec style (25-35%)
-  const characterExitProgress = Math.max(0, Math.min(1, (progress - 0.25) / 0.1));
-  
-  // Rotation vers SA droite (0° → -90°) - rotation négative = tourne vers la droite
-  const characterRotationY = characterExitProgress * -90;
-  
-  // Translation vers la gauche horizontalement (pas en diagonale)
-  const characterExitX = characterExitProgress * characterExitProgress * -150; // Easing quadratique
-  
-  // Scale down progressif
-  const characterScale = 1 - (characterExitProgress * 0.3); // De 1 à 0.7
-  
-  // Petit saut avant de partir
-  const characterJump = characterExitProgress < 0.3 
-    ? Math.sin(characterExitProgress * Math.PI * 3.33) * 0.15 // Petit saut au début (réduit)
-    : 0; // Puis reste stable (pas de descente)
-  
-  // === PHASES CARROUSELS (35%+) ===
-  const showCarousels = progress >= 0.35;
-  
-  // Destinations avec transitions fluides et synchronisées
-  const destinationProgress = Math.max(0, (progress - 0.35) / 0.6);
+  // Destinations avec transitions
+  const destinationProgress = Math.max(0, (progress - carouselsStart) / 0.6);
   
   let currentDestination: "Coree" | "Toronto" | "BrightonDubrovnik" = "Coree";
   let nextDestination: "Coree" | "Toronto" | "BrightonDubrovnik" | null = null;
@@ -121,12 +111,12 @@ export default function HobbyPage() {
       {/* === SECTION INTRO FIXE === */}
       <div 
         className="fixed inset-0 flex items-center justify-center pointer-events-none"
-        style={{ opacity: showCarousels ? 0 : 1, transition: "opacity 0.5s" }}
+        style={{ opacity: (showCarousels || showGame) ? 0 : 1, transition: "opacity 0.5s" }}
       >
         <div className="container mx-auto px-4 mt-16 md:mt-0">
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
             
-            {/* PERSONNAGE AVEC ROTATION ET SORTIE STYLÉE */}
+            {/* PERSONNAGE */}
             <div className="order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]">
               <div
                 className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]
@@ -152,7 +142,7 @@ export default function HobbyPage() {
               </div>
             </div>
 
-            {/* BULLES AVEC TRANSITION STYLÉE */}
+            {/* BULLES */}
             <div className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start pointer-events-auto">
               <div className="relative w-full md:w-auto md:min-h-[240px] flex justify-center md:block">
                 
@@ -178,26 +168,17 @@ export default function HobbyPage() {
                   </div>
                 </div>
 
-                {/* Message voyages avec animation pop-in */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    opacity: travelBubbleOpacity,
-                    transform: `scale(${travelBubbleScale}) rotate(${travelBubbleRotate}deg)`,
-                    transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)", // Elastic ease-out pour rebond
-                    pointerEvents: (isTransitioningBubble || showTravelMessage) ? "auto" : "none",
-                  }}
-                >
-                  <div className="md:min-w-[22rem] md:max-w-[28rem]">
-                    {/* On affiche la bulle seulement si on est dans la phase de transition ou voyage */}
-                    {(isTransitioningBubble || showTravelMessage) && (
+                {/* Message voyages (après le jeu) */}
+                {showTravelMessage && (
+                  <div className="absolute inset-0">
+                    <div className="md:min-w-[22rem] md:max-w-[28rem]">
                       <TravelMessageBubble 
                         progress={travelMessageProgress}
                         shouldAnimate={showTravelMessage}
                       />
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -214,7 +195,7 @@ export default function HobbyPage() {
             </div>
           )}
 
-          {/* Flèche qui reste toujours visible (sauf sur carrousels) */}
+          {/* Flèche qui reste visible (sauf sur carrousels) */}
           {!showCarousels && (
             <div 
               className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10"
@@ -243,11 +224,31 @@ export default function HobbyPage() {
               background: `radial-gradient(ellipse at 30% 50%, 
                 rgba(255, 193, 7, ${characterExitProgress * 0.15}) 0%, 
                 transparent 50%)`,
-              opacity: characterExitProgress * (1 - characterExitProgress) * 4, // Peak au milieu
+              opacity: characterExitProgress * (1 - characterExitProgress) * 4,
             }}
           />
         )}
       </div>
+
+      {/* === SECTION MINI-JEU FIXE === */}
+      {showGame && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center px-4 pt-20 z-50"
+          style={{ 
+            opacity: showGame ? 1 : 0,
+            pointerEvents: showGame ? 'auto' : 'none',
+            transition: "opacity 0.5s"
+          }}
+        >
+          <ScrollRunnerGame 
+            onGameComplete={() => {
+              console.log("🎮 Jeu complété !");
+              setGameCompleted(true);
+            }}
+            scrollProgress={gameProgress}
+          />
+        </div>
+      )}
 
       {/* === SECTION CARROUSELS FIXE === */}
       {showCarousels && (
@@ -259,7 +260,7 @@ export default function HobbyPage() {
           }}
         >
           
-          {/* TITRES AVEC ANIMATION SYNCHRONIZED ET ROTATION 3D */}
+          {/* TITRES AVEC ROTATION 3D */}
           <div className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden">
             <FuturisticTitle 
               currentTitle={currentData.config.title}
@@ -301,13 +302,13 @@ export default function HobbyPage() {
         </div>
       )}
 
-      {/* PISTE DE SCROLL - Réduite pour une navigation plus rapide */}
-      <section ref={trackRef} className="relative h-[1000dvh]" />
+      {/* PISTE DE SCROLL - Plus longue pour inclure le jeu */}
+      <section ref={trackRef} className="relative h-[1200dvh]" />
     </main>
   );
 }
 
-// Bulle qui s'écrit progressivement avec effet re-typing
+// Bulle qui s'écrit progressivement
 function TravelMessageBubble({ 
   progress, 
   shouldAnimate 
