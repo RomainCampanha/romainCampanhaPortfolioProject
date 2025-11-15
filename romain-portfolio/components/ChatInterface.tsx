@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useIsMobile } from "@/app/hooks/useIsMobile";
 
 type Message = {
   id: string;
@@ -11,6 +13,9 @@ type Message = {
 };
 
 export default function ChatInterface() {
+  const isMobile = useIsMobile();
+  const iconSize = isMobile ? 65 : 100; // Plus petit sur mobile, plus grand sur desktop
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -149,10 +154,23 @@ export default function ChatInterface() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className={`flex ${
+              className={`flex items-start ${
                 message.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
+              {/* Icône de Romain pour les messages assistant */}
+              {message.role === "assistant" && (
+                <div className="flex-shrink-0 mr-3 mt-2">
+                  <Image
+                    src="/icon/iconeChatRomain.png"
+                    alt="Romain"
+                    width={iconSize}
+                    height={iconSize}
+                    className="rounded-full"
+                  />
+                </div>
+              )}
+              
               <div
                 className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-3 ${
                   message.role === "user"
@@ -174,12 +192,36 @@ export default function ChatInterface() {
           ))}
         </AnimatePresence>
 
-        {isTyping && (
+        {/* Typing indicator - Affiché SEULEMENT avant que le message assistant n'apparaisse */}
+        {isTyping && messages[messages.length - 1]?.role !== "assistant" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex justify-start"
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-start justify-start"
           >
+            {/* Icône de Romain pour le typing indicator - ANIMÉE */}
+            <motion.div 
+              className="flex-shrink-0 mr-3 mt-2"
+              animate={{
+                scale: [1, 1.08, 1],
+                rotate: [0, 3, -3, 0],
+              }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <Image
+                src="/icon/iconeChatRomain.png"
+                alt="Romain"
+                width={iconSize}
+                height={iconSize}
+                className="rounded-full"
+              />
+            </motion.div>
+            
             <div className="bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" />
@@ -199,7 +241,8 @@ export default function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-white/10 bg-black/20 backdrop-blur-md p-4">
+      {/* Zone de saisie SANS background foncé */}
+      <div className="border-t border-white/10 backdrop-blur-md p-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}
@@ -208,7 +251,7 @@ export default function ChatInterface() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Écris ton message ici..."
             disabled={isLoading}
-            className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3
+            className="flex-1 bg-transparent border border-white/20 rounded-xl px-4 py-3
                      text-white placeholder:text-white/50
                      focus:outline-none focus:ring-2 focus:ring-purple-500/50
                      disabled:opacity-50 disabled:cursor-not-allowed
