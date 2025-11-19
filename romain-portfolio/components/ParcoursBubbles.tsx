@@ -1,6 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
+import Image from "next/image";
 
 type Props = { 
   show: boolean;
@@ -41,7 +42,7 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
           exit="exit"
           className="grid gap-4 w-full max-w-[22rem] mx-auto"
         >
-          {/* Bulle 1 : Sort à gauche sur mobile, droite sur desktop */}
+          {/* Bulle 1 : ESIG - Sort à gauche sur mobile, droite sur desktop */}
           <motion.div 
             variants={item}
             animate={{
@@ -56,7 +57,14 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
                        cursor-default"
           >
             <div className="flex items-start gap-3">
-              <span className="text-2xl flex-shrink-0">🎓</span>
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 relative">
+                <Image
+                  src="/parcoursIcone/esig.png"
+                  alt="ESIG"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-medium leading-relaxed text-sm md:text-base">
                   Informaticien de gestion ES
@@ -71,7 +79,7 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
                           translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           </motion.div>
 
-          {/* Bulle 2 : Sort à droite sur mobile et desktop */}
+          {/* Bulle 2 : Infomaniak - Sort à droite sur mobile et desktop */}
           <motion.div 
             variants={item}
             animate={{
@@ -86,7 +94,14 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
                        cursor-default"
           >
             <div className="flex items-start gap-3">
-              <span className="text-2xl flex-shrink-0">💼</span>
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 relative">
+                <Image
+                  src="/parcoursIcone/ik.png"
+                  alt="Infomaniak"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-medium leading-relaxed text-sm md:text-base">
                   Support technique hosting L2 Infomaniak
@@ -100,7 +115,7 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
                           translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           </motion.div>
 
-          {/* Bulle 3 : Sort à gauche sur mobile, droite sur desktop */}
+          {/* Bulle 3 : CFPT - Sort à gauche sur mobile, droite sur desktop */}
           <motion.div 
             variants={item}
             animate={{
@@ -115,7 +130,14 @@ export function ParcoursBubbles({ show, bubble1Exit = 0, bubble2Exit = 0, bubble
                        cursor-default"
           >
             <div className="flex items-start gap-3">
-              <span className="text-2xl flex-shrink-0">🛠️</span>
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 relative">
+                <Image
+                  src="/parcoursIcone/cfpt.png"
+                  alt="CFPT"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-medium leading-relaxed text-sm md:text-base">
                   CFC Informaticien développeur d'application
