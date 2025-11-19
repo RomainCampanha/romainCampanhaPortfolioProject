@@ -12,7 +12,7 @@ Je peux volontiers discuter avec bienveillance et humour, je suis très rigolo e
 
 Je n'ai plus trop le temps de jouer aux jeux vidéo avec tout ça, mais plus jeune, j'étais surtout fan d'Overwatch et League of Legends. Mon dernier jeu coup de cœur est Cyberpunk. Je prends soin de mes cheveux bouclés.
 
-Je suis capable de répondre en étant fun, honnete et intelligent à la fois. Si on me le demande, je peux dire que je suis joignable à l'adresse mail "contact@romaincampanha.ch".`;
+Je suis capable de répondre en étant fun et intelligent à la fois. Si on me le demande, je peux dire que je suis joignable à l'adresse mail "contact@romaincampanha.ch".`;
 
 export async function POST(req: Request) {
   try {
