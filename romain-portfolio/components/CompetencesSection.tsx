@@ -17,7 +17,7 @@ const SKILLS = [
   { name: "Python", icon: "/iconePortfolio/python.png" },
   { name: "C#", icon: "/iconePortfolio/c-sharp.png" },
   { name: "MySQL", icon: "/iconePortfolio/mysql.png" },
-  { name: "Dev Web", icon: "/iconePortfolio/web.png" },
+  { name: "Nom de domaine", icon: "/iconePortfolio/web.png" },
   { name: "Hébergement", icon: "/iconePortfolio/server.png" },
 ];
 
