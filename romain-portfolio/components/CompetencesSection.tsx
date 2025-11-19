@@ -18,7 +18,7 @@ const SKILLS = [
   { name: "C#", icon: "/iconePortfolio/c-sharp.png" },
   { name: "MySQL", icon: "/iconePortfolio/mysql.png" },
   { name: "Nom de domaine", icon: "/iconePortfolio/web.png" },
-  { name: "Hébergement", icon: "/iconePortfolio/server.png" },
+  { name: "Web Hosting", icon: "/iconePortfolio/server.png" },
 ];
 
 export default function CompetencesSection({ progress, visible }: CompetencesSectionProps) {
