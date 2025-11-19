@@ -22,6 +22,7 @@ type Romain3DProps = {
   phase?: "intro" | "run";
   modelUrl?: string;
   theme?: "home" | "hobby" | "chatbot";
+  disableCameraMovement?: boolean; // ⬅️ NOUVEAU : désactive le mouvement de caméra
 };
 
 type ModelProps = {
@@ -31,7 +32,15 @@ type ModelProps = {
   theme?: "home" | "hobby" | "chatbot";
 };
 
-function Rig({ progress = 0, theme = "home" }: { progress?: number; theme?: "home" | "hobby" | "chatbot" }) {
+function Rig({ 
+  progress = 0, 
+  theme = "home",
+  disableCameraMovement = false 
+}: { 
+  progress?: number; 
+  theme?: "home" | "hobby" | "chatbot";
+  disableCameraMovement?: boolean;
+}) {
   const { camera } = useThree();
   const [isMobile, setIsMobile] = useState(false);
   
@@ -46,6 +55,15 @@ function Rig({ progress = 0, theme = "home" }: { progress?: number; theme?: "hom
   }, []);
   
   useFrame(() => {
+    // 🔥 SI désactivé, on fixe la caméra et on ne bouge plus !
+    if (disableCameraMovement) {
+      const fixedPos = isMobile ? START_POS_MOBILE : START_POS;
+      camera.position.copy(fixedPos);
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+      return;
+    }
+    
     // 🎯 Si c'est le chatbot, utiliser des positions fixes spéciales
     if (theme === "chatbot") {
       const targetPos = isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP;
@@ -126,6 +144,7 @@ export default function Romain3D({
   phase = "intro",
   modelUrl = "/models/RomainSalut.glb",
   theme = "home",
+  disableCameraMovement = false, // ⬅️ NOUVEAU prop
 }: Romain3DProps) {
   // Utiliser le modèle passé en prop ou le modèle par défaut
   const url = modelUrl;
@@ -167,7 +186,11 @@ export default function Romain3D({
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
 
-      <Rig progress={progress} theme={theme} />
+      <Rig 
+        progress={progress} 
+        theme={theme}
+        disableCameraMovement={disableCameraMovement} // ⬅️ Passer le prop
+      />
 
       <Model 
         url={url} 

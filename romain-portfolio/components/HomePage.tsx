@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { motion } from "framer-motion"; // ⬅️ Import Framer Motion
 import { useTrackScrollProgress } from "../app/hooks/useTrackScrollProgress";
 import Romain3D from "@/components/Romain3D";
 import ChatBubble from "@/components/ChatBubble";
@@ -10,6 +11,16 @@ import CompetencesSection from "../components/CompetencesSection";
 export default function HomePage() {
   const trackRef = useRef<HTMLElement | null>(null);
   const progress = useTrackScrollProgress(trackRef);
+  
+  // Détecter si on est sur mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   
   // === PHASES CORRIGÉES SANS CHEVAUCHEMENT ===
   
@@ -51,19 +62,52 @@ export default function HomePage() {
   // Indicateur de scroll (masqué après l'intro)
   const showScrollIndicator = progress < 0.20;
   
-  // Position du personnage - Se centre horizontalement et reste en bas pour les compétences
-  const characterTranslateX = progress < recenterStart 
-    ? 15 // Position initiale à gauche (desktop)
-    : 0; // Centré après le recentrage
+  // === POSITIONNEMENT DU PERSONNAGE - EN PIXELS ABSOLUS ===
   
-  const characterTranslateXMobile = 0; // Toujours centré sur mobile
+  // 🎯 Calculer la largeur du viewport pour convertir % en pixels
+  const [viewportWidth, setViewportWidth] = useState(0);
   
-  // Position verticale - Descend vers le bas pour la section compétences
-  const characterTranslateY = progress < recenterStart
-    ? 0 // Position normale
-    : progress < skillsStart
-      ? recenterProgress * 25 // Descend vers le bas progressivement
-      : 25; // Reste en bas pendant les compétences
+  useEffect(() => {
+    const updateWidth = () => setViewportWidth(window.innerWidth);
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+  
+  // 🎯 Valeurs en PIXELS (pas en %) pour éviter les sauts
+  const INITIAL_TRANSLATE_X_DESKTOP = isMobile ? 0 : viewportWidth * 0.08;  // ~8% en pixels
+  const INITIAL_TRANSLATE_Y = 0;
+  const INITIAL_SCALE = 1;
+  
+  const SKILLS_TRANSLATE_X = 0;  // Centré
+  const SKILLS_TRANSLATE_Y = viewportWidth * 0.12;  // ~12% en pixels
+  const SKILLS_SCALE = 0.75;
+  
+  // 📍 Calcul de la position/taille selon progress (fonctionne dans les 2 sens !)
+  let characterTranslateX: number;
+  let characterTranslateY: number;
+  let characterScale: number;
+  
+  if (progress < recenterStart) {
+    // Phase intro/parcours (0-55%) : Valeurs initiales
+    characterTranslateX = INITIAL_TRANSLATE_X_DESKTOP;
+    characterTranslateY = INITIAL_TRANSLATE_Y;
+    characterScale = INITIAL_SCALE;
+    
+  } else if (progress < skillsStart) {
+    // Phase transition (55-60%) : Interpolation progressive
+    const t = (progress - recenterStart) / (skillsStart - recenterStart);
+    
+    characterTranslateX = INITIAL_TRANSLATE_X_DESKTOP + (SKILLS_TRANSLATE_X - INITIAL_TRANSLATE_X_DESKTOP) * t;
+    characterTranslateY = INITIAL_TRANSLATE_Y + (SKILLS_TRANSLATE_Y - INITIAL_TRANSLATE_Y) * t;
+    characterScale = INITIAL_SCALE + (SKILLS_SCALE - INITIAL_SCALE) * t;
+    
+  } else {
+    // Phase compétences (60%+) : Valeurs compétences
+    characterTranslateX = SKILLS_TRANSLATE_X;
+    characterTranslateY = SKILLS_TRANSLATE_Y;
+    characterScale = SKILLS_SCALE;
+  }
   
   // Opacité du personnage - reste visible pendant les compétences
   const characterOpacity = progress < 0.95 ? 1 : 1 - ((progress - 0.95) / 0.05);
@@ -80,26 +124,28 @@ export default function HomePage() {
       >
         <div className="container mx-auto px-4 pointer-events-auto mt-16 md:mt-0">
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            {/* 3D piloté par progress avec recentrage et descente */}
-            <div 
-              className={`order-2 md:order-1 transition-all duration-500 ${
-                progress >= skillsStart 
-                  ? 'w-full' // Prend toute la largeur pendant les compétences
-                  : 'w-full md:w-[55%] lg:w-[60%]' // Largeur normale avant
-              }`}
-            >
-              <div
-                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]
-                           transition-all duration-500"
-                style={{
-                  transform: progress >= skillsStart
-                    ? `translate(0%, 40%)` // Centré et descendu pour les compétences
-                    : `translate(${characterTranslateXMobile}%, ${characterTranslateY}%) md:translate(${characterTranslateX}%, ${characterTranslateY}%)`,
+            {/* 3D piloté par progress - PIXELS ABSOLUS pour éviter les sauts */}
+            <div className="order-2 md:order-1 w-full">
+              <motion.div
+                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]"
+                animate={{
+                  x: characterTranslateX, // ⬅️ Pixels, pas pourcentages !
+                  y: characterTranslateY, // ⬅️ Pixels, pas pourcentages !
+                  scale: characterScale,
                   opacity: characterOpacity,
                 }}
+                transition={{
+                  type: "tween",
+                  ease: "easeOut",
+                  duration: 0.4,
+                }}
               >
-                <Romain3D progress={progress} phase={phase} />
-              </div>
+                <Romain3D 
+                  progress={progress} 
+                  phase={phase}
+                  disableCameraMovement={true}
+                />
+              </motion.div>
             </div>
 
             {/* Bulles superposées */}
@@ -259,6 +305,7 @@ export default function HomePage() {
 
       {/* Section suivante */}
       <section id="section-2" className="w-full min-h-dvh" />
+      
     </main>
   );
 }
