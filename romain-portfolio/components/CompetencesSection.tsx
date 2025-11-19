@@ -10,7 +10,7 @@ type CompetencesSectionProps = {
 
 const SKILLS = [
   { name: "React", icon: "/iconePortfolio/atom.png" },
-  { name: "Next.js", icon: "/iconePortfolio/icons8-next_js-96.png" },
+  { name: "Next.js", icon: "/iconePortfolio/nextJS.png" },
   { name: "Tailwind CSS", icon: "/iconePortfolio/tailwindCss.png" },
   { name: "Node.js", icon: "/iconePortfolio/nodeJS.png" },
   { name: "PHP", icon: "/iconePortfolio/php.png" },
