@@ -24,14 +24,14 @@ export default function ChatbotPage() {
       {/* Desktop */}
       <div className="hidden md:flex h-full">
         <div className="w-2/5 flex flex-col items-center justify-center relative pt-16">
-          {/* TITRE CHAT - Repositionné avec plus d'espace en haut */}
+          {/* TITRE CHAT - Desktop uniquement */}
           <div className="mb-6 z-10">
             <h1 className="text-4xl lg:text-5xl font-bold font-orbitron text-white">
               Chat
             </h1>
           </div>
           
-          {/* ROMAIN 3D - Hauteur augmentée pour voir les pieds */}
+          {/* ROMAIN 3D */}
           <div className="w-full h-[75vh] max-w-[500px]">
             <Romain3D
               progress={0}
@@ -49,14 +49,13 @@ export default function ChatbotPage() {
         </div>
       </div>
 
-      {/* Mobile */}
-      <div className="md:hidden flex flex-col h-full pt-20 pb-4">
-        <div className="text-center mb-3 px-4 flex-shrink-0">
-          <h1 className="text-3xl font-bold font-orbitron text-white">Chat</h1>
-        </div>
+      {/* Mobile - Sans titre et personnage agrandi */}
+      <div className="md:hidden flex flex-col h-full pt-16 pb-4">
+        {/* TITRE RETIRÉ SUR MOBILE */}
         
-        <div className="w-full h-[28vh] flex items-center justify-center flex-shrink-0">
-          <div className="w-full max-w-[300px] h-full">
+        {/* Personnage agrandi sur mobile */}
+        <div className="w-full h-[35vh] flex items-center justify-center flex-shrink-0">
+          <div className="w-full max-w-[350px] h-full">
             <Romain3D
               progress={0}
               phase="intro"
@@ -66,6 +65,7 @@ export default function ChatbotPage() {
           </div>
         </div>
         
+        {/* Chat interface */}
         <div className="flex-1 mx-4 mb-4 bg-black/30 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden min-h-0">
           <ChatInterface />
         </div>

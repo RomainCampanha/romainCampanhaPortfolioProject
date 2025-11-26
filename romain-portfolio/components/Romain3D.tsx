@@ -2,18 +2,20 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 
+// === POSITIONS DE CAMÉRA ===
+// Accueil/Parcours
 const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
-const END_POS = new THREE.Vector3(-0.1, 0.0, 3.2);
-
-// Positions spécifiques pour mobile (caméra plus reculée pour voir les pieds)
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
-const END_POS_MOBILE = new THREE.Vector3(0, 0, 4.4);
 
-// 🎯 Positions spécifiques pour le CHATBOT (caméra plus basse et reculée pour voir les pieds)
+// Compétences : caméra reculée et légèrement plus haute pour voir le perso centré et plus petit
+const SKILLS_POS = new THREE.Vector3(0, 0.3, 4.5);        // Desktop: reculé + centré
+const SKILLS_POS_MOBILE = new THREE.Vector3(0, 0.3, 5.0); // Mobile: encore plus reculé
+
+// Chatbot
 const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
 const CHATBOT_POS_MOBILE = new THREE.Vector3(0, -0.1, 4.2);
 
@@ -22,119 +24,176 @@ type Romain3DProps = {
   phase?: "intro" | "run";
   modelUrl?: string;
   theme?: "home" | "hobby" | "chatbot";
-  disableCameraMovement?: boolean; // ⬅️ NOUVEAU : désactive le mouvement de caméra
 };
 
-type ModelProps = {
-  url: string;
+type RigProps = {
+  progress: number;
+  theme: "home" | "hobby" | "chatbot";
   isMobile: boolean;
-  position: [number, number, number];
-  theme?: "home" | "hobby" | "chatbot";
 };
 
-function Rig({ 
-  progress = 0, 
-  theme = "home",
-  disableCameraMovement = false 
-}: { 
-  progress?: number; 
-  theme?: "home" | "hobby" | "chatbot";
-  disableCameraMovement?: boolean;
-}) {
+function Rig({ progress, theme, isMobile }: RigProps) {
   const { camera } = useThree();
-  const [isMobile, setIsMobile] = useState(false);
   
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  // Refs pour le lerp fluide
+  const currentPos = useRef(new THREE.Vector3());
+  const initialized = useRef(false);
+  
+  // Calculer la position cible basée sur le progress
+  const getTargetPosition = () => {
+    if (theme === "chatbot") {
+      return isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP;
+    }
     
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+    // Home : transition vers compétences à partir de 55%
+    const startPos = isMobile ? START_POS_MOBILE : START_POS;
+    const skillsPos = isMobile ? SKILLS_POS_MOBILE : SKILLS_POS;
+    
+    // Avant 55% : position de départ
+    if (progress < 0.55) {
+      return startPos;
+    }
+    
+    // 55% - 60% : transition fluide vers compétences
+    if (progress < 0.60) {
+      const t = (progress - 0.55) / 0.05; // 0 → 1
+      return new THREE.Vector3().lerpVectors(startPos, skillsPos, t);
+    }
+    
+    // Après 60% : position compétences
+    return skillsPos;
+  };
   
   useFrame(() => {
-    // 🔥 SI désactivé, on fixe la caméra et on ne bouge plus !
-    if (disableCameraMovement) {
-      const fixedPos = isMobile ? START_POS_MOBILE : START_POS;
-      camera.position.copy(fixedPos);
-      camera.lookAt(0, 0, 0);
-      camera.updateProjectionMatrix();
-      return;
+    const targetPos = getTargetPosition();
+    
+    // Initialiser la position au premier frame
+    if (!initialized.current) {
+      currentPos.current.copy(targetPos);
+      camera.position.copy(targetPos);
+      initialized.current = true;
     }
     
-    // 🎯 Si c'est le chatbot, utiliser des positions fixes spéciales
-    if (theme === "chatbot") {
-      const targetPos = isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP;
-      camera.position.lerp(targetPos, 0.12);
-      camera.lookAt(0, 0, 0);
-      camera.updateProjectionMatrix();
-      return;
-    }
-
-    // Sinon, comportement normal (home/hobby avec progress)
-    const t = THREE.MathUtils.clamp(progress, 0, 1);
-    
-    const startPos = isMobile ? START_POS_MOBILE : START_POS;
-    const endPos = isMobile ? END_POS_MOBILE : END_POS;
-    
-    const target = new THREE.Vector3().lerpVectors(startPos, endPos, t);
-    camera.position.lerp(target, 0.12);
-    
+    // 🔥 Lerp fluide - exactement comme le mobile fait pour accueil → parcours
+    currentPos.current.lerp(targetPos, 0.08);
+    camera.position.copy(currentPos.current);
     camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
   });
+  
   return null;
 }
 
-function Model({ url, isMobile, position, theme = "home" }: ModelProps) {
+function Model({ url, isMobile, phase, progress, theme }: { 
+  url: string; 
+  isMobile: boolean;
+  phase: "intro" | "run";
+  progress: number;
+  theme: "home" | "hobby" | "chatbot";
+}) {
   const group = useRef<Group>(null!);
-  const currentY = useRef(position[1]); // Position Y actuelle (pour lerp)
+  
+  // Refs pour les animations fluides
+  const currentY = useRef(0);
+  const currentScale = useRef(1);
+  const initialized = useRef(false);
   
   const { scene, animations } = useGLTF(url);
   const { actions, names } = useAnimations(animations, group);
 
-  // Cherche l'animation d'intro (salut/wave)
   const chosenName = useMemo(() => {
     const rx = /idle|breath|stand|wave|greet|hello|salut/i;
-    const found = names.find((n) => rx.test(n));
-    return found ?? names[0];
+    return names.find((n) => rx.test(n)) ?? names[0];
   }, [names]);
 
   useEffect(() => {
     const action = chosenName ? actions[chosenName] : undefined;
     if (!action) return;
     action.reset().fadeIn(0.3).play();
-    return () => {
-      action.fadeOut(0.2);
-    };
+    return () => { action.fadeOut(0.2); };
   }, [actions, chosenName]);
 
-  // Anime la transition de position
+  // Calculer la position Y cible
+  const getTargetY = () => {
+    if (theme === "chatbot") {
+      return isMobile ? -0.3 : 0.2;
+    }
+    
+    // Home : transition pour compétences
+    if (progress >= 0.55) {
+      // Descendre légèrement pour les compétences
+      const baseY = isMobile ? 0.1 : 0.4;
+      const skillsY = isMobile ? -0.2 : 0.1;
+      
+      if (progress < 0.60) {
+        const t = (progress - 0.55) / 0.05;
+        return baseY + (skillsY - baseY) * t;
+      }
+      return skillsY;
+    }
+    
+    // Mobile: position différente selon phase
+    if (isMobile) {
+      return phase === "intro" ? 0.1 : -0.5;
+    }
+    
+    return 0.4;
+  };
+  
+  // Calculer le scale cible (pour rétrécir pendant compétences)
+  const getTargetScale = () => {
+    const baseScale = isMobile ? 1.6 : 1.2;
+    
+    if (theme === "chatbot") {
+      return isMobile ? 2.3 : 1.6;
+    }
+    
+    // Home : rétrécir pour compétences
+    if (progress >= 0.55) {
+      const skillsScale = baseScale * 0.75; // 25% plus petit
+      
+      if (progress < 0.60) {
+        const t = (progress - 0.55) / 0.05;
+        return baseScale + (skillsScale - baseScale) * t;
+      }
+      return skillsScale;
+    }
+    
+    return baseScale;
+  };
+
+  // 🎯 OFFSETS pour ajuster la hauteur du personnage
+  const getYOffset = () => {
+    if (theme === "chatbot") {
+      return isMobile ? 2.1 : 1; // Chat: remonter plus sur desktop
+    }
+    // Home/Hobby
+    return isMobile ? 1 : 0.4; // Mobile: remonter plus
+  };
+  
   useFrame(() => {
     if (!group.current) return;
     
-    // Lerp vers la position cible
-    const targetY = position[1];
-    currentY.current += (targetY - currentY.current) * 0.08; // Transition douce
+    const targetY = getTargetY() + getYOffset(); // Applique l'offset
+    const targetScale = getTargetScale();
+    
+    // Initialiser au premier frame
+    if (!initialized.current) {
+      currentY.current = targetY;
+      currentScale.current = targetScale;
+      initialized.current = true;
+    }
+    
+    // 🔥 Lerp fluide pour Y et Scale
+    currentY.current += (targetY - currentY.current) * 0.08;
+    currentScale.current += (targetScale - currentScale.current) * 0.08;
     
     group.current.position.y = currentY.current;
+    group.current.scale.setScalar(currentScale.current);
   });
 
-  // 🎯 Scale différent selon le theme
-  const modelScale = useMemo(() => {
-    if (theme === "chatbot") {
-      // Chatbot : plus grand !
-      return isMobile ? 2.3 : 1.6;
-    }
-    // Home/Hobby : scale normal
-    return isMobile ? 1.6 : 1.2;
-  }, [theme, isMobile]);
-
   return (
-    <group ref={group} position={[position[0], currentY.current, position[2]]}>
-      <primitive object={scene} scale={modelScale} position={[0, -1.6, 0]} />
+    <group ref={group} position={[0, 0, 0]}>
+      <primitive object={scene} position={[0, -1.6, 0]} />
     </group>
   );
 }
@@ -144,36 +203,33 @@ export default function Romain3D({
   phase = "intro",
   modelUrl = "/models/RomainSalut.glb",
   theme = "home",
-  disableCameraMovement = false, // ⬅️ NOUVEAU prop
 }: Romain3DProps) {
-  // Utiliser le modèle passé en prop ou le modèle par défaut
   const url = modelUrl;
-
-  const [isMobile, setIsMobile] = useState(false);
   
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  
+  useLayoutEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    setIsReady(true);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
-  // FOV plus large sur mobile pour voir le perso en entier même quand il est bas
   const fov = isMobile ? 55 : 45;
 
-  // 🎯 Position du modèle spécifique pour le chatbot
-  const getModelPosition = (): [number, number, number] => {
+  // Position initiale de la caméra
+  const initialCameraPosition = useMemo((): [number, number, number] => {
     if (theme === "chatbot") {
-      // Pour le chatbot, on descend le modèle pour voir les pieds
-      return isMobile ? [0, -0.3, 0] : [0, 0.2, 0];
+      return (isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP).toArray() as [number, number, number];
     }
-    
-    // Positions normales pour home/hobby
-    if (isMobile) {
-      return phase === "intro" ? [0, 0.1, 0] : [0, -0.5, 0];
-    }
-    return [0, 0.4, 0];
-  };
+    return (isMobile ? START_POS_MOBILE : START_POS).toArray() as [number, number, number];
+  }, [theme, isMobile]);
+
+  if (!isReady) {
+    return <div className="w-full h-full" />;
+  }
 
   return (
     <Canvas
@@ -181,21 +237,20 @@ export default function Romain3D({
       style={{ display: "block", background: "transparent" }}
       gl={{ alpha: true }}
       onCreated={(state) => state.gl.setClearColor(0x000000, 0)}
-      camera={{ position: START_POS.toArray() as [number, number, number], fov }}
+      camera={{ position: initialCameraPosition, fov }}
     >
       <ambientLight intensity={1} />
       <directionalLight position={[2, 5, 5]} intensity={1.4} />
-
       <Rig 
         progress={progress} 
         theme={theme}
-        disableCameraMovement={disableCameraMovement} // ⬅️ Passer le prop
+        isMobile={isMobile}
       />
-
       <Model 
         url={url} 
-        position={getModelPosition()}
         isMobile={isMobile}
+        phase={phase}
+        progress={progress}
         theme={theme}
       />
     </Canvas>

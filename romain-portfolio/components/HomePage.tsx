@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion"; // ⬅️ Import Framer Motion
+import { useRef, useState, useLayoutEffect } from "react";
 import { useTrackScrollProgress } from "../app/hooks/useTrackScrollProgress";
 import Romain3D from "@/components/Romain3D";
 import ChatBubble from "@/components/ChatBubble";
@@ -12,105 +11,49 @@ export default function HomePage() {
   const trackRef = useRef<HTMLElement | null>(null);
   const progress = useTrackScrollProgress(trackRef);
   
-  // Détecter si on est sur mobile
   const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+  useLayoutEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    setIsReady(true);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
   
-  // === PHASES CORRIGÉES SANS CHEVAUCHEMENT ===
-  
-  // Phase 1 : Intro (0-20%)
+  // === PHASES D'ANIMATION ===
   const showIntro = progress < 0.20;
-  
-  // Phase 2 : Parcours (20-40%)
   const showParcours = progress >= 0.20 && progress < 0.50;
   
-  // Phase 3 : Sortie des bulles parcours (40-50%)
-  const exitStart = 0.40;
-  const exitEnd = 0.50;
-  const exitProgress = Math.max(0, Math.min(1, (progress - exitStart) / (exitEnd - exitStart)));
+  const exitProgress = Math.max(0, Math.min(1, (progress - 0.40) / 0.10));
   const bubble1Exit = Math.min(1, exitProgress * 3);
   const bubble2Exit = Math.min(1, Math.max(0, (exitProgress - 0.33) * 3));
   const bubble3Exit = Math.min(1, Math.max(0, (exitProgress - 0.66) * 3));
   
-  // Phase 4 : Bulle Compétences (50-55%)
-  const competencesBubbleStart = 0.50;
-  const competencesBubbleEnd = 0.55;
-  const showCompetencesBubble = progress >= competencesBubbleStart && progress < competencesBubbleEnd;
-  const competencesBubbleProgress = Math.max(0, Math.min(1, (progress - competencesBubbleStart) / (competencesBubbleEnd - competencesBubbleStart)));
+  const showCompetencesBubble = progress >= 0.50 && progress < 0.55;
+  const competencesBubbleProgress = Math.max(0, Math.min(1, (progress - 0.50) / 0.05));
   
-  // Phase 5 : Sortie bulle + Recentrage personnage (55-60%)
-  const recenterStart = 0.55;
-  const recenterEnd = 0.60;
-  const recenterProgress = Math.max(0, Math.min(1, (progress - recenterStart) / (recenterEnd - recenterStart)));
+  const showSkills = progress >= 0.60 && progress < 1.0;
+  const skillsProgress = Math.max(0, Math.min(1, (progress - 0.60) / 0.25));
   
-  // Phase 6 : Affichage des compétences (60-85%)
-  const skillsStart = 0.60;
-  const skillsEnd = 0.85;
-  const showSkills = progress >= skillsStart && progress < 1.0;
-  const skillsProgress = Math.max(0, Math.min(1, (progress - skillsStart) / (skillsEnd - skillsStart)));
-  
-  // Calcul de l'opacité globale de la section
   const overlayVisible = progress < 1;
   const phase: "intro" | "run" = progress >= 0.25 ? "run" : "intro";
-  
-  // Indicateur de scroll (masqué après l'intro)
   const showScrollIndicator = progress < 0.20;
   
-  // === POSITIONNEMENT DU PERSONNAGE - EN PIXELS ABSOLUS ===
+  // Masquer les bulles pendant la transition vers compétences
+  const hideBubbles = progress >= 0.55;
   
-  // 🎯 Calculer la largeur du viewport pour convertir % en pixels
-  const [viewportWidth, setViewportWidth] = useState(0);
-  
-  useEffect(() => {
-    const updateWidth = () => setViewportWidth(window.innerWidth);
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
-  }, []);
-  
-  // 🎯 Valeurs en PIXELS (pas en %) pour éviter les sauts
-  const INITIAL_TRANSLATE_X_DESKTOP = isMobile ? 0 : viewportWidth * 0.08;  // ~8% en pixels
-  const INITIAL_TRANSLATE_Y = 0;
-  const INITIAL_SCALE = 1;
-  
-  const SKILLS_TRANSLATE_X = 0;  // Centré
-  const SKILLS_TRANSLATE_Y = viewportWidth * 0.12;  // ~12% en pixels
-  const SKILLS_SCALE = 0.75;
-  
-  // 📍 Calcul de la position/taille selon progress (fonctionne dans les 2 sens !)
-  let characterTranslateX: number;
-  let characterTranslateY: number;
-  let characterScale: number;
-  
-  if (progress < recenterStart) {
-    // Phase intro/parcours (0-55%) : Valeurs initiales
-    characterTranslateX = INITIAL_TRANSLATE_X_DESKTOP;
-    characterTranslateY = INITIAL_TRANSLATE_Y;
-    characterScale = INITIAL_SCALE;
-    
-  } else if (progress < skillsStart) {
-    // Phase transition (55-60%) : Interpolation progressive
-    const t = (progress - recenterStart) / (skillsStart - recenterStart);
-    
-    characterTranslateX = INITIAL_TRANSLATE_X_DESKTOP + (SKILLS_TRANSLATE_X - INITIAL_TRANSLATE_X_DESKTOP) * t;
-    characterTranslateY = INITIAL_TRANSLATE_Y + (SKILLS_TRANSLATE_Y - INITIAL_TRANSLATE_Y) * t;
-    characterScale = INITIAL_SCALE + (SKILLS_SCALE - INITIAL_SCALE) * t;
-    
-  } else {
-    // Phase compétences (60%+) : Valeurs compétences
-    characterTranslateX = SKILLS_TRANSLATE_X;
-    characterTranslateY = SKILLS_TRANSLATE_Y;
-    characterScale = SKILLS_SCALE;
-  }
-  
-  // Opacité du personnage - reste visible pendant les compétences
+  // Opacité du personnage (fade out à la fin)
   const characterOpacity = progress < 0.95 ? 1 : 1 - ((progress - 0.95) / 0.05);
+
+  if (!isReady) {
+    return (
+      <main className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]">
+        <section className="relative h-[500dvh]" />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-dvh bg-gradient-to-b from-[#0A0A1F] via-[#2A153A] to-[#00C1FF]">
@@ -120,36 +63,32 @@ export default function HomePage() {
           "fixed inset-0 flex items-center justify-center transition-opacity duration-300 " +
           (overlayVisible ? "opacity-100" : "opacity-0 pointer-events-none")
         }
-        style={{ pointerEvents: overlayVisible ? "none" : "none" }}
       >
         <div className="container mx-auto px-4 pointer-events-auto mt-16 md:mt-0">
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            {/* 3D piloté par progress - PIXELS ABSOLUS pour éviter les sauts */}
-            <div className="order-2 md:order-1 w-full">
-              <motion.div
-                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]"
-                animate={{
-                  x: characterTranslateX, // ⬅️ Pixels, pas pourcentages !
-                  y: characterTranslateY, // ⬅️ Pixels, pas pourcentages !
-                  scale: characterScale,
-                  opacity: characterOpacity,
-                }}
-                transition={{
-                  type: "tween",
-                  ease: "easeOut",
-                  duration: 0.4,
-                }}
+            
+            {/* 🎯 PERSONNAGE 3D - PAS de transform CSS, tout est géré dans Three.js */}
+            <div className="order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]">
+              <div
+                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px] md:translate-x-[15%] lg:translate-x-[20%] transition-opacity duration-300"
+                style={{ opacity: characterOpacity }}
               >
                 <Romain3D 
-                  progress={progress} 
+                  progress={progress}  // 🔥 On passe le progress pour que Three.js gère le mouvement
                   phase={phase}
-                  disableCameraMovement={true}
                 />
-              </motion.div>
+              </div>
             </div>
 
-            {/* Bulles superposées */}
-            <div className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start">
+            {/* Bulles */}
+            <div 
+              className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start"
+              style={{
+                opacity: hideBubbles ? 0 : 1,
+                pointerEvents: hideBubbles ? 'none' : 'auto',
+                transition: 'opacity 0.3s ease-out',
+              }}
+            >
               <div className="relative w-full md:w-auto md:min-h-[240px] flex justify-center md:block">
                 
                 {/* Bulle Intro */}
@@ -184,19 +123,8 @@ export default function HomePage() {
 
                   {/* Desktop */}
                   <div className="hidden md:block">
-                    {/* Bulle "Voici mon parcours pro" - Plus à gauche */}
-                    <div className="absolute left-0 -translate-x-[280%] -top-12">
-                      <div className="w-[280px]">
-                        <ChatBubble
-                          text="Voici mon parcours pro ! 🚀"
-                          className="arrow-right md:-translate-y-12"
-                          loop={true}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Bulles parcours */}
-                    <div className="min-w-[22rem] max-w-[28rem] md:-translate-y-16">
+                    {/* Bulles parcours à droite */}
+                    <div className="min-w-[22rem] max-w-[28rem]">
                       <ParcoursBubbles 
                         show 
                         bubble1Exit={bubble1Exit}
@@ -207,32 +135,17 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Bulle Compétences - Apparaît au centre avec animation progressive */}
-                {showCompetencesBubble && (
-                  <div className="fixed inset-0 flex items-center justify-center z-20 pointer-events-none">
-                    <div 
-                      className="pointer-events-auto"
-                      style={{
-                        opacity: Math.min(1, competencesBubbleProgress * 2),
-                        transform: `scale(${0.9 + competencesBubbleProgress * 0.1})`,
-                      }}
-                    >
-                      <div className="bubble max-w-[22rem] rounded-3xl p-4 md:p-5 
-                                      bg-gradient-to-br from-[#7928CA]/90 to-[#FF00C3]/80
-                                      backdrop-blur-sm text-white border border-white/20 relative
-                                      shadow-[0_0_24px_rgba(199,0,255,.25)]
-                                      font-orbitron">
-                        <p className="whitespace-normal break-words hyphens-auto leading-relaxed">
-                          {/* Texte qui apparaît progressivement */}
-                          {"Voici mes compétences ! 💻".substring(0, Math.floor(competencesBubbleProgress * "Voici mes compétences ! 💻".length))}
-                          {competencesBubbleProgress < 0.95 && <span className="animate-caret">|</span>}
-                        </p>
-                      </div>
-                    </div>
+                {/* Bulle "Voici mon parcours pro" - FIXÉE à gauche du personnage */}
+                {showParcours && (
+                  <div className="hidden md:block fixed left-[18%] top-1/2 -translate-y-1/2 z-10">
+                    <ChatBubble
+                      text="Voici mon parcours pro ! 🚀"
+                      className="arrow-right"
+                      loop={true}
+                    />
                   </div>
                 )}
 
-                {/* Spacer */}
                 <div className="invisible md:min-w-[22rem] md:max-w-[28rem]">
                   <ChatBubble text="." />
                 </div>
@@ -240,53 +153,47 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Indicateur de scroll */}
-          {showScrollIndicator && (
-            <div 
-              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3
-                         transition-opacity duration-500"
-              style={{ opacity: showScrollIndicator ? 1 : 0 }}
-            >
-              <span className="text-white/80 font-semibold text-lg tracking-wide font-orbitron">
-                Explorer
-              </span>
-              <svg 
-                className="w-8 h-8 text-white/70 animate-bounce cursor-pointer
-                           hover:text-white hover:scale-110 transition-all duration-300"
-                onClick={() =>
-                  document.getElementById("section-2")?.scrollIntoView({ behavior: "smooth" })
-                }
-                fill="none" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth="2.5" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
+          {/* Bulle Compétences */}
+          {showCompetencesBubble && (
+            <div className="fixed inset-0 flex items-center justify-center z-20 pointer-events-none">
+              <div 
+                className="pointer-events-auto"
+                style={{
+                  opacity: Math.min(1, competencesBubbleProgress * 2),
+                  transform: `scale(${0.9 + competencesBubbleProgress * 0.1})`,
+                }}
               >
+                <div className="bubble max-w-[22rem] rounded-3xl p-4 md:p-5 
+                                bg-gradient-to-br from-[#7928CA]/90 to-[#FF00C3]/80
+                                backdrop-blur-sm text-white border border-white/20 relative
+                                shadow-[0_0_24px_rgba(199,0,255,.25)]
+                                font-orbitron">
+                  <p className="whitespace-normal break-words hyphens-auto leading-relaxed">
+                    {"Voici mes compétences ! 💻".substring(0, Math.floor(competencesBubbleProgress * "Voici mes compétences ! 💻".length))}
+                    {competencesBubbleProgress < 0.95 && <span className="animate-caret">|</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Scroll indicators */}
+          {showScrollIndicator && (
+            <div className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3">
+              <span className="text-white/80 font-semibold text-lg tracking-wide font-orbitron">Explorer</span>
+              <svg className="w-8 h-8 text-white/70 animate-bounce cursor-pointer hover:text-white hover:scale-110 transition-all duration-300"
+                   onClick={() => document.getElementById("section-2")?.scrollIntoView({ behavior: "smooth" })}
+                   fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
               </svg>
             </div>
           )}
 
-          {/* Flèche seule après intro */}
           {!showScrollIndicator && progress < 0.95 && (
-            <div 
-              className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10
-                         transition-opacity duration-500"
-            >
-              <svg 
-                className="w-8 h-8 text-white/50 animate-bounce cursor-pointer
-                           hover:text-white/70 hover:scale-110 transition-all duration-300"
-                onClick={() =>
-                  window.scrollTo({ top: window.innerHeight * 2, behavior: "smooth" })
-                }
-                fill="none" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth="2.5" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
+            <div className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10">
+              <svg className="w-8 h-8 text-white/50 animate-bounce cursor-pointer hover:text-white/70 hover:scale-110 transition-all duration-300"
+                   onClick={() => window.scrollTo({ top: window.innerHeight * 2, behavior: "smooth" })}
+                   fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
               </svg>
             </div>
@@ -294,18 +201,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* SECTION COMPÉTENCES FIXE */}
-      <CompetencesSection 
-        progress={skillsProgress}
-        visible={showSkills}
-      />
-
-      {/* PISTE DE SCROLL - Plus longue pour accommoder la section compétences */}
+      <CompetencesSection progress={skillsProgress} visible={showSkills} />
       <section ref={trackRef} className="relative h-[500dvh]" />
-
-      {/* Section suivante */}
       <section id="section-2" className="w-full min-h-dvh" />
-      
     </main>
   );
 }
