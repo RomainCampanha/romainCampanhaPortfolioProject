@@ -11,9 +11,9 @@ import type { Group } from "three";
 const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
 
-// Compétences : caméra reculée et légèrement plus haute pour voir le perso centré et plus petit
-const SKILLS_POS = new THREE.Vector3(0, 0.3, 4.5);        // Desktop: reculé + centré
-const SKILLS_POS_MOBILE = new THREE.Vector3(0, 0.3, 5.0); // Mobile: encore plus reculé
+// Compétences : caméra reculée et légèrement plus basse pour voir le perso centré en bas
+const SKILLS_POS = new THREE.Vector3(0, -0.2, 4.2);        // Desktop: reculé + centré + plus bas
+const SKILLS_POS_MOBILE = new THREE.Vector3(0, -0.1, 4.8); // Mobile: encore plus reculé + plus bas
 
 // Chatbot
 const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
@@ -120,10 +120,10 @@ function Model({ url, isMobile, phase, progress, theme }: {
     
     // Home : transition pour compétences
     if (progress >= 0.55) {
-      // Descendre légèrement pour les compétences
+      // Descendre pour les compétences - personnage plus bas et centré
       const baseY = isMobile ? 0.1 : 0.4;
-      const skillsY = isMobile ? -0.2 : 0.1;
-      
+      const skillsY = isMobile ? -0.6 : -0.4; // Plus bas sur les deux
+
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
         return baseY + (skillsY - baseY) * t;
