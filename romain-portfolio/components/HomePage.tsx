@@ -121,8 +121,8 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Desktop */}
-                  <div className="hidden md:block">
+                  {/* Desktop - Remonté avec -translate-y-16 */}
+                  <div className="hidden md:block -translate-y-16">
                     {/* Bulles parcours à droite */}
                     <div className="min-w-[22rem] max-w-[28rem]">
                       <ParcoursBubbles 
@@ -135,9 +135,9 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Bulle "Voici mon parcours pro" - FIXÉE à gauche du personnage */}
+                {/* Bulle "Voici mon parcours pro" - Plus à gauche */}
                 {showParcours && (
-                  <div className="hidden md:block fixed left-[18%] top-1/2 -translate-y-1/2 z-10">
+                  <div className="hidden md:block fixed left-[8%] top-[30%] -translate-y-1/2 z-10">
                     <ChatBubble
                       text="Voici mon parcours pro ! 🚀"
                       className="arrow-right"

@@ -9,7 +9,7 @@ type ChatBubbleProps = {
   startDelay?: number;
   typingSpeed?: number;   // ms par caractère
   onDone?: () => void;
-  className?: string;     // <- on l’utilise pour arrow-bottom / arrow-left
+  className?: string;     // <- on l'utilise pour arrow-bottom / arrow-left
   showCursor?: boolean;
   ariaLabel?: string;
   skipOnClick?: boolean;
@@ -65,16 +65,12 @@ export default function ChatBubble({
       i += 1;
       setIndex(i);
 
-      // Exemple si tu veux jouer un son sur les caractères non-espaces :
-      // if (/\S/.test(safeText.charAt(i - 1))) typingSoundRef.current?.play();
-
       if (i < safeText.length) {
         typingId = window.setTimeout(type, typingSpeed) as unknown as number;
       } else {
         onDone?.();
         if (loop) {
           loopId = window.setTimeout(() => {
-            // popSoundRef.current?.play();
             i = 0;
             setIndex(0);
             startId = window.setTimeout(type, startDelay) as unknown as number;
@@ -128,18 +124,19 @@ export default function ChatBubble({
         className, // Applique les classes custom en dernier pour override
       ].join(" ")}
     >
-      <p className="whitespace-normal break-words hyphens-auto leading-relaxed">
-  {safeText.slice(0, index)}
-  {showCursor && !isDone && <span className="animate-caret">|</span>}
-</p>
-
-      {/* Indice de skip */}
-      {//skipOnClick && !skipped && !isDone && (
-        //<span className="mt-2 block text-xs text-white/70">
-         // Cliquer pour tout afficher
-       // </span>
-      //)
-      }
+      {/* 🔥 Container avec taille fixe - le texte invisible réserve l'espace */}
+      <div className="relative">
+        {/* Texte invisible qui réserve l'espace (taille fixe) */}
+        <p className="whitespace-normal break-words hyphens-auto leading-relaxed invisible" aria-hidden="true">
+          {safeText}
+        </p>
+        
+        {/* Texte visible qui s'écrit par dessus */}
+        <p className="whitespace-normal break-words hyphens-auto leading-relaxed absolute inset-0">
+          {safeText.slice(0, index)}
+          {showCursor && !isDone && <span className="animate-caret">|</span>}
+        </p>
+      </div>
     </div>
   );
 }

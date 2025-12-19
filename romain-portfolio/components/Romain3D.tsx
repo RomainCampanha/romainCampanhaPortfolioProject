@@ -133,7 +133,9 @@ function Model({ url, isMobile, phase, progress, theme }: {
     
     // Mobile: position différente selon phase
     if (isMobile) {
-      return phase === "intro" ? 0.1 : -0.5;
+      // Intro (accueil) : position normale
+      // Parcours (run) : descendre le personnage sous les bulles
+      return phase === "intro" ? 0.1 : -0.2;
     }
     
     return 0.4;
@@ -142,6 +144,11 @@ function Model({ url, isMobile, phase, progress, theme }: {
   // Calculer le scale cible (pour rétrécir pendant compétences)
   const getTargetScale = () => {
     const baseScale = isMobile ? 1.6 : 1.2;
+    
+    // 🔥 Mobile parcours : rétrécir le personnage
+    if (isMobile && phase === "run" && progress < 0.55) {
+      return 1.2; // Plus petit sur parcours mobile
+    }
     
     if (theme === "chatbot") {
       return isMobile ? 2.3 : 1.6;
