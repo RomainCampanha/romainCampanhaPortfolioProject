@@ -43,16 +43,16 @@ const POSITIONS_3 = [
   { x: 200, y: -80, rotate: 12 },   // Droite
 ];
 
-// Positions mobile - plus compactes
+// Positions mobile - plus basses et plus compactes
 const POSITIONS_2_MOBILE = [
-  { x: -80, y: -140, rotate: -5 },
-  { x: 80, y: -140, rotate: 5 },
+  { x: -70, y: -80, rotate: -5 },
+  { x: 70, y: -80, rotate: 5 },
 ];
 
 const POSITIONS_3_MOBILE = [
-  { x: -100, y: -100, rotate: -8 },
-  { x: 0, y: -180, rotate: 0 },
-  { x: 100, y: -100, rotate: 8 },
+  { x: -90, y: -50, rotate: -8 },
+  { x: 0, y: -120, rotate: 0 },
+  { x: 90, y: -50, rotate: 8 },
 ];
 
 export default function CompetencesSection({ progress, visible }: CompetencesSectionProps) {
@@ -206,16 +206,16 @@ export default function CompetencesSection({ progress, visible }: CompetencesSec
           </motion.div>
         </AnimatePresence>
 
-        {/* Titre du groupe actuel */}
+        {/* Titre du groupe actuel - Centré */}
         <motion.div
           key={`title-${currentGroupIndex}`}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="absolute top-[12%] md:top-[15%] left-1/2 -translate-x-1/2 z-10"
+          className="absolute top-[12%] md:top-[15%] left-0 right-0 z-10 flex justify-center"
         >
-          <h2 className="text-white/80 text-lg md:text-xl font-orbitron tracking-wider">
+          <h2 className="text-white/80 text-lg md:text-xl font-orbitron tracking-wider text-center">
             {currentGroupIndex === 0 && "Frontend"}
             {currentGroupIndex === 1 && "Full Stack"}
             {currentGroupIndex === 2 && "Langages"}

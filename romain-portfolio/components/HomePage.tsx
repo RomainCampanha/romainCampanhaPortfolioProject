@@ -65,27 +65,30 @@ export default function HomePage() {
         }
       >
         <div className="container mx-auto px-4 pointer-events-auto mt-16 md:mt-0">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            
-            {/* 🎯 PERSONNAGE 3D - PAS de transform CSS, tout est géré dans Three.js */}
+          <div className={`flex flex-col md:flex-row md:items-center gap-4 md:gap-8 ${
+            showSkills ? 'justify-center' : ''
+          }`}>
+
+            {/* 🎯 PERSONNAGE 3D - Centré quand compétences visible */}
             <div className={`order-2 md:order-1 w-full transition-all duration-500 ${
-              showSkills ? 'md:w-full' : 'md:w-[55%] lg:w-[60%]'
+              showSkills ? 'md:w-full flex justify-center' : 'md:w-[55%] lg:w-[60%]'
             }`}>
               <div
                 className={`mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px] transition-all duration-500 ${
-                  showSkills ? '' : 'md:translate-x-[15%] lg:translate-x-[20%]'
+                  showSkills ? 'md:max-w-[500px]' : 'md:translate-x-[15%] lg:translate-x-[20%]'
                 }`}
                 style={{ opacity: characterOpacity }}
               >
                 <Romain3D
-                  progress={progress}  // 🔥 On passe le progress pour que Three.js gère le mouvement
+                  progress={progress}
                   phase={phase}
                 />
               </div>
             </div>
 
-            {/* Bulles */}
-            <div 
+            {/* Bulles - Masquées complètement pendant compétences */}
+            {!hideBubbles && (
+            <div
               className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start"
               style={{
                 opacity: hideBubbles ? 0 : 1,
@@ -155,6 +158,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {/* Bulle Compétences */}

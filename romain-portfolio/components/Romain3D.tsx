@@ -13,7 +13,7 @@ const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
 
 // Compétences : caméra reculée et légèrement plus basse pour voir le perso centré en bas
 const SKILLS_POS = new THREE.Vector3(0, -0.2, 4.2);        // Desktop: reculé + centré + plus bas
-const SKILLS_POS_MOBILE = new THREE.Vector3(0, -0.1, 4.8); // Mobile: encore plus reculé + plus bas
+const SKILLS_POS_MOBILE = new THREE.Vector3(0, -0.4, 4.0); // Mobile: plus proche et plus bas pour personnage plus grand
 
 // Chatbot
 const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
@@ -122,7 +122,7 @@ function Model({ url, isMobile, phase, progress, theme }: {
     if (progress >= 0.55) {
       // Descendre pour les compétences - personnage plus bas et centré
       const baseY = isMobile ? 0.1 : 0.4;
-      const skillsY = isMobile ? -0.6 : -0.4; // Plus bas sur les deux
+      const skillsY = isMobile ? -1.0 : -0.4; // Mobile: beaucoup plus bas
 
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
@@ -154,10 +154,11 @@ function Model({ url, isMobile, phase, progress, theme }: {
       return isMobile ? 2.3 : 1.6;
     }
     
-    // Home : rétrécir pour compétences
+    // Home : ajuster pour compétences
     if (progress >= 0.55) {
-      const skillsScale = baseScale * 0.75; // 25% plus petit
-      
+      // Desktop: rétrécir, Mobile: garder plus grand
+      const skillsScale = isMobile ? baseScale * 1.1 : baseScale * 0.75;
+
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
         return baseScale + (skillsScale - baseScale) * t;
