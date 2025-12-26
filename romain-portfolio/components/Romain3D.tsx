@@ -7,13 +7,13 @@ import * as THREE from "three";
 import type { Group } from "three";
 
 // === POSITIONS DE CAMÉRA ===
-// Accueil/Parcours
-const START_POS = new THREE.Vector3(-0.1, 0, 2.8);
+// Accueil/Parcours - Desktop décalé à gauche (x négatif = caméra à gauche = perso à droite du centre)
+const START_POS = new THREE.Vector3(-0.4, 0, 2.8);
 const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
 
-// Compétences : caméra reculée et légèrement plus basse pour voir le perso centré en bas
-const SKILLS_POS = new THREE.Vector3(0, -0.2, 4.2);        // Desktop: reculé + centré + plus bas
-const SKILLS_POS_MOBILE = new THREE.Vector3(0, -0.4, 4.0); // Mobile: plus proche et plus bas pour personnage plus grand
+// Compétences : caméra centrée (x=0) et reculée
+const SKILLS_POS = new THREE.Vector3(0, -0.2, 4.2);        // Desktop: centré
+const SKILLS_POS_MOBILE = new THREE.Vector3(0, 0.1, 4.5);  // Mobile: dézoomer (z plus grand) + remonter (y positif)
 
 // Chatbot
 const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
@@ -122,7 +122,7 @@ function Model({ url, isMobile, phase, progress, theme }: {
     if (progress >= 0.55) {
       // Descendre pour les compétences - personnage plus bas et centré
       const baseY = isMobile ? 0.1 : 0.4;
-      const skillsY = isMobile ? -1.0 : -0.4; // Mobile: beaucoup plus bas
+      const skillsY = isMobile ? -0.2 : -0.4; // Mobile: légèrement plus bas, pieds visibles
 
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
@@ -130,12 +130,12 @@ function Model({ url, isMobile, phase, progress, theme }: {
       }
       return skillsY;
     }
-    
+
     // Mobile: position différente selon phase
     if (isMobile) {
       // Intro (accueil) : position normale
       // Parcours (run) : descendre le personnage sous les bulles
-      return phase === "intro" ? 0.1 : -0.2;
+      return phase === "intro" ? 0.1 : -0.4; // Parcours: un peu plus bas
     }
     
     return 0.4;
@@ -156,8 +156,8 @@ function Model({ url, isMobile, phase, progress, theme }: {
     
     // Home : ajuster pour compétences
     if (progress >= 0.55) {
-      // Desktop: rétrécir, Mobile: garder plus grand
-      const skillsScale = isMobile ? baseScale * 1.1 : baseScale * 0.75;
+      // Desktop: rétrécir, Mobile: légèrement plus petit pour voir les pieds
+      const skillsScale = isMobile ? baseScale * 0.9 : baseScale * 0.75;
 
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
