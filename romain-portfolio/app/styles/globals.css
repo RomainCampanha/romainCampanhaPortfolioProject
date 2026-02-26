@@ -170,3 +170,12 @@ body {
 .animate-pulse-slow {
   animation: pulse-slow 3s ease-in-out infinite;
 }
+
+/* Masquer la scrollbar du carousel horizontal */
+.snap-carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.snap-carousel::-webkit-scrollbar {
+  display: none;
+}

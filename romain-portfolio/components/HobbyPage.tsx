@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useTrackScrollProgress } from "../app/hooks/useTrackScrollProgress";
 import Romain3D from "@/components/Romain3D";
 import ChatBubble from "@/components/ChatBubble";
-import CoverFlowCarousel from "@/components/CoverFlowCarousel";
+import HorizontalSnapCarousel from "@/components/HorizontalSnapCarousel";
 import FuturisticTitle from "@/components/FuturisticTitle";
 import { useDestinationImages } from "@/app/hooks/useDestinationImages";
 import ScrollRunnerGame from "@/components/ScrollRunnerGame";
@@ -278,7 +278,7 @@ export default function HobbyPage() {
           }}
         >
           
-          {/* TITRES AVEC ROTATION 3D */}
+          {/* TITRES AVEC WIPE HORIZONTAL */}
           <div className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden">
             <FuturisticTitle 
               currentTitle={currentData.config.title}
@@ -288,12 +288,12 @@ export default function HobbyPage() {
             />
           </div>
 
-          {/* CARROUSEL COVER FLOW avec rotation 3D */}
+          {/* CARROUSEL HORIZONTAL SNAP */}
           <div 
             className="w-full max-w-7xl h-[55vh] md:h-[60vh]"
             style={{ pointerEvents: 'auto' }}
           >
-            <CoverFlowCarousel 
+            <HorizontalSnapCarousel
               images={currentData.images}
               nextImages={nextData?.images || []}
               transitionProgress={transitionProgress}
