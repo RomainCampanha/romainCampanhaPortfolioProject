@@ -41,9 +41,10 @@ export default function HomePage() {
   const phase: "intro" | "run" = progress >= 0.25 ? "run" : "intro";
   const showScrollIndicator = progress < 0.20;
   
-  // Masquer les bulles pendant la transition vers compétences
-  const hideBubbles = progress >= 0.55;
-  
+  // === TRANSITION LAYOUT : parcours → compétences (fluide, piloté par scroll) ===
+  const layoutTransitionProgress = Math.max(0, Math.min(1, (progress - 0.50) / 0.08));
+  const layoutEased = 1 - Math.pow(1 - layoutTransitionProgress, 3); // ease-out cubic
+
   // Opacité du personnage (fade out à la fin)
   const characterOpacity = progress < 0.95 ? 1 : 1 - ((progress - 0.95) / 0.05);
 
@@ -65,14 +66,20 @@ export default function HomePage() {
         }
       >
         <div className="container mx-auto px-4 pointer-events-auto mt-16 md:mt-0">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-4 md:gap-8">
+          <div
+            className="flex flex-col md:flex-row md:items-center md:justify-center"
+            style={{ gap: isMobile ? '1rem' : `${2 * (1 - layoutEased)}rem` }}
+          >
 
-            {/* 🎯 PERSONNAGE 3D - Positionnement géré dans Three.js */}
-            <div className={`order-2 md:order-1 w-full transition-all duration-500 ${
-              showSkills ? 'md:w-full' : 'md:w-[55%] lg:w-[60%]'
-            }`}>
+            {/* 🎯 PERSONNAGE 3D - Largeur interpolée par le scroll */}
+            <div
+              className="order-2 md:order-1 w-full"
+              style={{
+                width: isMobile ? '100%' : `${55 + layoutEased * 45}%`,
+              }}
+            >
               <div
-                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px] transition-opacity duration-300"
+                className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]"
                 style={{ opacity: characterOpacity }}
               >
                 <Romain3D
@@ -82,13 +89,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Bulles - Masquées complètement pendant compétences */}
-            {!hideBubbles && (
+            {/* Bulles - Masquées via opacity (restent dans le DOM pour éviter le reflow) */}
             <div
-              className="order-1 md:order-2 w-full md:w-1/2 flex justify-center md:justify-start"
+              className="order-1 md:order-2 w-full flex justify-center md:justify-start"
+              style={{
+                width: isMobile ? '100%' : `${50 * (1 - layoutEased)}%`,
+                opacity: 1 - layoutEased,
+                pointerEvents: layoutEased > 0.5 ? 'none' as const : 'auto' as const,
+                overflow: layoutEased > 0 ? 'hidden' : 'visible',
+              }}
             >
               <div className="relative w-full md:w-auto md:min-h-[240px] flex justify-center md:block">
-                
+
                 {/* Bulle Intro */}
                 <div
                   className={`absolute inset-0 flex justify-center md:justify-start transition-opacity duration-300
@@ -110,8 +122,8 @@ export default function HomePage() {
                   {/* Mobile */}
                   <div className="flex md:hidden justify-center items-start h-full">
                     <div className="w-[90%] -translate-y-14">
-                      <ParcoursBubbles 
-                        show 
+                      <ParcoursBubbles
+                        show
                         bubble1Exit={bubble1Exit}
                         bubble2Exit={bubble2Exit}
                         bubble3Exit={bubble3Exit}
@@ -123,8 +135,8 @@ export default function HomePage() {
                   <div className="hidden md:block -translate-y-16">
                     {/* Bulles parcours à droite */}
                     <div className="min-w-[22rem] max-w-[28rem]">
-                      <ParcoursBubbles 
-                        show 
+                      <ParcoursBubbles
+                        show
                         bubble1Exit={bubble1Exit}
                         bubble2Exit={bubble2Exit}
                         bubble3Exit={bubble3Exit}
@@ -149,7 +161,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            )}
           </div>
 
           {/* Bulle Compétences */}

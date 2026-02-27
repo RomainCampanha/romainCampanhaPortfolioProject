@@ -7,13 +7,13 @@ import * as THREE from "three";
 import type { Group } from "three";
 
 // === POSITIONS DE CAMÉRA ===
-// Accueil/Parcours - Desktop décalé à gauche (x négatif = caméra à gauche = perso à droite du centre)
-const START_POS = new THREE.Vector3(-0.4, 0, 2.8);
-const START_POS_MOBILE = new THREE.Vector3(0, 0.2, 3.2);
+// Accueil/Parcours - Desktop décalé à gauche, caméra à hauteur des yeux
+const START_POS = new THREE.Vector3(-0.55, -0.1, 3.0);
+const START_POS_MOBILE = new THREE.Vector3(0, 0.15, 3.2);   // Mobile : garder le zoom d'origine
 
-// Compétences : caméra centrée (x=0) et reculée
-const SKILLS_POS = new THREE.Vector3(0, -0.2, 4.2);        // Desktop: centré
-const SKILLS_POS_MOBILE = new THREE.Vector3(0, 0.1, 4.5);  // Mobile: dézoomer (z plus grand) + remonter (y positif)
+// Compétences : caméra centrée et légèrement reculée
+const SKILLS_POS = new THREE.Vector3(0, -0.15, 3.8);        // Desktop: centré, plus proche
+const SKILLS_POS_MOBILE = new THREE.Vector3(0, 0.05, 4.3);  // Mobile: un peu plus reculé
 
 // Chatbot
 const CHATBOT_POS_DESKTOP = new THREE.Vector3(0, -0.3, 3.8);
@@ -120,12 +120,11 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     if (theme === "chatbot") {
       return isMobile ? -0.3 : 0.2;
     }
-    
+
     // Home : transition pour compétences
     if (progress >= 0.55) {
-      // Descendre pour les compétences - personnage plus bas et centré
-      const baseY = isMobile ? 0.1 : 0.4;
-      const skillsY = isMobile ? -0.2 : -0.4; // Mobile: légèrement plus bas, pieds visibles
+      const baseY = isMobile ? 0.1 : 0.3;
+      const skillsY = isMobile ? -0.2 : -0.3;
 
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
@@ -136,31 +135,28 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
 
     // Mobile: position différente selon phase
     if (isMobile) {
-      // Intro (accueil) : position normale
-      // Parcours (run) : descendre le personnage sous les bulles
-      return phase === "intro" ? 0.1 : -0.4; // Parcours: un peu plus bas
+      return phase === "intro" ? 0.1 : -0.4;
     }
-    
-    return 0.4;
+
+    return 0.3; // Desktop intro/parcours
   };
   
   // Calculer le scale cible (pour rétrécir pendant compétences)
   const getTargetScale = () => {
     const baseScale = isMobile ? 1.6 : 1.2;
-    
+
     // 🔥 Mobile parcours : rétrécir le personnage
     if (isMobile && phase === "run" && progress < 0.55) {
-      return 1.2; // Plus petit sur parcours mobile
+      return 1.3; // Plus petit sur parcours mobile
     }
-    
+
     if (theme === "chatbot") {
       return isMobile ? 2.3 : 1.6;
     }
-    
+
     // Home : ajuster pour compétences
     if (progress >= 0.55) {
-      // Desktop: rétrécir, Mobile: légèrement plus petit pour voir les pieds
-      const skillsScale = isMobile ? baseScale * 0.9 : baseScale * 0.75;
+      const skillsScale = isMobile ? baseScale * 0.9 : baseScale * 0.85;
 
       if (progress < 0.60) {
         const t = (progress - 0.55) / 0.05;
@@ -168,17 +164,17 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
       }
       return skillsScale;
     }
-    
+
     return baseScale;
   };
 
   // 🎯 OFFSETS pour ajuster la hauteur du personnage
   const getYOffset = () => {
     if (theme === "chatbot") {
-      return isMobile ? 2.1 : 1; // Chat: remonter plus sur desktop
+      return isMobile ? 2.1 : 1;
     }
     // Home/Hobby
-    return isMobile ? 1 : 0.4; // Mobile: remonter plus
+    return isMobile ? 1 : 0.35;
   };
   
   useFrame(() => {
