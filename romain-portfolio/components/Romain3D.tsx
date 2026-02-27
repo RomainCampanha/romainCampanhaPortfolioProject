@@ -24,6 +24,7 @@ type Romain3DProps = {
   phase?: "intro" | "run";
   modelUrl?: string;
   theme?: "home" | "hobby" | "chatbot";
+  rotationY?: number; // Rotation du modèle sur l'axe Y (en radians)
 };
 
 type RigProps = {
@@ -83,18 +84,20 @@ function Rig({ progress, theme, isMobile }: RigProps) {
   return null;
 }
 
-function Model({ url, isMobile, phase, progress, theme }: { 
-  url: string; 
+function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
+  url: string;
   isMobile: boolean;
   phase: "intro" | "run";
   progress: number;
   theme: "home" | "hobby" | "chatbot";
+  rotationY?: number;
 }) {
   const group = useRef<Group>(null!);
-  
+
   // Refs pour les animations fluides
   const currentY = useRef(0);
   const currentScale = useRef(1);
+  const currentRotY = useRef(0);
   const initialized = useRef(false);
   
   const { scene, animations } = useGLTF(url);
@@ -188,15 +191,18 @@ function Model({ url, isMobile, phase, progress, theme }: {
     if (!initialized.current) {
       currentY.current = targetY;
       currentScale.current = targetScale;
+      currentRotY.current = rotationY;
       initialized.current = true;
     }
-    
-    // 🔥 Lerp fluide pour Y et Scale
+
+    // Lerp fluide pour Y, Scale et Rotation
     currentY.current += (targetY - currentY.current) * 0.08;
     currentScale.current += (targetScale - currentScale.current) * 0.08;
-    
+    currentRotY.current += (rotationY - currentRotY.current) * 0.1;
+
     group.current.position.y = currentY.current;
     group.current.scale.setScalar(currentScale.current);
+    group.current.rotation.y = currentRotY.current;
   });
 
   return (
@@ -211,6 +217,7 @@ export default function Romain3D({
   phase = "intro",
   modelUrl = "/models/RomainSalut.glb",
   theme = "home",
+  rotationY = 0,
 }: Romain3DProps) {
   const url = modelUrl;
   
@@ -254,12 +261,13 @@ export default function Romain3D({
         theme={theme}
         isMobile={isMobile}
       />
-      <Model 
-        url={url} 
+      <Model
+        url={url}
         isMobile={isMobile}
         phase={phase}
         progress={progress}
         theme={theme}
+        rotationY={rotationY}
       />
     </Canvas>
   );

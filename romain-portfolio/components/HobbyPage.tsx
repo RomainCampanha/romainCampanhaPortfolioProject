@@ -50,22 +50,32 @@ export default function HobbyPage() {
   // Personnage : wave avant de partir
   const waveProgress = Math.max(0, Math.min(1, (progress - (travelMessageStart + 0.03)) / 0.05));
   const waveRotation = Math.sin(waveProgress * Math.PI * 2) * 8;
-  
-  // Personnage sort avec style (après message voyage)
-  const characterExitStart = travelMessageStart + 0.08;
+
+  // Personnage : d'abord se retourne, puis sort
+  // Phase 1 : rotation vers la gauche (avant de bouger)
+  const turnStart = travelMessageStart + 0.05; // 0.55
+  const turnProgress = Math.max(0, Math.min(1, (progress - turnStart) / 0.03));
+  const characterRotationY = turnProgress * -1.2; // En radians (~70°)
+
+  // Phase 2 : sort de l'écran (après la rotation)
+  const characterExitStart = travelMessageStart + 0.08; // 0.58
   const characterExitProgress = Math.max(0, Math.min(1, (progress - characterExitStart) / 0.1));
-  
-  const characterRotationY = characterExitProgress * -90;
-  const characterExitX = characterExitProgress * characterExitProgress * -150;
-  const characterScale = 1 - (characterExitProgress * 0.3);
-  const characterJump = characterExitProgress < 0.3 
-    ? Math.sin(characterExitProgress * Math.PI * 3.33) * 0.15
-    : 0;
+  const eased = 1 - Math.pow(1 - characterExitProgress, 3);
+  const characterExitX = eased * -130;
   
   // === PHASES CARROUSELS (après sortie du personnage) ===
   const carouselsStart = characterExitStart + 0.1;
   const showCarousels = progress >= carouselsStart;
-  
+
+  // Entrée du carrousel : slide up + fade (sur 5% de scroll)
+  const carouselEntranceDuration = 0.05;
+  const carouselEntranceProgress = Math.max(0, Math.min(1, (progress - carouselsStart) / carouselEntranceDuration));
+  const carouselEntranceEased = 1 - Math.pow(1 - carouselEntranceProgress, 3); // ease-out cubic
+
+  // Titre entre légèrement avant le carrousel
+  const titleEntranceProgress = Math.max(0, Math.min(1, (progress - carouselsStart) / (carouselEntranceDuration * 0.7)));
+  const titleEntranceEased = 1 - Math.pow(1 - titleEntranceProgress, 3);
+
   // Destinations avec transitions
   const destinationProgress = Math.max(0, (progress - carouselsStart) / 0.6);
   
@@ -128,24 +138,19 @@ export default function HobbyPage() {
             <div className="order-2 md:order-1 w-full md:w-[55%] lg:w-[60%]">
               <div
                 className="mx-auto h-[60vh] md:h-[70vh] w-full max-w-[720px]
-                           md:translate-x-[15%] lg:translate-x-[20%]
-                           transition-all duration-300"
+                           md:translate-x-[15%] lg:translate-x-[20%]"
                 style={{
-                  transform: `
-                    translateX(${characterExitX}%) 
-                    translateY(${characterJump * 100}%) 
-                    rotateY(${characterRotationY}deg)
-                    ${characterExitProgress === 0 ? `rotateZ(${waveRotation}deg)` : ''}
-                    scale(${characterScale})
-                  `,
-                  opacity: 1 - characterExitProgress,
+                  transform: characterExitProgress > 0 ? `translateX(${characterExitX}%)` : undefined,
+                  opacity: 1 - eased,
+                  willChange: characterExitProgress > 0 ? "transform, opacity" : undefined,
                 }}
               >
-                <Romain3D 
-                  progress={Math.min(0.25, progress)} 
+                <Romain3D
+                  progress={Math.min(0.25, progress)}
                   phase="intro"
                   modelUrl="/models/RomainVacanceSalut.glb"
                   theme="hobby"
+                  rotationY={characterRotationY}
                 />
               </div>
             </div>
@@ -279,8 +284,15 @@ export default function HobbyPage() {
         >
           
           {/* TITRES AVEC WIPE HORIZONTAL */}
-          <div className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden">
-            <FuturisticTitle 
+          <div
+            className="mb-8 md:mb-16 z-10 relative w-full h-20 md:h-32 flex items-center justify-center overflow-hidden"
+            style={{
+              opacity: titleEntranceEased,
+              transform: `translateY(${(1 - titleEntranceEased) * 40}px)`,
+              willChange: titleEntranceProgress < 1 ? "transform, opacity" : undefined,
+            }}
+          >
+            <FuturisticTitle
               currentTitle={currentData.config.title}
               nextTitle={nextData?.config.title || ""}
               transitionProgress={transitionProgress}
@@ -289,9 +301,14 @@ export default function HobbyPage() {
           </div>
 
           {/* CARROUSEL HORIZONTAL SNAP */}
-          <div 
+          <div
             className="w-full max-w-7xl h-[55vh] md:h-[60vh]"
-            style={{ pointerEvents: 'auto' }}
+            style={{
+              pointerEvents: 'auto',
+              opacity: carouselEntranceEased,
+              transform: `translateY(${(1 - carouselEntranceEased) * 60}px)`,
+              willChange: carouselEntranceProgress < 1 ? "transform, opacity" : undefined,
+            }}
           >
             <HorizontalSnapCarousel
               images={currentData.images}
@@ -301,9 +318,9 @@ export default function HobbyPage() {
           </div>
 
           {/* Flèche vers le bas */}
-          <div 
+          <div
             className="absolute bottom-[3dvh] left-1/2 -translate-x-1/2 z-10"
-            style={{ opacity: 1, pointerEvents: 'none' }}
+            style={{ opacity: carouselEntranceEased, pointerEvents: 'none' }}
           >
             <svg 
               className="w-8 h-8 text-amber-900/70 animate-bounce"
