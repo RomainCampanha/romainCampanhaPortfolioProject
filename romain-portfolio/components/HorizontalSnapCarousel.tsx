@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 type HorizontalSnapCarouselProps = {
   images: string[];
@@ -13,13 +13,24 @@ export default function HorizontalSnapCarousel({
   nextImages = [],
   transitionProgress = 0,
 }: HorizontalSnapCarouselProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+  const animFrameRef = useRef<number>(0);
+  const offsetXRef = useRef(0);
+  const currentSpeedRef = useRef(0.5);
+  const targetSpeedRef = useRef(0.5);
+  const userInteractingRef = useRef(false);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const touchStartXRef = useRef(0);
+  const singleSetWidthRef = useRef(0);
+  const burstSpeedRef = useRef(0);
+  const hasSwappedRef = useRef(false);
+  const prevTransitionRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
-  const isAutoPlayingRef = useRef(true);
-  const autoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [displayedImages, setDisplayedImages] = useState(images);
 
-  const isTransitioning = transitionProgress > 0 && nextImages.length > 0;
+  const BASE_SPEED = 0.5;
+  const BURST_MAX_SPEED = 30; // vitesse max pendant le speed burst
 
   // Détecter mobile
   useEffect(() => {
@@ -29,265 +40,231 @@ export default function HorizontalSnapCarousel({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Suivre l'index courant via IntersectionObserver
+  // Dimensions responsive
+  const getImageWidthPx = useCallback(() => {
+    return isMobile ? window.innerWidth * 0.75 : 350;
+  }, [isMobile]);
+
+  const getGapPx = useCallback(() => {
+    return isMobile ? 12 : 20;
+  }, [isMobile]);
+
+  // Calculer la largeur d'un set complet d'images
+  const computeSingleSetWidth = useCallback(() => {
+    const imgW = getImageWidthPx();
+    const gap = getGapPx();
+    return images.length * (imgW + gap);
+  }, [images.length, getImageWidthPx, getGapPx]);
+
+  // Initialiser / reset l'offset au milieu (2e set)
+  const resetOffset = useCallback(() => {
+    const setW = computeSingleSetWidth();
+    singleSetWidthRef.current = setW;
+    offsetXRef.current = setW;
+    currentSpeedRef.current = BASE_SPEED;
+    targetSpeedRef.current = BASE_SPEED;
+    userInteractingRef.current = false;
+  }, [computeSingleSetWidth]);
+
+  // === GESTION DES TRANSITIONS ENTRE DESTINATIONS ===
+
+  // Quand la transition démarre (0 → >0), préparer le swap
+  // Quand elle atteint ~0.5, swapper les images affichées
+  // Quand elle finit (retour à 0), reset propre
   useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
+    const wasTransitioning = prevTransitionRef.current > 0;
+    const isNowTransitioning = transitionProgress > 0;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute("data-index"));
-            if (!isNaN(index)) setCurrentIndex(index);
-          }
-        });
-      },
-      {
-        root: container,
-        threshold: 0.6,
-      }
-    );
-
-    const items = container.querySelectorAll("[data-index]");
-    items.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [images]);
-
-  const scrollToIndex = useCallback((index: number) => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const items = container.querySelectorAll("[data-index]");
-    if (items[index]) {
-      items[index].scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
+    // Transition vient de commencer
+    if (!wasTransitioning && isNowTransitioning) {
+      hasSwappedRef.current = false;
     }
-  }, []);
 
-  // Pause auto-play quand l'utilisateur interagit
-  const pauseAutoPlay = useCallback(() => {
-    isAutoPlayingRef.current = false;
-    if (autoPlayTimeoutRef.current) clearTimeout(autoPlayTimeoutRef.current);
-    autoPlayTimeoutRef.current = setTimeout(() => {
-      isAutoPlayingRef.current = true;
-    }, 8000);
-  }, []);
+    // Midpoint : swap les images pendant le speed burst
+    if (transitionProgress >= 0.5 && !hasSwappedRef.current && nextImages.length > 0) {
+      hasSwappedRef.current = true;
+      setDisplayedImages(nextImages);
+      // Reset l'offset au milieu du loop (le blur cache la discontinuité)
+      const setW = singleSetWidthRef.current;
+      offsetXRef.current = setW;
+    }
 
-  // Auto-play
+    // Transition terminée : sync avec les images réelles
+    if (wasTransitioning && !isNowTransitioning) {
+      setDisplayedImages(images);
+      hasSwappedRef.current = false;
+      resetOffset();
+    }
+
+    // Update la vitesse burst
+    burstSpeedRef.current = transitionProgress > 0
+      ? Math.sin(transitionProgress * Math.PI) * BURST_MAX_SPEED // bell curve : monte puis descend
+      : 0;
+
+    prevTransitionRef.current = transitionProgress;
+  }, [transitionProgress, nextImages, images, resetOffset]);
+
+  // Sync images quand elles changent hors transition
   useEffect(() => {
-    if (isTransitioning) return;
+    if (transitionProgress === 0) {
+      setDisplayedImages(images);
+    }
+  }, [images, transitionProgress]);
 
-    const interval = setInterval(() => {
-      if (!isAutoPlayingRef.current) return;
-      const nextIndex = (currentIndex + 1) % images.length;
-      scrollToIndex(nextIndex);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [currentIndex, images.length, isTransitioning, scrollToIndex]);
-
-  // Navigation clavier
+  // Init au montage
   useEffect(() => {
-    if (isTransitioning) return;
+    resetOffset();
+  }, [resetOffset]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        pauseAutoPlay();
-        scrollToIndex((currentIndex - 1 + images.length) % images.length);
-      } else if (e.key === "ArrowRight") {
-        pauseAutoPlay();
-        scrollToIndex((currentIndex + 1) % images.length);
+  // Recalculer singleSetWidth au resize
+  useEffect(() => {
+    const handleResize = () => {
+      const oldSetW = singleSetWidthRef.current;
+      const newSetW = computeSingleSetWidth();
+      if (oldSetW > 0) {
+        const ratio = offsetXRef.current / oldSetW;
+        offsetXRef.current = ratio * newSetW;
       }
+      singleSetWidthRef.current = newSetW;
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [computeSingleSetWidth]);
+
+  // Pause auto et reprise progressive
+  const pauseAutoAndResume = useCallback(() => {
+    userInteractingRef.current = true;
+    targetSpeedRef.current = 0;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      userInteractingRef.current = false;
+      targetSpeedRef.current = BASE_SPEED;
+    }, 2000);
+  }, []);
+
+  // === BOUCLE D'ANIMATION ===
+  useEffect(() => {
+    const animate = () => {
+      const setW = singleSetWidthRef.current;
+      if (setW <= 0) {
+        animFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Lerp de la vitesse auto vers la cible
+      currentSpeedRef.current += (targetSpeedRef.current - currentSpeedRef.current) * 0.03;
+
+      // Vitesse totale = auto + burst (le burst overrides l'interaction user)
+      const totalSpeed = currentSpeedRef.current + burstSpeedRef.current;
+
+      // Avancer le strip
+      offsetXRef.current += totalSpeed;
+
+      // Boucle infinie : reset silencieux
+      if (offsetXRef.current >= setW * 2) {
+        offsetXRef.current -= setW;
+      }
+      if (offsetXRef.current < 0) {
+        offsetXRef.current += setW;
+      }
+
+      // Appliquer le transform + motion blur
+      if (stripRef.current) {
+        stripRef.current.style.transform = `translate3d(-${offsetXRef.current}px, 0, 0)`;
+
+        // Motion blur proportionnel à la vitesse burst
+        const blurAmount = Math.min(burstSpeedRef.current * 0.4, 10);
+        stripRef.current.style.filter = blurAmount > 0.5 ? `blur(${blurAmount}px)` : "none";
+      }
+
+      animFrameRef.current = requestAnimationFrame(animate);
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, images.length, isTransitioning, pauseAutoPlay, scrollToIndex]);
+    animFrameRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
 
-  // Réinitialiser au changement de destination
-  const prevImagesRef = useRef(images);
+  // === EVENT HANDLERS ===
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    offsetXRef.current += delta * 0.8;
+    pauseAutoAndResume();
+  }, [pauseAutoAndResume]);
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    pauseAutoAndResume();
+  }, [pauseAutoAndResume]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const delta = touchStartXRef.current - currentX;
+    touchStartXRef.current = currentX;
+    offsetXRef.current += delta;
+    pauseAutoAndResume();
+  }, [pauseAutoAndResume]);
+
+  // Attacher les events sur le container
   useEffect(() => {
-    if (transitionProgress === 0 && prevImagesRef.current !== images) {
-      setCurrentIndex(0);
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
-      }
-      prevImagesRef.current = images;
-    }
-  }, [transitionProgress, images]);
+    const el = containerRef.current;
+    if (!el) return;
 
-  const goNext = () => {
-    pauseAutoPlay();
-    scrollToIndex((currentIndex + 1) % images.length);
-  };
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: true });
 
-  const goPrev = () => {
-    pauseAutoPlay();
-    scrollToIndex((currentIndex - 1 + images.length) % images.length);
-  };
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [handleWheel, handleTouchStart, handleTouchMove]);
 
-  // Dimensions responsive
+  // Dimensions
   const imageWidth = isMobile ? "75vw" : "350px";
   const imageHeight = isMobile ? "50vh" : "500px";
   const gap = isMobile ? "12px" : "20px";
-  const halfWidth = isMobile ? "37.5vw" : "175px";
 
-  // Rendu du conteneur scroll (réutilisé pour current et next)
-  const renderScrollContainer = (
-    imgs: string[],
-    ref?: React.RefObject<HTMLDivElement | null>,
-    interactive?: boolean
-  ) => (
-    <div
-      ref={ref}
-      className="w-full flex items-center overflow-x-auto snap-carousel"
-      style={{
-        scrollSnapType: "x mandatory",
-        WebkitOverflowScrolling: "touch",
-        gap,
-        paddingLeft: `calc(50% - ${halfWidth})`,
-        paddingRight: `calc(50% - ${halfWidth})`,
-        pointerEvents: interactive ? "auto" : "none",
-      }}
-      onTouchStart={interactive ? pauseAutoPlay : undefined}
-      onWheel={interactive ? (e) => {
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-          pauseAutoPlay();
-        }
-      } : undefined}
-    >
-      {imgs.map((imageUrl, index) => (
-        <div
-          key={`img-${index}`}
-          data-index={interactive ? index : undefined}
-          className="flex-shrink-0 snap-center"
-          style={{
-            scrollSnapAlign: "center",
-            width: imageWidth,
-            height: imageHeight,
-          }}
-        >
-          <img
-            src={imageUrl}
-            alt={`Photo ${index + 1}`}
-            className="w-full h-full object-cover rounded-xl"
-            style={{
-              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35)",
-              userSelect: "none",
-            }}
-            draggable={false}
-          />
-        </div>
-      ))}
-    </div>
-  );
+  // Images triplées pour la boucle infinie
+  const tripleImages = [...displayedImages, ...displayedImages, ...displayedImages];
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center">
-      {/* Nouvelles images (derrière, révélées par le wipe) */}
-      {isTransitioning && (
-        <div className="absolute inset-0 flex items-center">
-          {renderScrollContainer(nextImages)}
-        </div>
-      )}
-
-      {/* Images courantes (au-dessus, clippées de gauche à droite) */}
+    <div
+      ref={containerRef}
+      className="relative w-full h-full flex items-center overflow-hidden"
+      style={{ cursor: "grab" }}
+    >
+      {/* Strip unique avec speed burst + motion blur */}
       <div
-        className="relative w-full flex-1 flex items-center"
-        style={{
-          clipPath: isTransitioning
-            ? `inset(0 0 0 ${transitionProgress * 100}%)`
-            : undefined,
-          willChange: isTransitioning ? "clip-path" : undefined,
-        }}
+        ref={stripRef}
+        className="flex items-center will-change-transform"
+        style={{ gap }}
       >
-        {renderScrollContainer(images, scrollRef, true)}
-
-        {/* Flèches de navigation (desktop uniquement) */}
-        {!isMobile && !isTransitioning && (
-          <>
-            <button
-              onClick={goPrev}
-              className="absolute left-4 z-10 w-12 h-12 flex items-center justify-center
-                         rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40
-                         transition-colors text-white cursor-pointer"
-              aria-label="Photo précédente"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={goNext}
-              className="absolute right-4 z-10 w-12 h-12 flex items-center justify-center
-                         rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40
-                         transition-colors text-white cursor-pointer"
-              aria-label="Photo suivante"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Ligne de wipe lumineuse */}
-      {isTransitioning && (
-        <div
-          className="absolute top-0 bottom-0 z-20 pointer-events-none"
-          style={{
-            left: `${transitionProgress * 100}%`,
-            width: "3px",
-            background: "linear-gradient(to bottom, transparent 5%, rgba(251, 146, 60, 0.8) 30%, rgba(251, 146, 60, 0.9) 50%, rgba(251, 146, 60, 0.8) 70%, transparent 95%)",
-            boxShadow: "0 0 12px 3px rgba(251, 146, 60, 0.4), 0 0 30px 6px rgba(251, 146, 60, 0.15)",
-          }}
-        />
-      )}
-
-      {/* Indicateurs de position (dots) */}
-      {!isTransitioning && (
-        <div className="flex gap-1.5 mt-4 pb-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                pauseAutoPlay();
-                scrollToIndex(index);
+        {tripleImages.map((imageUrl, index) => (
+          <div
+            key={`img-${index}`}
+            className="flex-shrink-0"
+            style={{
+              width: imageWidth,
+              height: imageHeight,
+            }}
+          >
+            <img
+              src={imageUrl}
+              alt={`Photo ${(index % displayedImages.length) + 1}`}
+              className="w-full h-full object-cover rounded-xl"
+              style={{
+                boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35)",
+                userSelect: "none",
               }}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? "w-6 bg-amber-900"
-                  : "w-1.5 bg-amber-900/30"
-              }`}
-              aria-label={`Aller à l'image ${index + 1}`}
+              draggable={false}
             />
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
