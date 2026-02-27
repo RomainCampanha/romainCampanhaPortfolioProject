@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type ScrollRunnerGameProps = {
   onGameComplete: () => void;
-  onChestReached: () => void; // Nouveau callback pour quand on atteint le coffre
+  onChestReached?: () => void; // Callback optionnel pour quand on atteint le coffre
   scrollProgress: number;
 };
 
@@ -208,7 +208,7 @@ export default function ScrollRunnerGame({
       // Vérifier si on a atteint le coffre
       if (adjustedProgress >= 0.95 && !chestReached) {
         setChestReached(true);
-        onChestReached();
+        onChestReached?.();
       }
 
       // === DESSINER LES OBSTACLES ===

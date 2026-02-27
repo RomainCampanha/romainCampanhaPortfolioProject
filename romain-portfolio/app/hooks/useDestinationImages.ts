@@ -10,19 +10,22 @@ const DESTINATIONS_CONFIG = {
     title: "SEOUL",
     country: "SOUTH KOREA",
     date: "2023",
-    color: "#DC2626", // Rouge
+    color: "#DC2626",
+    coords: { lat: 37.5, lng: 127.0 },
   },
   Toronto: {
     title: "TORONTO",
     country: "CANADA",
     date: "2024",
-    color: "#2563EB", // Bleu
+    color: "#2563EB",
+    coords: { lat: 43.7, lng: -79.4 },
   },
   BrightonDubrovnik: {
     title: "BRIGHTON & DUBROVNIK",
     country: "UK & CROATIA",
     date: "2024",
-    color: "#059669", // Vert
+    color: "#059669",
+    coords: { lat: 50.8, lng: -0.1 },
   },
 };
 
@@ -33,20 +36,14 @@ export function useDestinationImages(destination: Destination) {
   useEffect(() => {
     async function loadImages() {
       setLoading(true);
-      
-      // Pour l'instant, on simule avec des images de 1 à 12
-      // Dans un vrai projet Next.js, on utiliserait fs.readdir côté serveur
+
       const imageUrls: string[] = [];
-      
-      // Charger 12 images
+
       for (let i = 1; i <= 12; i++) {
         const url = `/PhotoSitePortfolio/${destination}/${i}.jpeg`;
         imageUrls.push(url);
       }
-      
-      // On pourrait aussi vérifier si les images existent avec fetch
-      // Mais pour l'instant on suppose qu'elles sont là
-      
+
       setImages(imageUrls);
       setLoading(false);
     }
@@ -54,8 +51,8 @@ export function useDestinationImages(destination: Destination) {
     loadImages();
   }, [destination]);
 
-  return { 
-    images, 
+  return {
+    images,
     loading,
     config: DESTINATIONS_CONFIG[destination]
   };

@@ -4,14 +4,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 type HorizontalSnapCarouselProps = {
   images: string[];
-  nextImages?: string[];
-  transitionProgress?: number; // 0 à 1 pendant la transition
 };
 
 export default function HorizontalSnapCarousel({
   images,
-  nextImages = [],
-  transitionProgress = 0,
 }: HorizontalSnapCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -23,16 +19,11 @@ export default function HorizontalSnapCarousel({
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const touchStartXRef = useRef(0);
   const singleSetWidthRef = useRef(0);
-  const burstSpeedRef = useRef(0);
-  const hasSwappedRef = useRef(false);
-  const prevTransitionRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [displayedImages, setDisplayedImages] = useState(images);
 
   const BASE_SPEED = 0.5;
-  const BURST_MAX_SPEED = 30; // vitesse max pendant le speed burst
 
-  // Détecter mobile
+  // Detect mobile
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -40,7 +31,7 @@ export default function HorizontalSnapCarousel({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Dimensions responsive
+  // Responsive dimensions
   const getImageWidthPx = useCallback(() => {
     return isMobile ? window.innerWidth * 0.75 : 350;
   }, [isMobile]);
@@ -49,14 +40,14 @@ export default function HorizontalSnapCarousel({
     return isMobile ? 12 : 20;
   }, [isMobile]);
 
-  // Calculer la largeur d'un set complet d'images
+  // Compute width of one set of images
   const computeSingleSetWidth = useCallback(() => {
     const imgW = getImageWidthPx();
     const gap = getGapPx();
     return images.length * (imgW + gap);
   }, [images.length, getImageWidthPx, getGapPx]);
 
-  // Initialiser / reset l'offset au milieu (2e set)
+  // Init / reset offset to middle (2nd set)
   const resetOffset = useCallback(() => {
     const setW = computeSingleSetWidth();
     singleSetWidthRef.current = setW;
@@ -66,57 +57,12 @@ export default function HorizontalSnapCarousel({
     userInteractingRef.current = false;
   }, [computeSingleSetWidth]);
 
-  // === GESTION DES TRANSITIONS ENTRE DESTINATIONS ===
-
-  // Quand la transition démarre (0 → >0), préparer le swap
-  // Quand elle atteint ~0.5, swapper les images affichées
-  // Quand elle finit (retour à 0), reset propre
-  useEffect(() => {
-    const wasTransitioning = prevTransitionRef.current > 0;
-    const isNowTransitioning = transitionProgress > 0;
-
-    // Transition vient de commencer
-    if (!wasTransitioning && isNowTransitioning) {
-      hasSwappedRef.current = false;
-    }
-
-    // Midpoint : swap les images pendant le speed burst
-    if (transitionProgress >= 0.5 && !hasSwappedRef.current && nextImages.length > 0) {
-      hasSwappedRef.current = true;
-      setDisplayedImages(nextImages);
-      // Reset l'offset au milieu du loop (le blur cache la discontinuité)
-      const setW = singleSetWidthRef.current;
-      offsetXRef.current = setW;
-    }
-
-    // Transition terminée : sync avec les images réelles
-    if (wasTransitioning && !isNowTransitioning) {
-      setDisplayedImages(images);
-      hasSwappedRef.current = false;
-      resetOffset();
-    }
-
-    // Update la vitesse burst
-    burstSpeedRef.current = transitionProgress > 0
-      ? Math.sin(transitionProgress * Math.PI) * BURST_MAX_SPEED // bell curve : monte puis descend
-      : 0;
-
-    prevTransitionRef.current = transitionProgress;
-  }, [transitionProgress, nextImages, images, resetOffset]);
-
-  // Sync images quand elles changent hors transition
-  useEffect(() => {
-    if (transitionProgress === 0) {
-      setDisplayedImages(images);
-    }
-  }, [images, transitionProgress]);
-
-  // Init au montage
+  // Reset when images change
   useEffect(() => {
     resetOffset();
-  }, [resetOffset]);
+  }, [resetOffset, images]);
 
-  // Recalculer singleSetWidth au resize
+  // Recalculate on resize
   useEffect(() => {
     const handleResize = () => {
       const oldSetW = singleSetWidthRef.current;
@@ -131,7 +77,7 @@ export default function HorizontalSnapCarousel({
     return () => window.removeEventListener("resize", handleResize);
   }, [computeSingleSetWidth]);
 
-  // Pause auto et reprise progressive
+  // Pause auto-scroll and resume after timeout
   const pauseAutoAndResume = useCallback(() => {
     userInteractingRef.current = true;
     targetSpeedRef.current = 0;
@@ -142,7 +88,7 @@ export default function HorizontalSnapCarousel({
     }, 2000);
   }, []);
 
-  // === BOUCLE D'ANIMATION ===
+  // === ANIMATION LOOP ===
   useEffect(() => {
     const animate = () => {
       const setW = singleSetWidthRef.current;
@@ -151,16 +97,13 @@ export default function HorizontalSnapCarousel({
         return;
       }
 
-      // Lerp de la vitesse auto vers la cible
+      // Lerp speed towards target
       currentSpeedRef.current += (targetSpeedRef.current - currentSpeedRef.current) * 0.03;
 
-      // Vitesse totale = auto + burst (le burst overrides l'interaction user)
-      const totalSpeed = currentSpeedRef.current + burstSpeedRef.current;
+      // Advance strip
+      offsetXRef.current += currentSpeedRef.current;
 
-      // Avancer le strip
-      offsetXRef.current += totalSpeed;
-
-      // Boucle infinie : reset silencieux
+      // Infinite loop: silent reset
       if (offsetXRef.current >= setW * 2) {
         offsetXRef.current -= setW;
       }
@@ -168,13 +111,9 @@ export default function HorizontalSnapCarousel({
         offsetXRef.current += setW;
       }
 
-      // Appliquer le transform + motion blur
+      // Apply transform
       if (stripRef.current) {
         stripRef.current.style.transform = `translate3d(-${offsetXRef.current}px, 0, 0)`;
-
-        // Motion blur proportionnel à la vitesse burst
-        const blurAmount = Math.min(burstSpeedRef.current * 0.4, 10);
-        stripRef.current.style.filter = blurAmount > 0.5 ? `blur(${blurAmount}px)` : "none";
       }
 
       animFrameRef.current = requestAnimationFrame(animate);
@@ -207,7 +146,7 @@ export default function HorizontalSnapCarousel({
     pauseAutoAndResume();
   }, [pauseAutoAndResume]);
 
-  // Attacher les events sur le container
+  // Attach events
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -228,8 +167,8 @@ export default function HorizontalSnapCarousel({
   const imageHeight = isMobile ? "50vh" : "500px";
   const gap = isMobile ? "12px" : "20px";
 
-  // Images triplées pour la boucle infinie
-  const tripleImages = [...displayedImages, ...displayedImages, ...displayedImages];
+  // Triple images for infinite loop
+  const tripleImages = [...images, ...images, ...images];
 
   return (
     <div
@@ -237,7 +176,6 @@ export default function HorizontalSnapCarousel({
       className="relative w-full h-full flex items-center overflow-hidden"
       style={{ cursor: "grab" }}
     >
-      {/* Strip unique avec speed burst + motion blur */}
       <div
         ref={stripRef}
         className="flex items-center will-change-transform"
@@ -254,7 +192,7 @@ export default function HorizontalSnapCarousel({
           >
             <img
               src={imageUrl}
-              alt={`Photo ${(index % displayedImages.length) + 1}`}
+              alt={`Photo ${(index % images.length) + 1}`}
               className="w-full h-full object-cover rounded-xl"
               style={{
                 boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35)",
