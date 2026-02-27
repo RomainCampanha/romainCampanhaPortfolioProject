@@ -194,13 +194,13 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     // Seulement pour Home desktop
     if (theme !== "home" || isMobile) return 0;
 
-    // Desktop Home accueil/parcours : décaler vers la droite
-    if (progress < 0.38) return 0.5;
+    // Desktop Home accueil/parcours : décaler vers la droite (léger)
+    if (progress < 0.38) return 0.25;
 
     // Transition vers compétences : revenir au centre
     if (progress < 0.44) {
       const t = (progress - 0.38) / 0.06;
-      return 0.5 * (1 - t);
+      return 0.25 * (1 - t);
     }
 
     // Compétences + Contact : centré

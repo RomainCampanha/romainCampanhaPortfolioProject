@@ -170,9 +170,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Bulle Compétences */}
+          {/* Bulle Compétences — au-dessus du personnage avec typing au scroll */}
           {showCompetencesBubble && (
-            <div className="fixed inset-0 flex items-center justify-center z-20 pointer-events-none">
+            <div className="fixed inset-0 z-20 pointer-events-none flex flex-col items-center"
+                 style={{ paddingTop: isMobile ? '22vh' : '18vh' }}>
               <div
                 className="pointer-events-auto"
                 style={{
