@@ -46,22 +46,22 @@ function Rig({ progress, theme, isMobile }: RigProps) {
       return isMobile ? CHATBOT_POS_MOBILE : CHATBOT_POS_DESKTOP;
     }
     
-    // Home : transition vers compétences à partir de 55%
+    // Home : transition vers compétences à partir de 38%
     const startPos = isMobile ? START_POS_MOBILE : START_POS;
     const skillsPos = isMobile ? SKILLS_POS_MOBILE : SKILLS_POS;
-    
-    // Avant 55% : position de départ
-    if (progress < 0.55) {
+
+    // Avant 38% : position de départ
+    if (progress < 0.38) {
       return startPos;
     }
-    
-    // 55% - 60% : transition fluide vers compétences
-    if (progress < 0.60) {
-      const t = (progress - 0.55) / 0.05; // 0 → 1
+
+    // 38% - 44% : transition fluide vers compétences
+    if (progress < 0.44) {
+      const t = (progress - 0.38) / 0.06; // 0 → 1
       return new THREE.Vector3().lerpVectors(startPos, skillsPos, t);
     }
-    
-    // Après 60% : position compétences
+
+    // Après 44% : position compétences
     return skillsPos;
   };
   
@@ -123,12 +123,12 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     }
 
     // Home : transition pour compétences
-    if (progress >= 0.55) {
+    if (progress >= 0.38) {
       const baseY = isMobile ? 0.1 : 0.3;
       const skillsY = isMobile ? -0.2 : -0.3;
 
-      if (progress < 0.60) {
-        const t = (progress - 0.55) / 0.05;
+      if (progress < 0.44) {
+        const t = (progress - 0.38) / 0.06;
         return baseY + (skillsY - baseY) * t;
       }
       return skillsY;
@@ -147,7 +147,7 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     const baseScale = isMobile ? 1.6 : 1.2;
 
     // 🔥 Mobile parcours : rétrécir le personnage
-    if (isMobile && phase === "run" && progress < 0.55) {
+    if (isMobile && phase === "run" && progress < 0.38) {
       return 1.3; // Plus petit sur parcours mobile
     }
 
@@ -156,11 +156,11 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     }
 
     // Home : ajuster pour compétences
-    if (progress >= 0.55) {
+    if (progress >= 0.38) {
       const skillsScale = isMobile ? baseScale * 0.9 : baseScale * 0.85;
 
-      if (progress < 0.60) {
-        const t = (progress - 0.55) / 0.05;
+      if (progress < 0.44) {
+        const t = (progress - 0.38) / 0.06;
         return baseScale + (skillsScale - baseScale) * t;
       }
       return skillsScale;
@@ -184,15 +184,15 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     if (theme !== "home" || isMobile) return 0;
 
     // Desktop Home accueil/parcours : décaler vers la droite
-    if (progress < 0.55) return 0.5;
+    if (progress < 0.38) return 0.5;
 
     // Transition vers compétences : revenir au centre
-    if (progress < 0.60) {
-      const t = (progress - 0.55) / 0.05;
+    if (progress < 0.44) {
+      const t = (progress - 0.38) / 0.06;
       return 0.5 * (1 - t);
     }
 
-    // Compétences : centré
+    // Compétences + Contact : centré
     return 0;
   };
 
