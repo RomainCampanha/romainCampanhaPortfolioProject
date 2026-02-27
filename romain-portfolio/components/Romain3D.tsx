@@ -155,7 +155,7 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
       return isMobile ? 2.3 : 1.6;
     }
 
-    // Home : ajuster pour compétences
+    // Home : ajuster pour compétences + contact
     if (progress >= 0.38) {
       const skillsScale = isMobile ? baseScale * 0.9 : baseScale * 0.85;
 
@@ -163,6 +163,17 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
         const t = (progress - 0.38) / 0.06;
         return baseScale + (skillsScale - baseScale) * t;
       }
+
+      // 📱 Mobile contact : agrandir le personnage
+      if (isMobile && progress >= 0.70) {
+        const contactScale = 1.8;
+        if (progress < 0.76) {
+          const t = (progress - 0.70) / 0.06;
+          return skillsScale + (contactScale - skillsScale) * t;
+        }
+        return contactScale;
+      }
+
       return skillsScale;
     }
 
