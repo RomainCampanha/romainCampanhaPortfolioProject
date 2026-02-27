@@ -8,7 +8,7 @@ import type { Group } from "three";
 
 // === POSITIONS DE CAMÉRA ===
 // Accueil/Parcours - Desktop décalé à gauche, caméra à hauteur des yeux
-const START_POS = new THREE.Vector3(-0.55, -0.1, 3.0);
+const START_POS = new THREE.Vector3(0, -0.1, 3.0);
 const START_POS_MOBILE = new THREE.Vector3(0, 0.15, 3.2);   // Mobile : garder le zoom d'origine
 
 // Compétences : caméra centrée et légèrement reculée
@@ -95,6 +95,7 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
   const group = useRef<Group>(null!);
 
   // Refs pour les animations fluides
+  const currentX = useRef(0);
   const currentY = useRef(0);
   const currentScale = useRef(1);
   const currentRotY = useRef(0);
@@ -176,26 +177,48 @@ function Model({ url, isMobile, phase, progress, theme, rotationY = 0 }: {
     // Home/Hobby
     return isMobile ? 1 : 0.35;
   };
-  
+
+  // 🎯 OFFSET X : décaler le personnage vers la droite (desktop Home accueil/parcours uniquement)
+  const getTargetX = () => {
+    // Seulement pour Home desktop
+    if (theme !== "home" || isMobile) return 0;
+
+    // Desktop Home accueil/parcours : décaler vers la droite
+    if (progress < 0.55) return 0.5;
+
+    // Transition vers compétences : revenir au centre
+    if (progress < 0.60) {
+      const t = (progress - 0.55) / 0.05;
+      return 0.5 * (1 - t);
+    }
+
+    // Compétences : centré
+    return 0;
+  };
+
   useFrame(() => {
     if (!group.current) return;
     
+    const targetX = getTargetX();
     const targetY = getTargetY() + getYOffset(); // Applique l'offset
     const targetScale = getTargetScale();
-    
+
     // Initialiser au premier frame
     if (!initialized.current) {
+      currentX.current = targetX;
       currentY.current = targetY;
       currentScale.current = targetScale;
       currentRotY.current = rotationY;
       initialized.current = true;
     }
 
-    // Lerp fluide pour Y, Scale et Rotation
+    // Lerp fluide pour X, Y, Scale et Rotation
+    currentX.current += (targetX - currentX.current) * 0.08;
     currentY.current += (targetY - currentY.current) * 0.08;
     currentScale.current += (targetScale - currentScale.current) * 0.08;
     currentRotY.current += (rotationY - currentRotY.current) * 0.1;
 
+    group.current.position.x = currentX.current;
     group.current.position.y = currentY.current;
     group.current.scale.setScalar(currentScale.current);
     group.current.rotation.y = currentRotY.current;
