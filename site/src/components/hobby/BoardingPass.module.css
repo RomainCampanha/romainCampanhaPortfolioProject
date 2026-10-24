@@ -1,48 +1,719 @@
-/* Carte d'embarquement : deux parties (billet + talon photos) séparées par une
-   ligne perforée, avec des encoches demi-cercle découpées par un masque CSS
-   (le fond dégradé de la page reste visible à travers). */
+/* ==========================================================================
+   Carte d'embarquement « Cosy » (maquette : scratchpad/da/cosy, bande Hobby).
+   Billet crème en argile (ClayCard) : photo | billet | talon (tampon + code-barres),
+   séparés par une perforation avec encoches. Mise en page selon la largeur de la CARTE
+   (container queries) : empilée (< 34rem), photo | billet + talon en bas (34rem+),
+   trois colonnes (50rem+). Puis l'album déplié, l'anecdote (post-it) et la visionneuse.
+   Couleurs, ombres, polices : tokens du design system (globals.css).
+   ========================================================================== */
 
-.pass {
-  --notch: 0.8rem;
-  --paper: #fffaf0;
-  /* L'ombre est portée par le parent : un masque couperait box-shadow. */
-  filter: drop-shadow(0 10px 18px rgb(59 36 16 / 0.18)) drop-shadow(0 2px 3px rgb(59 36 16 / 0.15));
+/* ---------- Liste : les derniers voyages en grand, les plus anciens en cartes compactes ---------- */
+.passes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem 1.5rem;
+}
+.passFull {
+  grid-column: 1 / -1;
+  margin-block-end: 1.25rem;
+}
+.passCompact {
+  min-inline-size: 0;
+}
+@media (min-width: 40rem) {
+  .passes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2.25rem;
+  }
 }
 
-.ticket,
-.stub {
-  background: var(--paper);
-  color: #3b2410;
+.article {
+  container: pass / inline-size;
+  scroll-margin-block-start: 1.5rem;
 }
 
-.ticket {
-  border-radius: 1.25rem 1.25rem 0 0;
-  overflow: hidden;
-  mask:
-    radial-gradient(circle at 0 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
-    radial-gradient(circle at 100% 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+/* ---------- Carte ---------- */
+.card {
+  --pass-perf: var(--theme-edge);
+  --pass-notch-shade: color-mix(in srgb, var(--color-clay-edge) 12%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "photo"
+    "main"
+    "stub";
 }
 
-.stub {
+/* ---------- Photo de couverture (bouton -> visionneuse) ---------- */
+.photo {
+  grid-area: photo;
   position: relative;
-  border-radius: 0 0 1.25rem 1.25rem;
-  mask:
-    radial-gradient(circle at 0 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
-    radial-gradient(circle at 100% 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+  padding: 0.75rem 0.75rem 0;
 }
 
-/* Perforation entre les encoches */
-.stub::before {
+.photoFrame {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 5 / 4;
+  padding: 0;
+  border: 0;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: var(--color-peach-100);
+  cursor: zoom-in;
+}
+
+.photoImg {
+  object-fit: cover;
+  object-position: 50% 40%;
+  transition: scale 0.5s var(--ease-squish);
+}
+.photoFrame:hover .photoImg {
+  scale: 1.035;
+}
+
+/* Compteur « 1 / 8 » (décoratif : le nombre de photos est écrit sur le billet) */
+.counter {
+  position: absolute;
+  inset-inline-start: 0.875rem;
+  inset-block-end: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.5625rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  color: var(--color-cream);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pas encore de photos : emplacement en pointillés */
+.photoSoon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-block-size: 12rem;
+  padding: 1.25rem;
+  border: 2.5px dashed var(--theme-dash);
+  border-radius: 1.5rem;
+  color: var(--theme-accent);
+  text-align: center;
+}
+.photoSoon p {
+  color: var(--theme-fg);
+}
+
+/* ---------- Billet ---------- */
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  padding: 1.25rem 1.375rem 1.5rem;
+}
+
+.band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block-end: 0.875rem;
+  border-block-end: 2px dashed var(--theme-line);
+  color: var(--theme-accent);
+  font-size: 0.78125rem;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.band :global(.icon) {
+  color: var(--color-clay);
+  fill: var(--color-peach-200);
+}
+
+.label {
+  margin-block-start: 1.375rem;
+  color: var(--theme-accent);
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.city {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.875rem;
+  margin-block-start: 0.25rem;
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-weight: 660;
+  font-size: clamp(2.75rem, 15cqi, 3.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  overflow-wrap: break-word;
+}
+/* Plusieurs villes (Brighton & Dubrovnik) ou nom long : une ville par ligne, un cran plus petit */
+.city[data-long] {
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: clamp(2.25rem, 11cqi, 2.875rem);
+  line-height: 1;
+}
+.cityName {
+  min-inline-size: 0;
+}
+
+/* Nom dans l'écriture d'origine (서울) : Jua, argile */
+.native {
+  font-size: 0.42em;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--color-clay);
+}
+
+.country {
+  margin-block-start: 0.375rem;
+  color: var(--theme-muted);
+  font-size: 1.125rem;
+  font-weight: 750;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.875rem 1.75rem;
+  margin-block-start: 1.5rem;
+}
+.fields dt {
+  color: var(--theme-accent);
+  font-size: 0.71875rem;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fields dd {
+  margin: 0.125rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+
+/* Bouton « Voir les N photos » : chevron retourné quand l'album est ouvert */
+.toggle {
+  align-self: flex-start;
+  margin-block-start: 1.625rem;
+}
+.toggle :global(.icon) {
+  transition: rotate 0.25s var(--ease-squish);
+}
+.toggle[aria-expanded="true"] :global(.icon) {
+  rotate: 180deg;
+}
+
+/* ---------- Talon : perforation + encoches, tampon, code-barres ---------- */
+.stub {
+  grid-area: stub;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.375rem 1.625rem;
+  border-block-start: 3px dashed var(--pass-perf);
+}
+
+/* Encoches : demi-disques de la couleur de la bande, aux deux bouts de la perforation */
+.stub::before,
+.stub::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: calc(var(--notch) + 0.5rem);
-  right: calc(var(--notch) + 0.5rem);
-  border-top: 2px dashed rgb(59 36 16 / 0.28);
+  inset-block-start: -16.5px;
+  inline-size: 15px;
+  block-size: 30px;
+  background-color: var(--theme-band);
+  background-image: var(--texture-grain);
+}
+.stub::before {
+  inset-inline-start: 0;
+  border-radius: 0 15px 15px 0;
+  box-shadow: inset -3px 0 3px -1px var(--pass-notch-shade);
+}
+.stub::after {
+  inset-inline-end: 0;
+  border-radius: 15px 0 0 15px;
+  box-shadow: inset 3px 0 3px -1px var(--pass-notch-shade);
 }
 
-/* Bandeau du haut : brun foncé, texte jaune (contraste élevé) */
-.band {
-  background: linear-gradient(90deg, #3b2410, #5a3417);
-  color: #ffd95a;
+.stamp {
+  display: block;
+  flex: none;
+  inline-size: 7rem;
+  aspect-ratio: 1;
+  color: var(--tone-800);
+  opacity: 0.9;
+  rotate: var(--stamp-tilt, -12deg);
+}
+.stamp svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+.stampArc {
+  fill: currentColor;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.stampYear {
+  fill: currentColor;
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "opsz" 72;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.barcode {
+  display: block;
+  flex: 1;
+  min-inline-size: 0;
+  max-inline-size: 13rem;
+  block-size: 4rem;
+  color: var(--color-ink);
+  opacity: 0.85;
+}
+
+/* Très petite carte (320 px) : bandeau sur une ligne */
+@container pass (max-width: 21rem) {
+  .band {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* ---------- 34rem+ : photo | billet, talon en bas ---------- */
+@container pass (min-width: 34rem) {
+  .card {
+    grid-template-columns: minmax(12rem, 40%) minmax(0, 1fr);
+    grid-template-areas:
+      "photo main"
+      "stub stub";
+  }
+  .photo {
+    min-block-size: 20rem;
+    padding: 0;
+  }
+  .photo > .photoFrame,
+  .photo > .photoSoon {
+    position: absolute;
+    inset: 0.875rem 0 0.875rem 0.875rem;
+    inline-size: auto;
+    aspect-ratio: auto;
+  }
+  .main {
+    padding: 1.75rem 1.75rem 1.875rem 1.5rem;
+  }
+  .city {
+    font-size: clamp(2.75rem, 9cqi, 4rem);
+  }
+  .city[data-long] {
+    font-size: clamp(2.25rem, 6.5cqi, 3rem);
+  }
+  .stub {
+    justify-content: flex-start;
+    gap: 2rem;
+    padding-inline: 1.75rem;
+  }
+  .barcode {
+    max-inline-size: 16rem;
+  }
+}
+
+/* ---------- 50rem+ : photo | billet | talon (comme la maquette desktop) ---------- */
+@container pass (min-width: 50rem) {
+  .card {
+    grid-template-columns: 16rem minmax(0, 1fr) 11.5rem;
+    grid-template-areas: "photo main stub";
+  }
+  .photo {
+    min-block-size: 22.5rem;
+  }
+  .main {
+    padding: 1.875rem 2.125rem 2rem 1.375rem;
+  }
+  .city {
+    font-size: clamp(3rem, 7.6cqi, 4.75rem);
+  }
+  .city[data-long] {
+    font-size: clamp(2.25rem, 5.2cqi, 3.25rem);
+  }
+  .stub {
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2.125rem 1.625rem 1.75rem;
+    border-block-start: 0;
+    border-inline-start: 3px dashed var(--pass-perf);
+  }
+  .stub::before,
+  .stub::after {
+    inset-inline: -16.5px auto;
+    inline-size: 30px;
+    block-size: 15px;
+  }
+  .stub::before {
+    inset-block-start: 0;
+    border-radius: 0 0 15px 15px;
+    box-shadow: inset 0 -3px 3px -1px var(--pass-notch-shade);
+  }
+  .stub::after {
+    inset-block: auto 0;
+    border-radius: 15px 15px 0 0;
+    box-shadow: inset 0 3px 3px -1px var(--pass-notch-shade);
+  }
+  .stamp {
+    inline-size: 8.75rem;
+  }
+  .barcode {
+    flex: none;
+    inline-size: 100%;
+    max-inline-size: none;
+    block-size: 3.375rem;
+  }
+}
+
+/* ---------- Carte compacte (voyages plus anciens) ----------
+   Photo en bande verticale | destination (+ tampon en coin dès 22rem) ; puis année, photos et
+   bouton de l'album. Même article (id, album, visionneuse, anecdote) que la grande carte. */
+.mini {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "photo main"
+    "photo foot"
+    "photo toggle";
+  grid-template-rows: auto auto 1fr;
+}
+.miniPhoto {
+  grid-area: photo;
+  display: flex;
+  padding: 0.625rem 0 0.625rem 0.625rem;
+}
+.miniPhoto > .photoFrame,
+.miniPhoto > .photoSoon {
+  flex: 1;
+  aspect-ratio: auto;
+  min-block-size: 7rem;
+  border-radius: 1.125rem;
+}
+.miniPhoto > .photoSoon {
+  padding: 0.5rem;
+  border-width: 2px;
+}
+/* Le nombre de photos est écrit sur la carte : pas de compteur sur la petite photo */
+.miniPhoto .counter {
+  display: none;
+}
+.miniMain {
+  grid-area: main;
+  min-inline-size: 0;
+  padding: 1rem 1rem 0 1.125rem;
+}
+.miniMain > .label {
+  margin-block-start: 0;
+}
+.miniCity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  margin-block-start: 0.125rem;
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-weight: 660;
+  font-size: 2.125rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  overflow-wrap: break-word;
+}
+.miniCity[data-long] {
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.75rem;
+  line-height: 1.02;
+}
+.miniCountry {
+  margin-block-start: 0.25rem;
+  color: var(--theme-muted);
+  font-size: 0.9375rem;
+  font-weight: 750;
+}
+.miniFields {
+  grid-area: foot;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  padding: 0.875rem 1rem 1.125rem 1.125rem;
+}
+.miniFields dt {
+  color: var(--theme-accent);
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.miniFields dd {
+  margin: 0.125rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+/* Le bouton de l'album rejoint la ligne année / photos (pied de carte) */
+.mini:has(.miniToggle) .miniFields {
+  padding-block-end: 0;
+}
+.miniToggle {
+  grid-area: toggle;
+  align-self: end;
+  justify-self: start;
+  margin: 0.875rem 1rem 1.125rem 1.125rem;
+}
+/* Tampon composté en coin (décoratif), dès que la carte a la place */
+.miniStamp {
+  display: none;
+}
+@container pass (min-width: 22rem) {
+  .mini {
+    grid-template-columns: 6.25rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "photo main stamp"
+      "photo foot foot"
+      "photo toggle toggle";
+  }
+  .miniStamp {
+    display: block;
+    grid-area: stamp;
+    inline-size: 4.5rem;
+    margin: 0.625rem 0.75rem 0 0;
+  }
+}
+
+/* ---------- Album déplié : vignettes « polaroïd » dans un plateau en creux ---------- */
+.tray {
+  margin-block-start: 1.25rem;
+  padding: 0.875rem;
+  border-radius: var(--radius-clay-xl);
+  background: color-mix(in srgb, var(--color-cream) 45%, transparent);
+  box-shadow: var(--shadow-well);
+}
+
+.trayList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.875rem;
+}
+
+.thumb {
+  display: block;
+  inline-size: 100%;
+  padding: 0.375rem;
+  border: 0;
+  border-radius: var(--radius-clay-md);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-clay-sm);
+  cursor: zoom-in;
+  rotate: -1.2deg;
+  transition:
+    rotate 0.2s ease,
+    translate 0.2s ease;
+}
+.trayList > li:nth-child(even) .thumb {
+  rotate: 1deg;
+}
+.trayList > li:nth-child(3n) .thumb {
+  rotate: -0.4deg;
+}
+.thumb:hover,
+.thumb:focus-visible {
+  rotate: 0deg;
+  translate: 0 -3px;
+}
+
+.thumbImg {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-clay-sm);
+  overflow: hidden;
+  background: var(--color-peach-100);
+}
+.thumbImg img {
+  object-fit: cover;
+}
+
+@container pass (min-width: 28rem) {
+  .trayList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container pass (min-width: 34rem) {
+  .tray {
+    padding: 1.25rem;
+  }
+  .trayList {
+    gap: 1.125rem;
+  }
+}
+@container pass (min-width: 40rem) {
+  .trayList {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container pass (min-width: 50rem) {
+  .trayList {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Anecdote : post-it beurre, scotché sur le bas de la carte ---------- */
+.anecdote {
+  position: relative;
+  z-index: 1;
+  margin: -0.5rem 0.75rem 0;
+  padding: 1.25rem 1.25rem 1.125rem;
+  border-radius: var(--radius-clay-sm);
+  background: var(--color-butter-100);
+  color: var(--color-ink);
+  box-shadow:
+    inset 0 2px 0 color-mix(in srgb, var(--color-cream) 80%, transparent),
+    0 4px 0 var(--color-butter-300),
+    var(--shadow-float);
+  rotate: -1.2deg;
+}
+/* Bout de scotch */
+.anecdote::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -0.625rem;
+  inset-inline-start: 50%;
+  inline-size: 4.5rem;
+  block-size: 1.25rem;
+  translate: -50% 0;
+  rotate: 3deg;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-cream) 72%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-clay-edge) 18%, transparent);
+}
+.tray:not([hidden]) ~ .anecdote {
+  margin-block-start: 1.5rem;
+}
+.anecdoteLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-butter-800);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@container pass (min-width: 34rem) {
+  .anecdote {
+    max-inline-size: 30rem;
+    margin: -0.75rem 2rem 0 auto;
+  }
+}
+
+/* ---------- Visionneuse (dialog modal) ---------- */
+.lightbox {
+  /* margin: auto = centrage natif du dialog modal (remis à 0 par le preflight Tailwind) */
+  margin: auto;
+  inline-size: min(calc(100vw - 1.5rem), 60rem);
+  max-inline-size: none;
+  max-block-size: calc(100dvh - 1.5rem);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-clay-xl);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  box-shadow:
+    0 7px 0 var(--color-cream-edge),
+    0 40px 80px -30px color-mix(in srgb, var(--color-ink) 60%, transparent);
+  overflow: hidden;
+}
+.lightbox::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  backdrop-filter: blur(4px);
+}
+/* Pas de défilement de la page derrière la visionneuse */
+:global(html):has(.lightbox[open]) {
+  overflow: hidden;
+}
+
+.lightboxInner {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.lightboxBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline-start: 0.75rem;
+}
+.lightboxTitle {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.lightboxFigure {
+  position: relative;
+  margin: 0;
+  block-size: min(44rem, calc(100dvh - 12.5rem));
+  min-block-size: 12rem;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: var(--color-oat-deep);
+  touch-action: pan-y;
+}
+.lightboxImg {
+  object-fit: contain;
+}
+
+.lightboxNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-block-end: 0.25rem;
+}
+.lightboxCounter {
+  min-inline-size: 9rem;
+  color: var(--theme-muted);
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* Flèche « précédente » : la flèche droite retournée */
+.prev :global(.icon) {
+  scale: -1 1;
 }

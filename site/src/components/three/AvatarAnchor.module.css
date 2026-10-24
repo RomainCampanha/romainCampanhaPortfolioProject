@@ -1,18 +1,221 @@
-/* Ancre de Rominou : réserve l'espace (hauteur définie par globals.css ou className). */
-.anchor {
-  position: relative;
+/* ==========================================================================
+   Cadres de Rominou (DA Cosy) — structure :
+   .frame (l'ancre : taille explicite, conteneur de requêtes)
+     .window (fenêtre en argile : bordure crème, épaisseur, ombre, ciel)
+       .overlay (children de la page, ex. bulle : en haut, dans le flux)
+       .ground (la scène sous la bulle, découpée aux arrondis ; unités cqh / cqw)
+         .decor (décor SVG)
+         .figure > [île | serviette] + .contact (ombre) + .floater > .box (poster + Canvas)
+       .chip (légende « Genève »)
+     .tour (carte « Visite du site », déborde en bas à droite)
+   Réglages par page (CSS module de la page ou utilitaires, sur l'ancre) :
+   --rominou-h (hauteur de la boîte 2:3, cf. stage-config.json), --rominou-x (axe),
+   --rominou-feet (pieds au-dessus du bas de la scène) ou --rominou-top (buste : haut de la boîte).
+   ========================================================================== */
+
+/* Conteneur de requêtes (indispensable : hauteur explicite requise). */
+.frame {
   container-type: size;
-  pointer-events: none;
 }
 
-/* Boîte de scène au ratio fixe (2:3), centrée et "contain" dans l'ancre :
-   le poster et le Canvas 3D partagent exactement ce cadre. */
+/* Carte « Visite du site » : place sous le cadre pour son débordement (couche components :
+   surchargeable par la page ; inutile quand la carte est masquée, cadre étroit < 15rem). */
+@layer components {
+  .frame {
+    position: relative;
+    pointer-events: none;
+  }
+  .frame[data-tour] {
+    margin-block-end: 1.75rem;
+  }
+}
+
+/* ---------- Réglages des décors ----------
+   Les pages règlent --rominou-h / -x / -feet / -top sur l'ancre ; sinon les valeurs du décor
+   (--scene-*, posées sur .window, adaptées à la taille du cadre) s'appliquent. */
+.window {
+  --scene-h: min(100cqh, 150cqw);
+  --scene-x: 50cqw;
+  --scene-feet: 8cqh;
+  --contact-tint: color-mix(in srgb, var(--color-clay-edge) 30%, transparent);
+}
+
+/* Pro : Genève, Rominou sur son île, axe un peu à droite (le jet d'eau à gauche) */
+.frame[data-scene="geneva"] .window {
+  --scene-h: min(80cqh, 132cqw);
+  --scene-x: 57cqw;
+  --scene-feet: 9.5cqh;
+  --scene-sky: linear-gradient(
+    180deg,
+    var(--color-lake-200) 0%,
+    color-mix(in srgb, var(--color-oat) 70%, var(--color-peach-100)) 62%,
+    color-mix(in srgb, var(--color-peach-100) 70%, var(--color-peach-200)) 100%
+  );
+  --scene-drop: rgb(92 64 40 / 0.45);
+  --contact-tint: color-mix(in srgb, var(--color-sage-800) 34%, transparent);
+}
+
+/* Hobby : plage au coucher du soleil */
+.frame[data-scene="beach"] .window {
+  --scene-h: min(84cqh, 138cqw);
+  --scene-x: 54cqw;
+  --scene-feet: 8.5cqh;
+  --scene-sky: linear-gradient(
+    180deg,
+    var(--color-lilac-200) 0%,
+    var(--color-peach-200) 42%,
+    var(--color-butter-100) 72%
+  );
+  --scene-drop: rgb(124 53 25 / 0.32);
+  --contact-tint: color-mix(in srgb, var(--color-clay-edge) 28%, transparent);
+}
+
+/* Chat : ciel du soir, Rominou en buste coupé par le bas du cadre */
+.frame[data-scene="dusk"] .window {
+  --scene-h: min(135cqh, 100cqw);
+  --scene-x: 60cqw;
+  --scene-top: -15cqh;
+  --scene-sky: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-lilac-500) 80%, var(--color-lilac-800)) 0%,
+    var(--color-lilac-300) 55%,
+    var(--color-peach-200) 100%
+  );
+  --scene-drop: rgb(91 71 143 / 0.5);
+}
+
+/* Cadre de Genève étroit (mobile) : l'île remonte un peu, la carte « Visite du site » ne mord
+   que son bord (comme la maquette) */
+@container (max-width: 25.99rem) {
+  .frame[data-scene="geneva"][data-tour] .window {
+    --scene-x: 55cqw;
+    --scene-feet: 13cqh;
+  }
+}
+
+/* ---------- Fenêtre en argile ---------- */
+.window {
+  --frame-border: 6px;
+  --frame-radius: 26px;
+  --frame-depth: 6px;
+  --frame-inner: calc(var(--frame-radius) - var(--frame-border));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border: var(--frame-border) solid var(--color-cream);
+  border-radius: var(--frame-radius);
+  background: var(--scene-sky, var(--color-lake-200));
+  box-shadow:
+    0 var(--frame-depth) 0 var(--theme-edge),
+    0 40px 60px -30px var(--scene-drop, rgb(92 64 40 / 0.45));
+}
+
+@container (min-width: 14rem) {
+  .window {
+    --frame-border: 8px;
+    --frame-radius: 34px;
+    --frame-depth: 7px;
+  }
+}
+
+@container (min-width: 26rem) and (min-height: 34rem) {
+  .window {
+    --frame-border: 10px;
+    --frame-radius: 44px;
+    --frame-depth: 8px;
+  }
+}
+
+/* Sans décor : Rominou seul, centré (ancien comportement), avec son ombre */
+.frame[data-scene="none"] .window {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* Décor : remplit le sol (sous une éventuelle bulle dans le flux : rien de caché derrière) ;
+   le ciel de la fenêtre (--scene-sky) continue derrière la bulle */
+.decor {
+  position: absolute;
+  inset: 0;
+}
+
+.overlay {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+.ground {
+  position: relative;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  container-type: size;
+  overflow: hidden;
+  border-radius: var(--frame-inner);
+}
+
+.frame[data-scene="none"] .ground {
+  overflow: visible;
+}
+
+/* ---------- Rominou ---------- */
+.figure {
+  --fig-h: var(--rominou-h, var(--scene-h));
+  --fig-w: calc(var(--fig-h) * var(--stage-aspect, 0.6667));
+  position: absolute;
+  inline-size: var(--fig-w);
+  block-size: var(--fig-h);
+  inset-inline-start: calc(var(--rominou-x, var(--scene-x)) - var(--fig-w) / 2);
+  /* Pieds (ligne --feet-frac de la boîte) à --rominou-feet du bas */
+  inset-block-end: calc(var(--rominou-feet, var(--scene-feet)) - var(--fig-h) * (1 - var(--feet-frac)));
+}
+
+/* Remplissage (fit="fill") : sans hauteur imposée par la page, Rominou grandit jusqu'à ce que
+   le haut de ses cheveux (--head-frac) arrive à --rominou-head-gap du haut de la scène (juste
+   sous la queue de la bulle dans le flux), pieds sur la ligne du sol : quelle que soit la
+   longueur du texte (FR / EN). Le ciel vide au-dessus de la tête est rogné par la scène.
+   Plafonnée par la largeur (cadre très large et bas). */
+.frame[data-fit="fill"] .figure {
+  --fig-h: var(
+    --rominou-h,
+    min(
+      calc(
+        (100cqh - var(--rominou-feet, var(--scene-feet)) - var(--rominou-head-gap, 1.25rem)) /
+          (var(--feet-frac) - var(--head-frac))
+      ),
+      140cqw
+    )
+  );
+}
+
+/* Buste (chat) : boîte placée par son haut */
+.frame[data-scene="dusk"] .figure {
+  /* …sans jamais remonter au-dessus du bas du cadre (cadre portrait, tablette) : le buste reste
+     coupé par le bord bas, il ne flotte pas au-dessus du lac */
+  inset-block-start: max(var(--rominou-top, var(--scene-top)), calc(100cqh - var(--fig-h)));
+  inset-block-end: auto;
+}
+
+/* Sans décor : boîte centrée et contenue dans l'ancre */
+.frame[data-scene="none"] .figure {
+  inset-block-start: calc(50cqh - var(--fig-h) / 2);
+  inset-block-end: auto;
+}
+
+/* Flottement doux (coupé si mouvement réduit) */
+.floater {
+  position: absolute;
+  inset: 0;
+  animation: rominou-float 4.5s ease-in-out infinite;
+}
+
+/* Boîte de scène (2:3) : le poster et le Canvas 3D partagent exactement ce cadre */
 .box {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  max-width: 100%;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -38,13 +241,268 @@
   inset: 0;
 }
 
-/* Cadrage buste (chat) : fondu en bas plutôt qu'une coupe nette du corps et des mains. */
-.anchor[data-avatar-anchor="chat"] .box {
+/* Sans décor, cadrage buste : fondu en bas plutôt qu'une coupe nette */
+.frame[data-scene="none"][data-avatar-anchor="chat"] .box {
   mask-image: linear-gradient(to bottom, #000 72%, transparent 98%);
 }
 
+/* Ombre de contact sous les pieds : se resserre quand Rominou s'élève */
+.contact {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: calc(var(--feet-frac) * 100% - var(--fig-h) * 0.012);
+  inline-size: 52%;
+  block-size: calc(var(--fig-h) * 0.045);
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--contact-tint), transparent);
+  animation: rominou-contact 4.5s ease-in-out infinite;
+}
+
+/* ---------- Bulle « … » du chat (pendant que Rominou écrit) ---------- */
+.typing {
+  position: absolute;
+  z-index: 1;
+  inset-inline-end: 91%;
+  inset-block-start: 27%;
+  display: inline-flex;
+  gap: 0.3125rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 1.25rem 1.25rem 0.375rem 1.25rem;
+  background: var(--color-cream);
+  box-shadow:
+    0 4px 0 var(--theme-edge),
+    0 14px 20px -14px rgb(91 71 143 / 0.6);
+  opacity: 0;
+  scale: 0.6;
+  transform-origin: 100% 100%;
+  transition:
+    opacity 0.2s ease,
+    scale 0.35s var(--ease-squish);
+}
+.typing[data-visible="true"] {
+  opacity: 1;
+  scale: 1;
+}
+.typing > i {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-lilac-800);
+  opacity: 0.35;
+}
+.typing > i:nth-child(2) {
+  opacity: 0.6;
+}
+.typing > i:nth-child(3) {
+  opacity: 0.9;
+}
+.typing[data-visible="true"] > i {
+  animation: typing-dot 1.1s ease-in-out infinite;
+}
+.typing[data-visible="true"] > i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing[data-visible="true"] > i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* ---------- Légende du décor (« Genève ») ---------- */
+.chip {
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: 0.875rem;
+  inset-block-end: 0.875rem;
+  display: none;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0.4375rem 0.875rem 0.4375rem 0.625rem;
+  border-radius: 999px;
+  background: rgb(255 251 244 / 0.92);
+  color: var(--color-sage-800);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: 0 3px 0 rgb(47 90 59 / 0.2);
+}
+.chip > svg {
+  inline-size: 1.0625rem;
+  block-size: 1.0625rem;
+}
+
+/* Légende seulement sur un cadre assez large (sur mobile, la carte de visite occupe le bas) */
+@container (min-width: 26rem) {
+  .chip {
+    display: inline-flex;
+  }
+}
+
+/* ---------- Carte HUD « Visite du site 1/3 » ---------- */
+.tour {
+  position: absolute;
+  z-index: 4;
+  inset-inline-end: 0.625rem;
+  inset-block-end: -1.5rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+  padding: 0.625rem 0.75rem;
+  border: 2.5px solid var(--color-sand);
+  border-radius: 22px;
+  background: var(--color-cream);
+  box-shadow:
+    0 5px 0 var(--color-cream-edge),
+    0 22px 30px -18px rgb(92 64 40 / 0.5);
+  rotate: 1.5deg;
+  pointer-events: auto;
+}
+.tourTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--color-peach-800);
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.tourTitle > svg {
+  inline-size: 0.9375rem;
+  block-size: 0.9375rem;
+  color: var(--color-butter-500);
+}
+.tourCount {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.tourSteps {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Pastilles cliquables : cible >= 24 px, état courant en relief */
+.tourStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-block-size: 1.5rem;
+  padding: 0.125rem 0.625rem;
+  border: 1.5px dashed color-mix(in srgb, var(--color-sand) 75%, var(--color-ink-soft));
+  border-radius: 999px;
+  background: var(--color-oat);
+  color: var(--color-ink-soft);
+  font-size: 0.78125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    translate 0.15s ease,
+    background-color 0.15s ease;
+}
+.tourStep > svg {
+  inline-size: 0.8125rem;
+  block-size: 0.8125rem;
+  stroke-width: 3;
+}
+.tourStep:hover {
+  translate: 0 -1px;
+  background: var(--color-cream);
+}
+.tourStep:focus-visible {
+  border-radius: 999px;
+}
+.tourStep[data-state="done"] {
+  border: 1.5px solid var(--color-sage-300);
+  background: var(--color-sage-100);
+  color: var(--color-sage-800);
+}
+.tourStep[data-state="current"] {
+  border: 1.5px solid var(--color-sage-300);
+  background: var(--color-sage-200);
+  color: var(--color-sage-800);
+  box-shadow: 0 2px 0 var(--color-sage-300);
+}
+
+/* Visite terminée (les trois pages vues) : titre et compteur sauge, coche */
+.tour[data-done] .tourTitle,
+.tour[data-done] .tourCount {
+  color: var(--color-sage-800);
+}
+.tour[data-done] .tourTitle > svg {
+  color: var(--color-sage-800);
+  stroke-width: 3;
+}
+
+/* Cadre trop étroit pour la carte (Rominou de la page Hobby sur mobile / tablette) : rien */
+@container (max-width: 14.99rem) {
+  .tour {
+    display: none;
+  }
+}
+
+@container (min-width: 26rem) {
+  .tour {
+    inset-block-end: -1.875rem;
+    padding: 0.875rem 1rem;
+    rotate: 2deg;
+  }
+}
+
+/* Grand écran : la carte du hero déborde aussi à droite, comme dans la maquette */
+@media (min-width: 80rem) {
+  .frame[data-avatar-anchor="hero"] .tour {
+    inset-inline-end: -1.625rem;
+  }
+}
+
+@keyframes rominou-float {
+  50% {
+    translate: 0 calc(var(--fig-h) * -0.012);
+  }
+}
+
+@keyframes rominou-contact {
+  50% {
+    scale: 0.86;
+    opacity: 0.7;
+  }
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    translate: 0 0;
+  }
+  30% {
+    translate: 0 -3px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .poster {
+  .floater,
+  .contact,
+  .typing[data-visible="true"] > i {
+    animation: none;
+  }
+  .poster,
+  .typing,
+  .tourStep {
     transition: none;
   }
 }

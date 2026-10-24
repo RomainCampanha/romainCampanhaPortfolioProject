@@ -7,8 +7,8 @@ const pages = [
   { path: "/en", lang: "en", theme: "pro", h1: "Romain Campanha" },
   { path: "/hobby", lang: "fr", theme: "hobby", h1: "Mes hobbies" },
   { path: "/en/hobby", lang: "en", theme: "hobby", h1: "My hobbies" },
-  { path: "/chat", lang: "fr", theme: "chat", h1: "Parle avec l'IA de Romain" },
-  { path: "/en/chat", lang: "en", theme: "chat", h1: "Talk with Romain's AI" },
+  { path: "/chat", lang: "fr", theme: "chat", h1: "Parle avec l’IA de Romain" },
+  { path: "/en/chat", lang: "en", theme: "chat", h1: "Talk with Romain’s AI" },
 ] as const;
 
 for (const p of pages) {

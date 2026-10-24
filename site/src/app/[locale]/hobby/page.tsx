@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import type { AppLocale } from "@/i18n/routing";
@@ -7,16 +6,18 @@ import { pick, profile } from "@/content/profile";
 import { buildPageMetadata } from "@/lib/seo";
 import { inSentence } from "@/lib/text";
 import { PageShell } from "@/components/site/PageShell";
-import { GuidedLayout } from "@/components/site/GuidedLayout";
-import { RominouGuide } from "@/components/site/RominouGuide";
 import { HobbyOutfit } from "@/components/hobby/HobbyOutfit";
 import { HobbyHero } from "@/components/hobby/HobbyHero";
+import { HobbyGuide } from "@/components/hobby/HobbyGuide";
 import { TravelsSection } from "@/components/hobby/TravelsSection";
 import { MusicGamesSection } from "@/components/hobby/MusicGamesSection";
+import styles from "@/components/hobby/HobbyPage.module.css";
 
-// Page Hobby : voyages (cartes d'embarquement + photos), musique et jeux.
+// Page Hobby (thème pêche, « Cosy ») : intro + stickers, Rominou en tenue de vacances,
+// cartes d'embarquement (+ albums photo), musique & jeux.
 // Ids stables : #voyages (+ une carte par voyage = son id dans profile.travels, ex. #busan,
-// #tokyo, #brighton-dubrovnik), #musique-jeux (#lol, #musique, #jeu).
+// #tokyo, #brighton-dubrovnik ; l'outil showTrip du chat y mène et ouvre l'album),
+// #musique-jeux (#musique, #lol, #jeu).
 
 export async function generateMetadata({
   params,
@@ -46,20 +47,16 @@ export async function generateMetadata({
 export default function HobbyPage({ params }: PageProps<"/[locale]/hobby">) {
   const { locale } = use(params);
   setRequestLocale(locale as AppLocale);
-  const t = useTranslations("hobby.guide");
-  const tAvatar = useTranslations("common.avatar");
 
+  // Grille de la page (HobbyPage.module.css) : intro | Rominou, puis les sections.
+  // Dès 80rem, Rominou reste dans une colonne collante à droite pendant toute la visite.
   return (
-    <PageShell theme="hobby">
+    <PageShell theme="hobby" className={styles.page}>
       <HobbyOutfit />
-      <GuidedLayout
-        guideLabel={tAvatar("guideLabel")}
-        guide={<RominouGuide label={t("label")} message={t("bubble")} mobile="hero" desktop="column" />}
-      >
-        <HobbyHero />
-        <TravelsSection />
-        <MusicGamesSection />
-      </GuidedLayout>
+      <HobbyHero className={styles.hero} />
+      <HobbyGuide className={styles.guide} />
+      <TravelsSection className={styles.section} />
+      <MusicGamesSection className={styles.section} />
     </PageShell>
   );
 }

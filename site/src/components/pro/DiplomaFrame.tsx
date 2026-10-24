@@ -1,19 +1,26 @@
-import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { pick, type Education } from "@/content/profile";
-import { SCHOOL_LOGOS } from "./assets";
+import type { AppLocale } from "@/i18n/routing";
+import { isUntranslated, pick, type Education } from "@/content/profile";
+import { ClayCard, StatusBadge, type Tone } from "@/components/ui";
+import styles from "./PathSection.module.css";
 
 type DiplomaFrameProps = {
   education: Education;
-  /** Légère inclinaison (classe Tailwind) : effet "cadre accroché au mur". */
-  tiltClassName?: string;
+  /** Couleur du cadre (cf. tones.ts : CFPT pêche, ESIG sauge, HEG lilas). */
+  tone: Tone;
 };
 
-// Un diplôme du mur : cadre néon, logo de l'école, tampon "Obtenu" / "En cours".
-export function DiplomaFrame({ education: e, tiltClassName = "" }: DiplomaFrameProps) {
+// Un cadre du mur des diplômes : accroché à un clou par une ficelle, passe-partout crème.
+// Trois niveaux de texte : école (sigle · ville, nom complet au survol), intitulé court en
+// grand, titre officiel ; puis les années et le badge Obtenu / En cours. Les précisions
+// (profile.education[].details) sont sous le mur (PathSection). Hauteur naturelle.
+export function DiplomaFrame({ education: e, tone }: DiplomaFrameProps) {
   const t = useTranslations("pro.path");
-  const locale = useLocale();
+  const locale = useLocale() as AppLocale;
   const titleId = `diploma-${e.id}`;
+  // Noms officiels non traduits (ex. ESIG, CFPT) : en français sur les pages anglaises (WCAG 3.1.2)
+  const french = locale !== "fr";
+  const schoolLang = french && isUntranslated(e.school.name) ? "fr" : undefined;
   // Années passées en texte : un nombre serait formaté "2 017" par ICU.
   const period =
     e.endYear !== null
@@ -21,66 +28,38 @@ export function DiplomaFrame({ education: e, tiltClassName = "" }: DiplomaFrameP
       : t("since", { start: String(e.startYear) });
 
   return (
-    <article
-      aria-labelledby={titleId}
-      className={`relative h-full motion-safe:transition-transform motion-safe:duration-300 hover:rotate-0 ${tiltClassName}`}
-    >
-      {/* Le clou du cadre */}
-      <span
-        aria-hidden="true"
-        className="absolute -top-2 left-1/2 z-10 size-3.5 -translate-x-1/2 rounded-full bg-linear-to-br from-white to-muted shadow-[0_2px_4px_rgb(0_0_0/0.5)]"
-      />
-      <div className="h-full rounded-card bg-linear-to-br from-cyan via-accent-2 to-plum p-[3px] shadow-glow">
-        <div className="flex h-full flex-col rounded-[calc(var(--radius-card)-3px)] bg-night/90 p-5">
-          <div className="flex items-start justify-between gap-3">
-            <SchoolMark logo={SCHOOL_LOGOS[e.id] ?? null} shortName={e.school.shortName} />
-            <StatusStamp obtained={e.status === "obtained"} label={t(e.status === "obtained" ? "status.obtained" : "status.inProgress")} />
-          </div>
-
-          <p className="mt-5 font-display text-xs font-semibold tracking-widest text-accent">{period}</p>
-          <h4 id={titleId} className="mt-1 font-display text-base font-bold leading-snug">
-            {pick(e.title, locale)}
-          </h4>
-          <p className="mt-2 text-sm text-muted">
-            <span className="font-semibold text-fg">{e.school.shortName}</span>
-            {" · "}
-            {pick(e.school.name, locale)}
-          </p>
-          {e.details ? <p className="mt-2 text-sm">{pick(e.details, locale)}</p> : null}
-        </div>
+    <ClayCard as="article" tone={tone} shade="strong" aria-labelledby={titleId} className={styles.frame}>
+      <span aria-hidden="true" className={styles.nail} />
+      <div className={styles.mat}>
+        <p className={styles.school}>
+          {t.rich("school", {
+            school: e.school.shortName,
+            city: pick(e.school.city, locale),
+            abbr: (chunks) => (
+              <abbr title={pick(e.school.name, locale)} lang={schoolLang}>
+                {chunks}
+              </abbr>
+            ),
+          })}
+        </p>
+        <h3 id={titleId} className={`type-h3 ${styles.frameTitle}`}>
+          {pick(e.shortTitle, locale)}
+        </h3>
+        {/* Titre officiel (ex. « Informaticien de gestion diplômé ES, Professional Bachelor ») ;
+            en anglais, suivi du titre protégé français s'il n'a pas de traduction officielle */}
+        <p className={styles.official}>
+          {pick(e.title, locale)}
+          {french && e.nativeTitle ? (
+            <>
+              {" ("}
+              <span lang="fr">{e.nativeTitle}</span>
+              {")"}
+            </>
+          ) : null}
+        </p>
+        <p className={styles.years}>{period}</p>
       </div>
-    </article>
-  );
-}
-
-/** Logo de l'école (décoratif : le nom est écrit à côté) ou monogramme. */
-function SchoolMark({ logo, shortName }: { logo: string | null; shortName: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-white p-1"
-    >
-      {logo ? (
-        <Image src={logo} alt="" width={40} height={40} unoptimized className="size-10 object-contain" />
-      ) : (
-        <span className="font-display text-xs font-black text-night">{shortName.split(" ")[0]}</span>
-      )}
-    </span>
-  );
-}
-
-/** Tampon encreur : double bordure pleine si obtenu, pointillés si en cours. */
-function StatusStamp({ obtained, label }: { obtained: boolean; label: string }) {
-  return (
-    <span
-      className={[
-        "-rotate-[8deg] whitespace-nowrap rounded-md px-2 py-1 font-display text-[0.7rem] font-black uppercase tracking-[0.18em]",
-        obtained
-          ? "border-[3px] border-double border-cyan text-cyan [text-shadow:0_0_8px_rgb(0_193_255/0.6)]"
-          : "border-2 border-dashed border-accent-2 text-accent-2",
-      ].join(" ")}
-    >
-      {label}
-    </span>
+      <StatusBadge status={e.status} className={styles.badge} />
+    </ClayCard>
   );
 }

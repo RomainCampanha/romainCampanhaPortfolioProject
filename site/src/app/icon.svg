@@ -1,15 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0A0A1F"/>
-      <stop offset="0.6" stop-color="#2A153A"/>
-      <stop offset="1" stop-color="#0A0A1F"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <!-- Monogramme "R" néon (halo + trait) -->
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M23 47V17h11a8 8 0 0 1 0 16H23m10 0 10 14" stroke="#00C1FF" stroke-opacity="0.35" stroke-width="9"/>
-    <path d="M23 47V17h11a8 8 0 0 1 0 16H23m10 0 10 14" stroke="#00C1FF" stroke-width="5"/>
+  <!-- Monogramme "R" en argile (direction « Cosy ») : pastille crème, épaisseur, R terre cuite -->
+  <rect x="2" y="4" width="60" height="58" rx="18" fill="#E6D8C5"/>
+  <rect x="2" y="2" width="60" height="56" rx="18" fill="#FFFBF4"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
+    <path d="M24 46V18h9.5a7.5 7.5 0 0 1 0 15H24m9 0 9.5 13" stroke="#7C3519" transform="translate(0 2.5)"/>
+    <path d="M24 46V18h9.5a7.5 7.5 0 0 1 0 15H24m9 0 9.5 13" stroke="#A84A2A"/>
   </g>
 </svg>

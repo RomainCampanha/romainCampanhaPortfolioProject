@@ -5,53 +5,72 @@
   },
   "guide": {
     "label": "Rominou in holiday outfit",
-    "bubble": "Rominou, the guide, in holiday mode! This is Romain's personal side."
+    "bubble": "Holiday outfit on! This is {name}'s personal side."
   },
   "hero": {
+    "kicker": "Personal side",
     "title": "My hobbies",
-    "intro": "When I'm not at work or in class, I travel, listen to French rap and play video games. Welcome to my personal side!",
-    "listLabel": "My passions at a glance"
+    "intro": "When I'm not at work or in class, I travel, listen to {genre} and play video games. Welcome to my personal side!",
+    "listLabel": "My passions at a glance",
+    "musicSr": "{genre}: {artists}",
+    "lol": "LoL · {role} · {rank}",
+    "lolSr": "League of Legends: {role}, peak rank {rank}"
   },
   "travels": {
+    "kicker": "Travel log",
     "title": "My travels",
     "intro": "{count} boarding passes, from {first} ({firstYear}) to {last} ({lastYear}): the trips I brought photos back from. An interactive globe is coming soon to explore them all.",
     "introShort": "Boarding passes from the trips I brought photos back from. An interactive globe is coming soon to explore them all.",
     "pass": "Boarding pass",
-    "passenger": "Passenger",
     "destination": "Destination",
+    "passenger": "Passenger",
     "year": "Year",
     "photos": "Photos",
     "photoCount": "{count, plural, =0 {none} one {# photo} other {# photos}}",
+    "photosSoon": "Soon",
+    "photoCounter": "{index} / {count}",
+    "showPhotos": "{count, plural, one {See the photo} other {See all # photos}}",
+    "hidePhotos": "Hide the photos",
+    "galleryLabel": "Photos from {place}",
+    "openPhoto": "Enlarge: {alt}",
     "photosComing": "Photos coming soon",
     "photosComingHint": "I'm still sorting my photos from {place}. Check back soon!",
-    "galleryLabel": "Photos from {place}",
-    "galleryMoreLabel": "More photos from {place}",
-    "morePhotos": "{count, plural, one {See the last photo} other {See # more photos}}",
-    "lessPhotos": "Hide these photos",
     "anecdote": "Anecdote",
-    "otherTitle": "I've also been to…",
+    "otherTitle": "I’ve also been to…",
     "otherIntro": "Other cities I've visited, no boarding pass (yet).",
-    "photosSoon": "Soon"
+    "lightbox": {
+      "counter": "Photo {index} of {count}",
+      "close": "Close",
+      "previous": "Previous photo",
+      "next": "Next photo"
+    }
   },
   "passions": {
+    "kicker": "Downtime",
     "title": "Music & games",
-    "intro": "French rap in my ears, a controller (or a mouse) in my hands.",
+    "intro": "{genre} in my ears, a controller (or a mouse) in my hands.",
     "soon": "Soon",
+    "music": {
+      "kicker": "On repeat",
+      "title": "The music corner",
+      "soon": "Coming soon: a selection of my favourite tracks."
+    },
     "lol": {
+      "kicker": "Player card",
       "title": "My League of Legends card",
       "role": "Role",
       "peak": "Peak rank",
       "champions": "Favourite champions",
-      "otherGames": "Besides League of Legends, I also play {games}."
-    },
-    "music": {
-      "title": "The music corner",
-      "text": "Big fan of French rap, especially {artists}.",
-      "soon": "Coming soon: a selection of my favourite tracks."
+      "otherGames": "Also in my game library"
     },
     "game": {
-      "title": "The game: a runner",
-      "text": "A little runner game is coming to this page soon, playable right in your browser."
+      "kicker": "Next game",
+      "title": "Rominou’s Run",
+      "text": "A little runner game, playable right in your browser: Rominou runs through my trips, and each level you clear unlocks that city's postcard.",
+      "levelsLabel": "Planned levels",
+      "start": "Start",
+      "level": "Level {n}",
+      "locked": "Postcard to unlock"
     }
   }
 }

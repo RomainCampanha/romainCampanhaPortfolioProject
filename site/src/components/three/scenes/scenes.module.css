@@ -1,0 +1,404 @@
+/* Décors des cadres de Rominou (DA Cosy) : tokens du design system (+ mélanges doux entre eux).
+   Chaque élément est placé en % de la scène (.decor de AvatarAnchor.module.css) ; les
+   éléments de sol (île, serviette) se placent dans la boîte de Rominou (--fig-h, --feet-frac).
+   Mouvements doux : coupés par prefers-reduced-motion (règle globale + rappel en bas). */
+
+.cloud,
+.genevaSun,
+.genevaAlps,
+.genevaLake,
+.jet,
+.beachSun,
+.birds,
+.plane,
+.beachSea,
+.sand,
+.parasol,
+.starfish,
+.stars,
+.moon,
+.duskHills,
+.duskLake {
+  position: absolute;
+  display: block;
+}
+
+/* Nuages (crème), qui dérivent lentement */
+.cloud {
+  fill: var(--color-cream);
+  block-size: auto;
+  animation: drift 9s ease-in-out infinite;
+}
+
+/* Vagues / reflets : traits fins, épaisseur fixe quel que soit l'étirement du SVG */
+.waves,
+.glints,
+.reflections {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke-linecap: round;
+}
+.waves path,
+.glints path,
+.reflections path,
+.foam {
+  vector-effect: non-scaling-stroke;
+}
+.waves {
+  stroke: var(--color-cream);
+  stroke-width: 4;
+  opacity: 0.65;
+}
+
+/* ===================== Genève (Pro) ===================== */
+
+.genevaSun {
+  inset-inline-start: 77%;
+  inset-block-start: 21%;
+  inline-size: clamp(6rem, 42%, 14rem);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--color-butter-300) 0 37%,
+    color-mix(in srgb, var(--color-butter-200) 62%, transparent) 38.5%,
+    color-mix(in srgb, var(--color-butter-200) 0%, transparent) 100%
+  );
+}
+
+.genevaCloudA {
+  inset-inline-start: 54%;
+  inset-block-start: 26%;
+  inline-size: 17.7%;
+  opacity: 0.9;
+}
+.genevaCloudB {
+  inset-inline-start: 79%;
+  inset-block-start: 35.5%;
+  inline-size: 11.5%;
+  opacity: 0.75;
+  animation-duration: 12s;
+  animation-direction: reverse;
+}
+
+/* Alpes + collines : bande dimensionnée par la largeur, posée sur l'horizon (34.5 %) */
+.genevaAlps {
+  inset-inline-start: 50%;
+  inset-block-end: 33%;
+  inline-size: max(100%, 26rem);
+  aspect-ratio: 520 / 160;
+  translate: -50% 0;
+}
+.genevaMountains {
+  fill: color-mix(in srgb, var(--color-lilac-300) 75%, var(--color-cream));
+}
+.snow {
+  fill: var(--color-cream);
+}
+.genevaHills {
+  fill: color-mix(in srgb, var(--color-sage-200) 70%, var(--color-sage-300));
+}
+
+.genevaLake {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 34.5%;
+  background: linear-gradient(
+    180deg,
+    var(--color-lake-300),
+    color-mix(in srgb, var(--color-lake-300) 75%, var(--color-lake-500))
+  );
+}
+
+.jet {
+  inset-inline-start: 13%;
+  inset-block-end: 32.4%;
+  block-size: 30%;
+  aspect-ratio: 70 / 198;
+  fill: var(--color-cream);
+}
+.spray {
+  animation: var(--animate-float);
+  animation-duration: 3.2s;
+}
+
+/* ---------- Sol sous les pieds (dans la boîte de Rominou) ---------- */
+.underlay {
+  position: absolute;
+  inset-inline-start: 50%;
+  display: block;
+  block-size: auto;
+  translate: -50% 0;
+  overflow: visible;
+}
+
+/* Île : largeur 0.68 × boîte ; pieds à 39 % de sa hauteur (110/360 de sa largeur) */
+.island {
+  inline-size: calc(var(--fig-h) * 0.68);
+  inset-block-start: calc(var(--fig-h) * (var(--feet-frac) - 0.081));
+}
+.ripple {
+  fill: none;
+  stroke: var(--color-cream);
+  stroke-width: 3;
+  opacity: 0.55;
+}
+.islandBase {
+  fill: color-mix(in srgb, var(--color-sage-500) 80%, var(--color-sage-800));
+}
+.islandSide {
+  fill: var(--color-sage-300);
+}
+.islandTop {
+  fill: color-mix(in srgb, var(--color-sage-200) 75%, var(--color-sage-300));
+}
+.bush {
+  fill: var(--color-sage-500);
+}
+.bushLight {
+  fill: color-mix(in srgb, var(--color-sage-500) 55%, var(--color-sage-300));
+}
+.flowerPeach {
+  fill: var(--color-peach-300);
+}
+.flowerButter {
+  fill: var(--color-butter-300);
+}
+
+/* ===================== Plage (Hobby) ===================== */
+
+/* Soleil couchant : centré sur l'horizon (42 %), la mer en cache le bas */
+.beachSun {
+  inset-inline-start: 74%;
+  inset-block-end: 42%;
+  inline-size: clamp(3.5rem, 34%, 8rem);
+  aspect-ratio: 1;
+  translate: -50% 50%;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--color-butter-300) 20%,
+    color-mix(in srgb, var(--color-peach-300) 75%, var(--color-butter-300))
+  );
+  box-shadow:
+    0 0 0 0.5rem color-mix(in srgb, var(--color-butter-200) 40%, transparent),
+    0 0 3rem 1.25rem color-mix(in srgb, var(--color-butter-200) 55%, transparent);
+}
+
+.beachCloudA {
+  inset-inline-start: 5%;
+  inset-block-start: 19%;
+  inline-size: 36%;
+  opacity: 0.85;
+  animation-duration: 11s;
+}
+.beachCloudB {
+  inset-inline-end: 3%;
+  inset-block-start: 31%;
+  inline-size: 22%;
+  opacity: 0.7;
+  animation-duration: 14s;
+  animation-direction: reverse;
+}
+
+.birds {
+  inset-inline-start: 17%;
+  inset-block-start: 33%;
+  inline-size: 15%;
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-peach-800) 50%, transparent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.plane {
+  inset-inline-end: 6%;
+  inset-block-start: 7%;
+  inline-size: 36%;
+  max-inline-size: 9rem;
+  fill: var(--color-cream);
+}
+.trail {
+  fill: none;
+  stroke: var(--color-cream);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 7;
+}
+
+.beachSea {
+  inset-inline: 0;
+  inset-block-end: 20%;
+  block-size: 22%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-lake-300) 80%, var(--color-peach-200)),
+    var(--color-lake-300) 55%,
+    color-mix(in srgb, var(--color-lake-300) 70%, var(--color-lake-500))
+  );
+}
+.glints {
+  stroke: var(--color-butter-200);
+  stroke-width: 3;
+}
+
+.sand {
+  inset-inline: 0;
+  inset-block-end: 0;
+  inline-size: 100%;
+  block-size: 26%;
+}
+.sandFill {
+  fill: color-mix(in srgb, var(--color-butter-200) 55%, var(--color-peach-100));
+}
+.sandWet {
+  fill: color-mix(in srgb, var(--color-peach-200) 70%, var(--color-butter-200));
+  opacity: 0.75;
+}
+.foam {
+  fill: none;
+  stroke: var(--color-cream);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* Parasol : seulement si le cadre est assez large pour ne pas gêner Rominou */
+.parasol {
+  display: none;
+  inset-inline-start: 2%;
+  inset-block-end: 10%;
+  block-size: 40%;
+  aspect-ratio: 120 / 150;
+}
+.parasolPole {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-peach-800) 50%, var(--color-cream));
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.parasolCanopy,
+.parasolKnob {
+  fill: var(--color-peach-500);
+}
+.parasolStripe {
+  fill: var(--color-cream);
+}
+
+.starfish {
+  inset-inline-end: 9%;
+  inset-block-end: 6%;
+  inline-size: clamp(1.25rem, 9%, 2.25rem);
+  fill: var(--color-peach-300);
+  stroke: var(--color-peach-300);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  rotate: 14deg;
+}
+
+/* Serviette : largeur 0.42 × boîte ; pieds à 50 % de sa hauteur (56/200 de sa largeur) */
+.towel {
+  inline-size: calc(var(--fig-h) * 0.42);
+  inset-block-start: calc(var(--fig-h) * (var(--feet-frac) - 0.059));
+}
+.towelBase {
+  fill: var(--color-peach-300);
+  stroke: var(--color-peach-300);
+  stroke-width: 8;
+  stroke-linejoin: round;
+}
+.towelStripe {
+  fill: var(--color-cream);
+}
+.towelEdge {
+  fill: none;
+  stroke: var(--color-cream);
+  stroke-width: 2.5;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+@container (min-width: 13rem) {
+  .parasol {
+    display: block;
+  }
+}
+
+/* ===================== Soir (Chat) ===================== */
+
+.stars {
+  inset-inline: 0;
+  inset-block-start: 0;
+  inline-size: 100%;
+  block-size: 62%;
+  fill: color-mix(in srgb, var(--color-cream) 92%, transparent);
+}
+.stars[data-twinkle] {
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.stars[data-twinkle="2"] {
+  animation-duration: 4.1s;
+  animation-delay: -1.6s;
+}
+
+/* Croissant de lune (ombre interne), halo doux */
+.moon {
+  --moon: clamp(2.25rem, 12cqw, 4rem);
+  inset-inline-start: 13%;
+  inset-block-start: 40%;
+  inline-size: var(--moon);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: inset calc(var(--moon) * 0.24) calc(var(--moon) * -0.16) 0 0
+    color-mix(in srgb, var(--color-butter-100) 55%, var(--color-cream));
+  filter: drop-shadow(0 0 0.75rem color-mix(in srgb, var(--color-butter-100) 70%, transparent));
+}
+
+.duskHills {
+  inset-inline-start: 50%;
+  inset-block-end: 16%;
+  inline-size: max(100%, 26rem);
+  aspect-ratio: 520 / 72;
+  translate: -50% 0;
+  fill: color-mix(in srgb, var(--color-lilac-500) 70%, var(--color-lilac-300));
+}
+
+.duskLake {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 18%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-lake-300) 55%, var(--color-lilac-300)),
+    color-mix(in srgb, var(--color-lake-300) 80%, var(--color-lilac-500))
+  );
+}
+.reflections {
+  stroke: var(--color-peach-100);
+  stroke-width: 4;
+  opacity: 0.75;
+}
+
+@keyframes drift {
+  50% {
+    translate: 10px 0;
+  }
+}
+
+@keyframes twinkle {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud,
+  .spray,
+  .stars[data-twinkle] {
+    animation: none;
+  }
+}

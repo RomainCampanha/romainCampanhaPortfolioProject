@@ -56,6 +56,12 @@ const placeSchema = z.object({
   country: localizedSchema.nullable(),
   /** ISO 3166-1 alpha-2 */
   countryCode: z.string().length(2).nullable(),
+  /**
+   * Nom de la ville dans son écriture d'origine (ex. 서울), affiché à côté du nom latin
+   * (carte d'embarquement). Seulement pour une écriture couverte par une police du site :
+   * le coréen (Jua). Pas de japonais ni de chinois (aucune police CJK embarquée).
+   */
+  nativeName: z.object({ text: z.string(), lang: z.literal("ko") }).optional(),
 });
 export type Place = z.infer<typeof placeSchema>;
 
@@ -70,10 +76,19 @@ export type Skill = z.infer<typeof skillSchema>;
 const educationSchema = z.object({
   id: z.string(),
   title: localizedSchema,
+  /**
+   * Titre protégé dans sa langue d'origine (français), quand `title.en` n'en est qu'une
+   * traduction descriptive : affiché entre parenthèses (lang="fr") après le titre anglais.
+   */
+  nativeTitle: z.string().optional(),
   /** Intitulé court (fiche "En bref", mur des diplômes), ex. "CFC", "Bachelor HES-SO". */
   shortTitle: localizedSchema,
+  /** Domaine d'études, en minuscules dans une phrase (accroche Pro : « étudiant en … »). */
+  field: localizedSchema,
   school: z.object({
+    /** Nom complet ; identique en fr et en = nom officiel français, sans traduction (lang="fr"). */
     name: localizedSchema,
+    /** Sigle, sans la ville (ex. "HEG") : la ville est affichée à côté (« HEG · Genève »). */
     shortName: z.string(),
     city: localizedSchema,
   }),
@@ -113,6 +128,8 @@ export const profileSchema = z.object({
     company: z.string(),
     url: z.url(),
     role: localizedSchema,
+    /** Ce que Romain fait concrètement (ses mots), à la 1re personne. */
+    description: localizedSchema,
     /** "YYYY-MM" */
     since: z.string().regex(/^\d{4}-\d{2}$/),
     /** Taux d'activité actuel en % */
@@ -225,7 +242,8 @@ const place = (
   city: Localized,
   country: Localized | null,
   countryCode: string | null,
-): Place => ({ city, country, countryCode });
+  nativeName?: Place["nativeName"],
+): Place => ({ city, country, countryCode, ...(nativeName ? { nativeName } : {}) });
 
 const same = (value: string): Localized => ({ fr: value, en: value });
 
@@ -288,6 +306,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       fr: "Support technique hosting L2",
       en: "L2 hosting technical support",
     },
+    description: {
+      fr: "J'aide les clients à résoudre leurs problèmes de niveau 1 et 2 liés à l'hébergement de leur site web, et je contribue en interne à l'amélioration des produits.",
+      en: "I help customers solve level 1 and 2 issues with their website hosting, and I contribute internally to improving the products.",
+    },
     since: "2023-03",
     ratePercent: 70,
   },
@@ -301,12 +323,13 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         en: "Bachelor of Science HES-SO in Business Information Technology",
       },
       shortTitle: { fr: "Bachelor HES-SO", en: "HES-SO Bachelor" },
+      field: { fr: "informatique de gestion", en: "Business IT" },
       school: {
         name: {
           fr: "Haute école de gestion de Genève",
           en: "Geneva School of Business Administration",
         },
-        shortName: "HEG Genève",
+        shortName: "HEG",
         city: geneva,
       },
       startYear: 2025,
@@ -326,9 +349,11 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       // officiel de la filière, fixé d'ici au printemps 2027 dans le plan d'études cadre.
       title: {
         fr: "Informaticien de gestion diplômé ES, Professional Bachelor",
-        en: "Professional Bachelor in Business IT (Informaticien de gestion diplômé ES)",
+        en: "Professional Bachelor in Business IT",
       },
+      nativeTitle: "Informaticien de gestion diplômé ES",
       shortTitle: { fr: "Diplôme ES", en: "ES diploma" },
+      field: { fr: "informatique de gestion", en: "Business IT" },
       school: {
         // Nom officiel en français (pas de traduction officielle connue)
         name: same("École supérieure d'informatique de gestion"),
@@ -350,6 +375,7 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         en: "Federal VET Diploma (CFC) in application development",
       },
       shortTitle: same("CFC"),
+      field: { fr: "développement d'applications", en: "application development" },
       school: {
         name: same("Centre de formation professionnelle technique"),
         shortName: "CFPT",
@@ -382,10 +408,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         skill("C#", "CFPT"),
         skill("Python", "ESIG"),
         skill("Visual Basic", "ESIG"),
-        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
         skill(
           { fr: "Programmation orientée objet (POO)", en: "Object-oriented programming (OOP)" },
           "ESIG",
+          "CFPT",
         ),
         skill({ fr: "Élaboration de programmes", en: "Program development" }, "CFPT"),
       ],
@@ -394,8 +420,7 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       id: "web",
       label: { fr: "Développement web", en: "Web development" },
       skills: [
-        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
-        skill("PHP", "ESIG"),
+        skill("PHP", "ESIG", "CFPT"),
         skill("React", "Projets"),
         skill("Next.js", "Projets"),
         skill("Node.js", "Projets"),
@@ -500,7 +525,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     {
       id: "busan",
       places: [
-        place({ fr: "Busan", en: "Busan" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
+        place({ fr: "Busan", en: "Busan" }, { fr: "Corée du Sud", en: "South Korea" }, "KR", {
+          text: "부산",
+          lang: "ko",
+        }),
       ],
       year: 2026,
       photos: "available",
@@ -559,7 +587,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     {
       id: "seoul",
       places: [
-        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
+        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR", {
+          text: "서울",
+          lang: "ko",
+        }),
       ],
       year: 2023,
       photos: "available",
@@ -593,8 +624,8 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       id: "gaming",
       label: { fr: "Jeux vidéo", en: "Video games" },
       description: {
-        fr: "League of Legends (en mid), Overwatch, Cyberpunk 2077 et Pokopia.",
-        en: "League of Legends (mid lane), Overwatch, Cyberpunk 2077 and Pokopia.",
+        fr: "League of Legends (en mid), Overwatch, Cyberpunk 2077 et Pokémon Pokopia.",
+        en: "League of Legends (mid lane), Overwatch, Cyberpunk 2077 and Pokémon Pokopia.",
       },
     },
     {
@@ -622,7 +653,7 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
   },
 
   gaming: {
-    games: ["League of Legends", "Overwatch", "Cyberpunk 2077", "Pokopia"],
+    games: ["League of Legends", "Overwatch", "Cyberpunk 2077", "Pokémon Pokopia"],
     leagueOfLegends: {
       role: same("Mid"),
       peakRank: { fr: "Platine 4", en: "Platinum 4" },
@@ -666,6 +697,21 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
  */
 export function getAge(at: Date = new Date()): number {
   return ageInGeneva(profile.birthDate, at);
+}
+
+/**
+ * Titre officiel d'une formation, en texte : en anglais, suivi du titre protégé français
+ * entre parenthèses s'il existe (ex. "Professional Bachelor in Business IT (Informaticien de
+ * gestion diplômé ES)"). Les pages balisent la partie française (lang="fr").
+ */
+export function educationTitle(e: Education, locale: AppLocale): string {
+  const title = pick(e.title, locale);
+  return locale === "en" && e.nativeTitle ? `${title} (${e.nativeTitle})` : title;
+}
+
+/** Nom affiché tel quel dans une page anglaise, mais en français (pas de traduction) ? */
+export function isUntranslated(value: Localized): boolean {
+  return value.fr === value.en;
 }
 
 /** Libellé "Ville, Pays" localisé. */

@@ -1,85 +1,207 @@
 import { useLocale, useTranslations } from "next-intl";
 import { pick, profile, type Travel } from "@/content/profile";
-import { getPhotos } from "@/content/photos";
-import { CameraIcon, PlaneIcon } from "./icons";
-import { PhotoGrid } from "./PhotoGrid";
+import { getPhotos, photoAlt } from "@/content/photos";
+import { ClayCard } from "@/components/ui/ClayCard";
+import { Icon } from "@/components/ui/Icon";
+import { Hangul } from "@/components/ui/Hangul";
+import type { Tone } from "@/components/ui/tones";
+import { PassBarcode, PassStamp } from "./PassDecor";
+import {
+  GalleryCover,
+  GalleryLightbox,
+  GalleryToggle,
+  GalleryTray,
+  PassGalleryProvider,
+  type GalleryLabels,
+  type GalleryPhoto,
+} from "./PassGallery";
 import styles from "./BoardingPass.module.css";
 
-// Un voyage = une carte d'embarquement (id = slug du voyage : /hobby#seoul).
-// Rien d'inventé : pas d'aéroports ni de dates de vol, seulement les faits du profil.
-export function BoardingPassCard({ travel }: { travel: Travel }) {
+/** Encre du tampon et inclinaison, en alternance d'une carte à l'autre. */
+const STAMP_TONES: readonly Tone[] = ["lake", "lilac", "sage", "peach"];
+const STAMP_TILTS = [-12, 9, -7, 11] as const;
+
+/** Taille de la photo de couverture selon la mise en page de la carte (cf. CSS). */
+const COVER_SIZES = "(min-width: 64rem) 256px, (min-width: 40rem) 40vw, 100vw";
+const MINI_COVER_SIZES = "128px";
+
+type BoardingPassCardProps = {
+  travel: Travel;
+  index: number;
+  /**
+   * Carte compacte (voyages plus anciens) : photo carrée, destination, année, photos et album,
+   * tampon en coin ; sans talon ni code-barres. Même id, même album, même visionneuse.
+   */
+  compact?: boolean;
+};
+
+// Un voyage = une carte d'embarquement « cosy » (id = slug du voyage : /hobby#seoul).
+// Photo | billet (destination, passager, année, photos, bouton album) | talon (tampon,
+// code-barres). Rien d'inventé : pas d'aéroports ni de dates de vol, seulement les faits du profil.
+export function BoardingPassCard({ travel, index, compact = false }: BoardingPassCardProps) {
   const t = useTranslations("hobby.travels");
   const locale = useLocale();
-  const photos = getPhotos(travel.id);
-  const place = travel.places.map((p) => pick(p.city, locale)).join(" & ");
-  const countries = [
-    ...new Set(travel.places.flatMap((p) => (p.country ? [pick(p.country, locale)] : []))),
-  ].join(" · ");
+  const photos = travel.photos === "available" ? getPhotos(travel.id) : [];
+  const cities = travel.places.map((p) => pick(p.city, locale));
+  const place = cities.join(" & ");
+  const countries = [...new Set(travel.places.flatMap((p) => (p.country ? [pick(p.country, locale)] : [])))];
+  // Une seule ville : son nom dans l'écriture d'origine (ex. 서울), s'il est connu
+  const native = travel.places.length === 1 ? travel.places[0].nativeName : undefined;
   const titleId = `${travel.id}-title`;
+  const year = travel.year !== null ? String(travel.year) : null;
+  // Noms longs ou multiples (Brighton & Dubrovnik) : titre un cran plus petit, une ville par ligne
+  const long = cities.length > 1 || cities.some((city) => city.length > 9);
+
+  const galleryPhotos: GalleryPhoto[] = photos.map((photo) => ({
+    src: photo.src,
+    width: photo.width,
+    height: photo.height,
+    blurDataURL: photo.blurDataURL,
+    alt: photoAlt(photo, locale),
+  }));
+  const labels: GalleryLabels = {
+    list: t("galleryLabel", { place }),
+    show: t("showPhotos", { count: photos.length }),
+    hide: t("hidePhotos"),
+    open: galleryPhotos.map((photo) => t("openPhoto", { alt: photo.alt })),
+    counter: galleryPhotos.map((_, i) => t("lightbox.counter", { index: i + 1, count: photos.length })),
+    close: t("lightbox.close"),
+    previous: t("lightbox.previous"),
+    next: t("lightbox.next"),
+  };
+
+  const stamp = (
+    <PassStamp
+      id={travel.id}
+      top={cities.join(" · ")}
+      year={year}
+      bottom={countries.length > 0 ? countries.join(" · ") : null}
+      tone={STAMP_TONES[index % STAMP_TONES.length]}
+      tilt={STAMP_TILTS[index % STAMP_TILTS.length]}
+      className={compact ? styles.miniStamp : undefined}
+    />
+  );
+  const title = (
+    <h3 id={titleId} className={compact ? styles.miniCity : styles.city} data-long={long || undefined}>
+      {cities.map((city, i) => (
+        <span key={city} className={styles.cityName}>
+          {i > 0 ? "& " : null}
+          {city}
+        </span>
+      ))}
+      {native ? <Hangul className={styles.native}>{native.text}</Hangul> : null}
+    </h3>
+  );
 
   const fields = [
-    { term: t("passenger"), value: profile.name },
-    ...(travel.year !== null ? [{ term: t("year"), value: String(travel.year) }] : []),
+    ...(compact ? [] : [{ term: t("passenger"), value: profile.name }]),
+    ...(year ? [{ term: t("year"), value: year }] : []),
     {
       term: t("photos"),
       value: photos.length > 0 ? t("photoCount", { count: photos.length }) : t("photosSoon"),
     },
   ];
 
+  const extras = (
+    <>
+      {photos.length > 1 ? <GalleryTray /> : null}
+
+      {travel.anecdotes.map((anecdote) => (
+        <div key={anecdote.en} className={styles.anecdote}>
+          <p className={styles.anecdoteLabel}>
+            <Icon name="sparkle" size={14} />
+            {t("anecdote")}
+          </p>
+          <p className="mt-1.5 font-bold">{pick(anecdote, locale)}</p>
+        </div>
+      ))}
+
+      {photos.length > 0 ? <GalleryLightbox /> : null}
+    </>
+  );
+
+  if (compact) {
+    return (
+      <PassGalleryProvider id={travel.id} photos={galleryPhotos} labels={labels}>
+        <article id={travel.id} aria-labelledby={titleId} className={styles.article}>
+          <ClayCard className={styles.mini}>
+            <div className={styles.miniPhoto}>
+              {photos.length > 0 ? (
+                <GalleryCover counter={t("photoCounter", { index: 1, count: photos.length })} sizes={MINI_COVER_SIZES} />
+              ) : (
+                <div className={styles.photoSoon}>
+                  <Icon name="camera" size={24} />
+                </div>
+              )}
+            </div>
+            <div className={styles.miniMain}>
+              <p className={styles.label}>{t("destination")}</p>
+              {title}
+              {countries.length > 0 ? <p className={styles.miniCountry}>{countries.join(" · ")}</p> : null}
+            </div>
+            {stamp}
+            <dl className={styles.miniFields}>
+              {fields.map(({ term, value }) => (
+                <div key={term}>
+                  <dt>{term}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {photos.length > 1 ? <GalleryToggle variant="secondary" className={styles.miniToggle} /> : null}
+          </ClayCard>
+          {extras}
+        </article>
+      </PassGalleryProvider>
+    );
+  }
+
   return (
-    <article id={travel.id} aria-labelledby={titleId} className={`scroll-mt-20 ${styles.pass}`}>
-      <div className={styles.ticket}>
-        <div className={`flex items-center justify-between gap-3 px-5 py-2.5 ${styles.band}`}>
-          <p className="font-display text-[0.7rem] font-bold uppercase tracking-[0.25em]">{t("pass")}</p>
-          <PlaneIcon size={20} />
-        </div>
-
-        <div className="grid gap-5 px-5 pb-7 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-7">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-widest text-accent">{t("destination")}</p>
-            <h3 id={titleId} className="mt-1 break-words font-display text-3xl font-black leading-tight sm:text-4xl">
-              {place}
-            </h3>
-            {countries ? <p className="mt-1 font-semibold text-muted">{countries}</p> : null}
-          </div>
-          <dl className="flex flex-wrap gap-x-6 gap-y-3 sm:justify-end">
-            {fields.map(({ term, value }) => (
-              <div key={term}>
-                <dt className="text-[0.7rem] font-semibold uppercase tracking-widest text-accent">{term}</dt>
-                <dd className="font-display text-sm font-bold">{value}</dd>
+    <PassGalleryProvider id={travel.id} photos={galleryPhotos} labels={labels}>
+      <article id={travel.id} aria-labelledby={titleId} className={styles.article}>
+        <ClayCard className={styles.card}>
+          <div className={styles.photo}>
+            {photos.length > 0 ? (
+              <GalleryCover counter={t("photoCounter", { index: 1, count: photos.length })} sizes={COVER_SIZES} />
+            ) : (
+              <div className={styles.photoSoon}>
+                <Icon name="camera" size={32} />
+                <p>
+                  <span className="block font-extrabold">{t("photosComing")}</span>
+                  <span className="text-sm text-muted">{t("photosComingHint", { place })}</span>
+                </p>
               </div>
-            ))}
-          </dl>
-        </div>
-      </div>
+            )}
+          </div>
 
-      <div className={`space-y-5 px-4 pb-5 pt-6 sm:px-6 ${styles.stub}`}>
-        {photos.length > 0 ? (
-          <PhotoGrid
-            photos={photos}
-            locale={locale}
-            label={t("galleryLabel", { place })}
-            moreListLabel={t("galleryMoreLabel", { place })}
-            showMore={(count) => t("morePhotos", { count })}
-            showLess={t("lessPhotos")}
-          />
-        ) : (
-          <div className="flex items-center gap-4 rounded-xl border-2 border-dashed border-cocoa/25 p-5">
-            <CameraIcon />
-            <p>
-              <span className="block font-semibold">{t("photosComing")}</span>
-              <span className="text-sm text-muted">{t("photosComingHint", { place })}</span>
+          <div className={styles.main}>
+            <p className={styles.band}>
+              <span>{t("pass")}</span>
+              <Icon name="plane" size={22} />
             </p>
-          </div>
-        )}
+            <p className={styles.label}>{t("destination")}</p>
+            {title}
+            {countries.length > 0 ? <p className={styles.country}>{countries.join(" · ")}</p> : null}
 
-        {travel.anecdotes.map((anecdote) => (
-          <div key={anecdote.en} className="rounded-xl border-l-4 border-honey bg-sun/35 px-4 py-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-accent">{t("anecdote")}</p>
-            <p className="mt-1 font-medium">{pick(anecdote, locale)}</p>
+            <dl className={styles.fields}>
+              {fields.map(({ term, value }) => (
+                <div key={term}>
+                  <dt>{term}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            {photos.length > 1 ? <GalleryToggle /> : null}
           </div>
-        ))}
-      </div>
-    </article>
+
+          <div className={styles.stub}>
+            {stamp}
+            <PassBarcode seed={travel.id} />
+          </div>
+        </ClayCard>
+        {extras}
+      </article>
+    </PassGalleryProvider>
   );
 }

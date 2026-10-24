@@ -4,11 +4,11 @@ Nouveau portfolio de **Romain Campanha** (Genève). Son avatar 3D, **Rominou**, 
 
 Trois pages, en français (par défaut, à la racine) et en anglais (`/en`) :
 
-- **Pro** (`/`) : visite guidée par Rominou, le guide (parcours, Infomaniak, compétences, GE-Soif, contact) + version texte complète.
-- **Hobby** (`/hobby`) : voyages, League of Legends, rap français, runner (bientôt).
+- **Pro** (`/`) : Rominou sur son île du Léman, mur des diplômes, inventaire des compétences, GE-Soif, contact.
+- **Hobby** (`/hobby`) : cartes d'embarquement des voyages (albums photo), musique, jeux (League of Legends…), runner (bientôt).
 - **Chat** (`/chat`) : discussion avec « la version IA de Romain ».
 
-Stack : Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl 4, React Three Fiber, Motion, AI SDK. Hébergement : Vercel (Hobby).
+Stack : Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl 4, React Three Fiber, AI SDK. Hébergement : Vercel (Hobby).
 
 ## Lancer le projet
 
@@ -30,7 +30,7 @@ npm run dev                  # http://localhost:3000
 | `npm run lint`          | ESLint (config Next.js)                                    |
 | `npm run typecheck`     | Génère les types de routes puis `tsc --noEmit`             |
 | `npm run test:e2e`      | Tests Playwright, avec un faux OpenAI (après `npm run build`) |
-| `npm run assets:avatar` | Optimise les modèles 3D de l'avatar (`public/models/`)     |
+| `npm run assets:avatar` | Optimise les modèles 3D (`public/models/`) + posters (`public/scenes/`) |
 | `npm run assets:photos` | Optimise les photos de voyage (`public/photos/` + JSON)    |
 
 ## Variables d'environnement
@@ -72,8 +72,10 @@ garantir un plafond dur.
 messages/{fr,en}/        traductions, un fichier par namespace (common, pro, hobby, chat)
 src/app/[locale]/        pages localisées (layout racine, Pro, Hobby, Chat, 404)
 src/i18n/                routing, navigation localisée, chargement des messages
-src/components/site/     shell : header, footer, skip link, providers, thème
-src/components/three/    avatar 3D (Canvas unique et persistant + ancres)
+src/components/ui/       design system « Cosy » : primitives (Button, ClayCard, Chip, SpeechBubble…) + README
+src/components/site/     shell : header (+ dock mobile), footer, skip link, providers, thème
+src/components/three/    avatar 3D : Canvas unique et persistant + ancres = cadres « fenêtre » avec décor SVG
+                         (Genève / plage / ciel du soir), carte « Visite du site », posters (public/scenes/)
 src/content/             profil (source de vérité du contenu : pages + prompt du chat) et photos
 src/lib/                 helpers (pages, SEO, store de l'avatar)
 ```
@@ -82,4 +84,9 @@ Rominou communique uniquement par écrit (bulles et chat), sans voix.
 
 Captures des projets : `public/projects/` (WebP ~1280 px, servies sans optimiseur).
 
-Chaque page pose un thème (`data-theme="pro" | "hobby" | "chat"`) qui définit les variables CSS (`--theme-*`) et les utilitaires Tailwind sémantiques (`text-fg`, `text-muted`, `text-accent`, `bg-surface`, `border-line`, `shadow-glow`, `text-shadow-neon`).
+Direction artistique « Cosy » (pâte à modeler mate, pastels, HUD de jeu cosy) : tokens dans
+`src/app/globals.css`, primitives et règles dans [`src/components/ui/README.md`](src/components/ui/README.md).
+Chaque page pose un thème (`data-theme="pro" | "hobby" | "chat"`) qui définit les variables CSS (`--theme-*`) et
+les utilitaires Tailwind sémantiques (`text-fg`, `text-muted`, `text-accent`, `bg-surface`, `bg-band`,
+`border-line`) ; Hobby et Chat plongent dans leur bande (pêche, lilas). Polices auto-hébergées (@fontsource) :
+Fraunces (titres), Nunito (texte), Jua (coréen, chargée à la demande).

@@ -18,17 +18,17 @@
   },
   "footer": {
     "contact": "Contact",
-    "email": "Email:",
+    "signature": "{name} · {city}",
+    "writeMe": "Email me",
+    "writeMeTitle": "Write to {email}",
     "linkedin": "LinkedIn",
     "instagram": "Instagram",
     "lastUpdated": "Updated on {date}",
-    "copyright": "© {year} {name}",
-    "pages": "Site pages",
-    "madeIn": "Made in {city}, with {guide} as your guide."
+    "copyright": "© {year} {name}"
   },
   "age": "{age} years old",
   "avatar": {
-    "label": "Rominou, Romain's 3D avatar",
+    "label": "Rominou, {name}'s 3D avatar",
     "guideLabel": "Rominou, the guide"
   },
   "notFound": {
@@ -38,5 +38,12 @@
   },
   "a11y": {
     "newTab": "(opens in a new tab)"
+  },
+  "brand": {
+    "tagline": "The portfolio guided by {guide}"
+  },
+  "status": {
+    "obtained": "Obtained",
+    "inProgress": "In progress"
   }
 }

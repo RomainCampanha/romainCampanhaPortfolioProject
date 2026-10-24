@@ -1,112 +1,150 @@
-import type { ReactNode } from "react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { pick, profile } from "@/content/profile";
+import { inSentence } from "@/lib/text";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { GamepadIcon, MusicIcon, TrophyIcon } from "./icons";
+import { Chip } from "@/components/ui/Chip";
+import { ClayCard } from "@/components/ui/ClayCard";
+import { Coin } from "@/components/ui/Coin";
+import { cx } from "@/components/ui/cx";
+import { FEATURED_GAME, LOL } from "./games";
+import { CassetteArt, RankGem } from "./icons";
+import { RunnerTeaser } from "./RunnerTeaser";
 
-const LOL = "League of Legends";
-
-// #musique-jeux (ids stables pour la visite guidée) :
-// #lol (carte League of Legends : rôle, meilleur rang, champions — JAMAIS de pseudo),
-// #musique (rap français ; sons préférés à venir), #jeu (runner, bientôt).
-export function MusicGamesSection() {
+// #musique-jeux (ids stables pour la visite guidée et le chat) :
+// #musique (rap français qu'il ÉCOUTE : il ne fait pas de musique ; sons préférés à venir),
+// #lol (carte League of Legends : rôle, meilleur rang, champions — JAMAIS de pseudo — et les
+// autres jeux), #jeu (« La course de Rominou », bientôt).
+export function MusicGamesSection({ className }: { className?: string }) {
   const t = useTranslations("hobby.passions");
   const locale = useLocale();
-  const format = useFormatter();
-  const lol = profile.gaming.leagueOfLegends;
-  const artists = format.list(profile.music.favoriteArtists, { type: "conjunction" });
-  const otherGames = format.list(
-    profile.gaming.games.filter((game) => game !== LOL),
-    { type: "conjunction" },
-  );
 
   return (
-    <section id="musique-jeux" aria-labelledby="musique-jeux-title" className="scroll-mt-20 py-12 sm:py-16">
-      <SectionHeading id="musique-jeux-title" title={t("title")} intro={t("intro")} />
+    <section
+      id="musique-jeux"
+      aria-labelledby="musique-jeux-title"
+      className={cx("scroll-mt-6 pt-20 sm:pt-28", className)}
+    >
+      <SectionHeading
+        id="musique-jeux-title"
+        kicker={t("kicker")}
+        kickerIcon="headphones"
+        title={t("title")}
+        intro={t("intro", { genre: inSentence(pick(profile.music.genre, locale), locale) })}
+      />
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {lol ? (
-          <Card id="lol" icon={<TrophyIcon />} title={t("lol.title")} className="md:col-span-2">
-            <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:gap-10">
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-accent">{t("lol.role")}</dt>
-                <dd className="mt-1 font-display text-2xl font-black">{pick(lol.role, locale)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-widest text-accent">{t("lol.peak")}</dt>
-                <dd className="mt-1 font-display text-2xl font-black">{pick(lol.peakRank, locale)}</dd>
-              </div>
-              <div className="col-span-2 min-w-0 sm:col-span-1">
-                <dt className="text-xs font-semibold uppercase tracking-widest text-accent">{t("lol.champions")}</dt>
-                <dd className="mt-2">
-                  <ul className="flex flex-wrap gap-2">
-                    {lol.champions.map((champion) => (
-                      <li
-                        key={champion}
-                        className="rounded-full bg-cocoa px-3 py-1 font-display text-xs font-bold tracking-wide text-sun"
-                      >
-                        {champion}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-5 text-muted">{t("lol.otherGames", { games: otherGames })}</p>
-          </Card>
-        ) : null}
-
-        <Card id="musique" icon={<MusicIcon />} title={t("music.title")}>
-          <p className="mt-2 text-muted">{t("music.text", { artists })}</p>
-          <p className="mt-4 rounded-xl border-2 border-dashed border-cocoa/25 px-4 py-3 text-sm font-semibold">
-            {t("music.soon")}
-          </p>
-        </Card>
-
-        <Card id="jeu" icon={<GamepadIcon />} title={t("game.title")} badge={<SoonBadge label={t("soon")} />} dashed>
-          <p className="mt-2 text-muted">{t("game.text")}</p>
-        </Card>
+      <div className="grid gap-x-7 gap-y-10 md:grid-cols-2">
+        <MusicCard />
+        <LolCard />
+        <RunnerTeaser className="md:col-span-2" />
       </div>
     </section>
   );
 }
 
-type CardProps = {
-  id: string;
-  icon: ReactNode;
-  title: string;
-  badge?: ReactNode;
-  /** Bordure en pointillés : contenu à venir. */
-  dashed?: boolean;
-  className?: string;
-  children: ReactNode;
-};
-
-function Card({ id, icon, title, badge, dashed = false, className = "", children }: CardProps) {
+function CardHeader({ id, icon, kicker, title }: { id: string; icon: "headphones" | "gamepad"; kicker: string; title: string }) {
   return (
-    <article
-      id={id}
-      aria-labelledby={`${id}-title`}
-      className={`flex h-full scroll-mt-20 flex-col rounded-card bg-surface p-5 sm:p-6 ${
-        dashed ? "border-2 border-dashed border-cocoa/30" : "border border-line"
-      } ${className}`}
-    >
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-cocoa text-sun">{icon}</span>
-        <h3 id={`${id}-title`} className="font-display text-lg font-bold leading-snug">
+    <div className="flex items-center gap-3.5">
+      <Coin icon={icon} size="lg" className="text-tone-800" />
+      <div className="min-w-0">
+        <p className="type-kicker text-tone-800">{kicker}</p>
+        <h3 id={id} className="type-title mt-0.5">
           {title}
         </h3>
-        {badge ? <span className="ml-auto">{badge}</span> : null}
       </div>
-      {children}
-    </article>
+    </div>
   );
 }
 
-function SoonBadge({ label }: { label: string }) {
+/** Le coin musique (lilas) : cassette décorative + ses rappeurs préférés (il écoute, il ne fait pas). */
+function MusicCard() {
+  const t = useTranslations("hobby.passions.music");
+  const locale = useLocale();
+  // Ses mots (profil) : « Grand fan de rap français, surtout de Vald et Damso. »
+  const description = profile.hobbies.find((hobby) => hobby.id === "music")?.description;
+
   return (
-    <span className="rounded-full bg-cocoa px-3 py-1 font-display text-[0.65rem] font-bold uppercase tracking-[0.2em] text-sun">
-      {label}
-    </span>
+    <ClayCard
+      as="article"
+      id="musique"
+      aria-labelledby="musique-title"
+      tone="lilac"
+      className="flex scroll-mt-6 flex-col p-6 sm:p-7"
+    >
+      <CardHeader id="musique-title" icon="headphones" kicker={t("kicker")} title={t("title")} />
+      <div className="my-6 flex justify-center">
+        <CassetteArt
+          label={pick(profile.music.genre, locale)}
+          className="w-full max-w-60 -rotate-3 drop-shadow-[0_10px_12px_color-mix(in_srgb,var(--color-clay-edge)_22%,transparent)]"
+        />
+      </div>
+      {description ? <p className="text-lg font-bold">{pick(description, locale)}</p> : null}
+      <div className="mt-auto pt-5">
+        <p className="rounded-clay-md border-2 border-dashed border-tone-300 px-4 py-3 text-sm font-bold text-tone-800">
+          {t("soon")}
+        </p>
+      </div>
+    </ClayCard>
+  );
+}
+
+/** Carte de joueur League of Legends (lac) : rôle, meilleur rang, champions, puis les autres jeux. */
+function LolCard() {
+  const t = useTranslations("hobby.passions.lol");
+  const locale = useLocale();
+  const lol = profile.gaming.leagueOfLegends;
+  const otherGames = profile.gaming.games.filter((game) => game !== LOL);
+  if (!lol) return null;
+
+  return (
+    <ClayCard as="article" id="lol" aria-labelledby="lol-title" tone="lake" className="scroll-mt-6 p-6 sm:p-7">
+      <CardHeader id="lol-title" icon="gamepad" kicker={t("kicker")} title={t("title")} />
+
+      <dl className="mt-6 grid gap-3.5 min-[25rem]:grid-cols-2">
+        <div className="flex flex-col justify-between rounded-clay-md bg-cream px-4 py-3.5 shadow-[0_4px_0_var(--tone-300)]">
+          <dt className="type-kicker text-tone-800">{t("role")}</dt>
+          <dd className="type-title mt-1.5">{pick(lol.role, locale)}</dd>
+        </div>
+        <div className="flex flex-col justify-between rounded-clay-md bg-cream px-4 py-3.5 shadow-[0_4px_0_var(--tone-300)]">
+          <dt className="type-kicker text-tone-800">{t("peak")}</dt>
+          <dd className="mt-1.5 flex items-center justify-between gap-2">
+            <span className="type-title">{pick(lol.peakRank, locale)}</span>
+            <RankGem size={36} className="hidden shrink-0 min-[25rem]:block" />
+          </dd>
+        </div>
+        <div className="mt-2 min-[25rem]:col-span-2">
+          <dt className="type-kicker text-tone-800">{t("champions")}</dt>
+          <dd className="mt-2.5">
+            <ul className="flex flex-wrap gap-2">
+              {lol.champions.map((champion) => (
+                <Chip as="li" key={champion} tone="lake" className="bg-cream">
+                  {champion}
+                </Chip>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      </dl>
+
+      {otherGames.length > 0 ? (
+        <div className="mt-6 border-t-2 border-dashed border-tone-300 pt-5">
+          <h4 id="lol-other-games" className="type-kicker text-tone-800">
+            {t("otherGames")}
+          </h4>
+          <ul aria-labelledby="lol-other-games" className="mt-2.5 flex flex-wrap gap-2">
+            {otherGames.map((game) => (
+              <Chip
+                as="li"
+                key={game}
+                tone={game === FEATURED_GAME ? "sage" : "lake"}
+                icon={game === FEATURED_GAME ? "leaf" : "gamepad"}
+                className="bg-cream"
+              >
+                {game}
+              </Chip>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </ClayCard>
   );
 }

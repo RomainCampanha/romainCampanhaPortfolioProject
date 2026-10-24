@@ -4,13 +4,10 @@
     "description": "{name}: {headline}. Background, skills, project and contact."
   },
   "guide": {
-    "bubble": "Hi, I'm Rominou, the guide! I'm Romain's avatar: soon I'll show you around the site. Until then, everything's right here in text form."
+    "bubble": "Hi, I'm Rominou, the guide! I'm {name}'s avatar and I'll keep you company across the site's three pages. This is his professional side!"
   },
   "hero": {
-    "kicker": "Hi, I'm {firstName}",
-    "bioWork": "{native, select, true {Born and raised in {location}} other {Based in {location}}}, I've been working at {company} since {since}, at {rate}, as {role}.",
-    "bioStudies": "The rest of the time, I'm working towards my {studies} ({school}).",
-    "bioBefore": "Before that: {diplomas}.",
+    "lede": "{role} at <lake>{company}</lake> and {field} student at <lilac>{school}</lilac>.",
     "factsLabel": "At a glance",
     "facts": {
       "age": "Age",
@@ -18,30 +15,40 @@
       "job": "Job",
       "studies": "Studies"
     },
-    "jobValue": "{company}, at {rate}",
-    "studiesValue": "{degree}, {school}",
+    "ageNote": "born in {year}",
+    "cityNote": "born and raised here",
+    "rateLabel": "Workload: {rate}",
+    "studiesNote": "in progress",
     "ctaChat": "Talk to my AI",
     "ctaPath": "See my path"
   },
+  "stage": {
+    "quest": "Site tour",
+    "done": "Tour complete!",
+    "progress": "{current}/{total}",
+    "progressLabel": "{current, plural, one {# page} other {# pages}} of {total} visited"
+  },
   "path": {
-    "title": "My path",
-    "intro": "My wall of diplomas: from the {first} to the {last}{city, select, none {} other {, all in {city}}}.",
-    "diplomasTitle": "Diplomas",
-    "status": {
-      "obtained": "Obtained",
-      "inProgress": "In progress"
-    },
+    "kicker": "My path",
+    "title": "The wall of diplomas",
+    "intro": "From the {first} to the {last}{city, select, none {} other {, all in {city}}}.",
+    "diplomasLabel": "My diplomas, from oldest to most recent",
+    "school": "<abbr>{school}</abbr> · {city}",
     "period": "{start} – {end}",
     "since": "Since {start}",
-    "experienceTitle": "Experience",
-    "experienceSince": "Since {date}",
-    "experienceRate": "Workload: {rate}",
-    "experienceText": "Alongside my studies ({schools})."
+    "experience": {
+      "kicker": "Alongside",
+      "roleSince": "{role}, since {since}",
+      "rateLabel": "Workload: {rate}"
+    },
+    "notesLabel": "Notes on my diplomas"
   },
   "skills": {
-    "title": "Skills",
+    "kicker": "Skills",
+    "title": "My inventory",
     "intro": "What I've learned in school, at work and on my own projects. Each skill's tag shows where I picked it up.",
     "sourcePrefix": ", source: ",
+    "sourceJoin": " and ",
     "sources": {
       "ESIG": "ESIG",
       "CFPT": "CFPT",
@@ -49,23 +56,35 @@
       "Infomaniak": "Infomaniak",
       "Projets": "Self-taught"
     },
+    "summary": {
+      "title": "Where my skills come from",
+      "total": "{count, plural, one {# skill} other {# skills}} in total",
+      "legendLabel": "Skills by source",
+      "overlap": "Some skills come from more than one place."
+    },
     "languagesTitle": "Languages"
   },
   "project": {
-    "title": "{count, plural, one {Project} other {Projects}}",
+    "kicker": "{count, plural, one {Project} other {Projects}}",
+    "title": "Put into practice",
     "kind": {
       "school": "School project",
       "personal": "Side project"
     },
+    "highlightsLabel": "What {name} does",
+    "stackLabel": "Tech stack",
     "visit": "Visit {name}"
   },
   "contact": {
-    "title": "Contact",
-    "intro": "A question, an opportunity, or just want to talk rap and travel? Drop me a line!",
+    "kicker": "Contact",
+    "title": "Let’s talk",
+    "intro": "A question, an opportunity, or just want to talk {music} and {travel}? Drop me a line!",
     "email": "Email me",
+    "emailDirect": "My address:",
     "linkedin": "LinkedIn",
     "instagram": "Instagram",
-    "chatHint": "Not in the mood for an email?",
-    "chatCta": "Ask my AI your questions"
+    "linksLabel": "Get in touch",
+    "chatHint": "Not in the mood for an email? Ask {name}'s AI version instead.",
+    "chatCta": "Talk to my AI"
   }
 }
