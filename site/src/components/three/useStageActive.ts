@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useAvatar } from "@/lib/avatar/store";
 
-// Le Canvas ne rend que si l'onglet est visible ET l'ancre proche du viewport.
+// Le Canvas ne rend que si l'onglet est visible, l'ancre proche du viewport et le rendu
+// non suspendu (avatarStore.setSuspended, ex. pendant le jeu).
 
 function subscribeVisibility(onChange: () => void) {
   document.addEventListener("visibilitychange", onChange);
@@ -15,6 +17,7 @@ export function useStageActive(element: HTMLElement | null): boolean {
     () => document.visibilityState === "visible",
     () => false,
   );
+  const suspended = useAvatar((s) => s.suspended);
   const [intersecting, setIntersecting] = useState(true);
 
   useEffect(() => {
@@ -27,5 +30,5 @@ export function useStageActive(element: HTMLElement | null): boolean {
     return () => observer.disconnect();
   }, [element]);
 
-  return visible && element !== null && intersecting;
+  return visible && !suspended && element !== null && intersecting;
 }

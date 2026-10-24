@@ -52,6 +52,8 @@ export type AvatarState = {
   status: AvatarStageStatus;
   /** Tenue effectivement affichée en 3D quand status = "ready". */
   readyOutfit: AvatarOutfit | null;
+  /** Rendu du Canvas suspendu (ex. pendant le jeu, qui a son propre Canvas). */
+  suspended: boolean;
 };
 
 const initialState: AvatarState = {
@@ -63,6 +65,7 @@ const initialState: AvatarState = {
   anchor: null,
   status: "idle",
   readyOutfit: null,
+  suspended: false,
 };
 
 let state: AvatarState = initialState;
@@ -122,6 +125,11 @@ export const avatarStore = {
   /** Force une tenue (jusqu'au prochain changement de page). */
   setOutfit(outfit: AvatarOutfit) {
     setState({ outfit });
+  },
+
+  /** Suspend (ou reprend) le rendu du Canvas de Rominou, sans le démonter. */
+  setSuspended(suspended: boolean) {
+    setState({ suspended });
   },
 
   /** Change de page ; la tenue reprend la valeur par défaut de la page. */
