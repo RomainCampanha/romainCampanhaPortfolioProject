@@ -1,0 +1,50 @@
+/* Ancre de Rominou : réserve l'espace (hauteur définie par globals.css ou className). */
+.anchor {
+  position: relative;
+  container-type: size;
+  pointer-events: none;
+}
+
+/* Boîte de scène au ratio fixe (2:3), centrée et "contain" dans l'ancre :
+   le poster et le Canvas 3D partagent exactement ce cadre. */
+.box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Poster plein pied, mis à l'échelle pour imiter le cadrage de la variante (ex. buste). */
+.poster {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--poster-top, 0) * 100%);
+  width: calc(var(--poster-scale, 1) * 100%);
+  max-width: none;
+  height: auto;
+  translate: -50% 0;
+  user-select: none;
+  transition: opacity 0.45s ease;
+}
+
+.poster[data-hidden="true"] {
+  opacity: 0;
+}
+
+.slot {
+  position: absolute;
+  inset: 0;
+}
+
+/* Cadrage buste (chat) : fondu en bas plutôt qu'une coupe nette du corps et des mains. */
+.anchor[data-avatar-anchor="chat"] .box {
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 98%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster {
+    transition: none;
+  }
+}

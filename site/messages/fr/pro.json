@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "title": "{name} · Parcours & compétences",
+    "description": "{name} : {headline}. Parcours, compétences, projet perso et contact."
+  },
+  "guide": {
+    "bubble": "Salut, moi c'est Rominou, l'avatar de Romain ! Bientôt, je te fais la visite guidée. En attendant, tout est là, en version texte."
+  },
+  "hero": {
+    "kicker": "Salut, moi c'est {firstName}",
+    "bioWork": "{native, select, true {Né et resté à {location}} other {Basé à {location}}}, je travaille chez {company} depuis {since}, à {rate}, au poste de {role}.",
+    "bioStudies": "Le reste du temps, je prépare mon {studies} ({school}).",
+    "bioBefore": "Avant ça : {diplomas}.",
+    "factsLabel": "En bref",
+    "facts": {
+      "age": "Âge",
+      "city": "Ville",
+      "job": "Job",
+      "studies": "Études"
+    },
+    "jobValue": "{company}, à {rate}",
+    "studiesValue": "{degree}, {school}",
+    "ctaChat": "Parler à mon IA",
+    "ctaPath": "Voir mon parcours"
+  },
+  "path": {
+    "title": "Mon parcours",
+    "intro": "Mon mur des diplômes : du {first} au {last}{city, select, none {} other {, toujours à {city}}}.",
+    "diplomasTitle": "Diplômes",
+    "status": {
+      "obtained": "Obtenu",
+      "inProgress": "En cours"
+    },
+    "period": "{start} – {end}",
+    "since": "Depuis {start}",
+    "nickname": "Ce que j'appelle mon « {nickname} »",
+    "experienceTitle": "Expérience",
+    "experienceSince": "Depuis {date}",
+    "experienceRate": "Taux d'activité : {rate}",
+    "experienceText": "En parallèle de mes études ({schools})."
+  },
+  "skills": {
+    "title": "Compétences",
+    "intro": "Les langages, frameworks et outils que j'ai appris au fil de mes formations et de mes projets.",
+    "languagesTitle": "Langues"
+  },
+  "project": {
+    "title": "Projet perso",
+    "kicker": "Side project",
+    "visit": "Visiter {name}"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "Une question, une opportunité, ou juste envie de parler rap et voyages ? Écris-moi !",
+    "email": "M'écrire",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram",
+    "chatHint": "Pas envie d'écrire un e-mail ?",
+    "chatCta": "Pose tes questions à mon IA"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "defaultTitle": "{name} · Portfolio",
+    "description": "Portfolio of {name}, based in {city}: background, skills, travels and an AI to chat with. Guided tour by {guide}, his 3D avatar."
+  },
+  "skipLink": "Skip to main content",
+  "nav": {
+    "label": "Main navigation",
+    "home": "{name}, home",
+    "pro": "Pro",
+    "hobby": "Hobby",
+    "chat": "Chat"
+  },
+  "language": {
+    "label": "Language selection",
+    "fr": "Français",
+    "en": "English"
+  },
+  "footer": {
+    "contact": "Contact",
+    "email": "Email:",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram",
+    "lastUpdated": "Updated on {date}",
+    "copyright": "© {year} {name}",
+    "pages": "Site pages",
+    "madeIn": "Made in {city}, with {guide} as your guide."
+  },
+  "age": "{age} years old",
+  "avatar": {
+    "label": "Rominou, Romain's 3D avatar",
+    "guideLabel": "Rominou, your guide"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "Rominou looked everywhere, but this page doesn't exist.",
+    "backHome": "Back to home"
+  },
+  "a11y": {
+    "newTab": "(opens in a new tab)"
+  }
+}

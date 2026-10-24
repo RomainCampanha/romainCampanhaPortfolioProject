@@ -1,0 +1,33 @@
+# dépendances
+/node_modules
+/.pnp
+.pnp.*
+
+# Next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# tests
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# variables d'environnement (garder .env.example)
+.env
+.env*.local
+
+# photos sources non optimisées (scripts/optimize-photos.mjs) : tout est ignoré sauf le README.
+# "/photos-raw/*" (et non "photos-raw/") pour que la ré-inclusion du README fonctionne.
+/photos-raw/*
+!/photos-raw/README.md
+
+# divers
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel

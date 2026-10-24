@@ -1,0 +1,339 @@
+@import "tailwindcss";
+@import "@fontsource-variable/orbitron";
+@import "@fontsource-variable/inter";
+
+/* ==========================================================================
+   Design system — Romain Campanha
+   - Palette fixe (tokens @theme) + variables sémantiques par page (data-theme).
+   - Utilitaires sémantiques qui suivent le thème : text-fg, text-muted,
+     text-accent, bg-surface, border-line, shadow-glow, text-shadow-neon…
+   ========================================================================== */
+
+@theme {
+  /* Typo */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Orbitron Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Pro : nuit -> prune -> cyan */
+  --color-night: #0a0a1f;
+  --color-plum: #2a153a;
+  --color-cyan: #00c1ff;
+
+  /* Hobby : jaune chaud / ambre, texte brun foncé */
+  --color-sun: #ffd95a;
+  --color-honey: #f59e0b;
+  --color-cocoa: #3b2410;
+
+  /* Chat : violet -> rose néon / indigo */
+  --color-grape: #7928ca;
+  --color-neon-pink: #ff00c3;
+  /* Rose clair : texte de petite taille sur fond sombre (contraste AA, >= 4.5:1) */
+  --color-neon-pink-light: #ff6bdc;
+  --color-indigo-night: #140b33;
+
+  /* Rayons */
+  --radius-card: 1.25rem;
+  --radius-bubble: 1.75rem;
+
+  /* Glows néon fixes */
+  --shadow-glow-cyan: 0 0 8px rgb(0 193 255 / 0.55), 0 0 28px rgb(0 193 255 / 0.35);
+  --shadow-glow-pink: 0 0 8px rgb(255 0 195 / 0.55), 0 0 28px rgb(255 0 195 / 0.35);
+  --shadow-glow-sun: 0 0 8px rgb(245 158 11 / 0.55), 0 0 28px rgb(255 217 90 / 0.45);
+}
+
+/* Couleurs sémantiques liées au thème courant (résolues à l'usage) */
+@theme inline {
+  --color-fg: var(--theme-fg);
+  --color-muted: var(--theme-muted);
+  --color-accent: var(--theme-accent);
+  --color-accent-2: var(--theme-accent-2);
+  --color-surface: var(--theme-surface);
+  --color-line: var(--theme-line);
+  --shadow-glow: 0 0 8px var(--theme-glow), 0 0 28px var(--theme-glow);
+  --text-shadow-neon: 0 0 10px var(--theme-glow), 0 0 24px var(--theme-glow);
+}
+
+/* --------------------------------------------------------------------------
+   Thèmes par page : data-theme="pro" | "hobby" | "chat"
+   -------------------------------------------------------------------------- */
+
+:root,
+[data-theme="pro"] {
+  --theme-bg:
+    radial-gradient(ellipse 80% 60% at 85% 105%, rgb(0 193 255 / 0.22), transparent 65%),
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgb(42 21 58 / 0.9), transparent 70%),
+    linear-gradient(160deg, var(--color-night) 0%, var(--color-plum) 55%, var(--color-night) 100%);
+  --theme-base: var(--color-night);
+  --theme-fg: #ecebff;
+  --theme-muted: #b9b4d6;
+  --theme-accent: var(--color-cyan);
+  --theme-accent-2: #a78bfa;
+  --theme-surface: rgb(255 255 255 / 0.06);
+  --theme-line: rgb(255 255 255 / 0.14);
+  --theme-glow: rgb(0 193 255 / 0.45);
+  --theme-focus: var(--color-cyan);
+  color-scheme: dark;
+}
+
+[data-theme="hobby"] {
+  --theme-bg:
+    radial-gradient(ellipse 70% 50% at 90% 0%, rgb(255 255 255 / 0.35), transparent 60%),
+    linear-gradient(165deg, #ffe58f 0%, var(--color-sun) 40%, var(--color-honey) 100%);
+  --theme-base: var(--color-sun);
+  --theme-fg: var(--color-cocoa);
+  --theme-muted: #5c3d1e;
+  /* Rouille foncée : contraste AA sur jaune ET sur ambre */
+  --theme-accent: #7a2410;
+  --theme-accent-2: #92400e;
+  --theme-surface: rgb(255 255 255 / 0.45);
+  --theme-line: rgb(59 36 16 / 0.2);
+  --theme-glow: rgb(245 158 11 / 0.55);
+  --theme-focus: var(--color-cocoa);
+  color-scheme: light;
+}
+
+[data-theme="chat"] {
+  --theme-bg:
+    radial-gradient(ellipse 70% 55% at 100% 100%, rgb(255 0 195 / 0.3), transparent 65%),
+    radial-gradient(ellipse 60% 50% at 0% 0%, rgb(121 40 202 / 0.55), transparent 70%),
+    linear-gradient(155deg, var(--color-indigo-night) 0%, #2b0f57 50%, var(--color-indigo-night) 100%);
+  --theme-base: var(--color-indigo-night);
+  --theme-fg: #f6eeff;
+  --theme-muted: #cdbde6;
+  --theme-accent: var(--color-neon-pink);
+  --theme-accent-2: #c084fc;
+  --theme-surface: rgb(255 255 255 / 0.07);
+  --theme-line: rgb(255 255 255 / 0.16);
+  --theme-glow: rgb(255 0 195 / 0.45);
+  --theme-focus: var(--color-neon-pink-light);
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    background-color: var(--color-night);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Zone d'overscroll assortie à la page courante */
+  html:has(.theme-root[data-theme="hobby"]) {
+    background-color: var(--color-honey);
+  }
+  html:has(.theme-root[data-theme="chat"]) {
+    background-color: var(--color-indigo-night);
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  [data-theme] {
+    color: var(--theme-fg);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Focus visible partout, couleur selon le thème */
+  :focus-visible {
+    outline: 3px solid var(--theme-focus);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+
+  #main:focus {
+    outline: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Composants du shell
+   -------------------------------------------------------------------------- */
+
+@layer components {
+  .theme-root {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    color: var(--theme-fg);
+  }
+  /* Fond dégradé fixe (plus fluide que background-attachment: fixed, surtout sur iOS) */
+  .theme-root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--theme-bg);
+  }
+
+  .site-main {
+    flex: 1;
+  }
+
+  /* Contenu d'une page (wrapper PageShell) */
+  .page-shell {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 72rem;
+    padding-inline: 1rem;
+    color: var(--theme-fg);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100%;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: var(--theme-base);
+    color: var(--theme-fg);
+    font-weight: 600;
+    box-shadow: var(--shadow-glow);
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--theme-line);
+    background: color-mix(in srgb, var(--theme-base) 72%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding: 0.4rem 0.5rem;
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--theme-muted);
+    transition:
+      color 200ms ease,
+      background-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  @media (min-width: 40rem) {
+    .nav-link {
+      padding-inline: 0.75rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+    }
+  }
+  .nav-link:hover {
+    color: var(--theme-fg);
+    background: var(--theme-surface);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--theme-fg);
+    background: var(--theme-surface);
+    box-shadow: inset 0 0 0 1px var(--theme-accent), var(--shadow-glow);
+  }
+
+  .lang-switcher {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.125rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .lang-link {
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.375rem;
+    color: var(--theme-muted);
+  }
+  .lang-link:hover {
+    color: var(--theme-fg);
+  }
+  .lang-link[aria-current="true"] {
+    color: var(--theme-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--theme-line);
+  }
+  .footer-link {
+    color: var(--theme-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--theme-line);
+    text-underline-offset: 4px;
+  }
+  .footer-link:hover {
+    text-decoration-color: var(--theme-accent);
+  }
+
+  /* Bouton néon générique */
+  .btn-neon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid var(--theme-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--theme-fg);
+    background: var(--theme-surface);
+    transition: box-shadow 200ms ease, transform 200ms ease;
+  }
+  .btn-neon:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* Ancres de l'avatar : espace réservé (affiné par l'agent avatar) */
+  .avatar-anchor {
+    width: 100%;
+    pointer-events: none;
+  }
+  .avatar-anchor[data-avatar-anchor="hero"] {
+    height: min(60vh, 32rem);
+  }
+  .avatar-anchor[data-avatar-anchor="column"] {
+    height: min(50vh, 26rem);
+  }
+  .avatar-anchor[data-avatar-anchor="chat"] {
+    height: min(40vh, 20rem);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mouvement réduit : coupe animations, transitions et scroll fluide
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
