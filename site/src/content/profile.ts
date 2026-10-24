@@ -28,11 +28,14 @@ export type SkillGroupId = (typeof SKILL_GROUP_IDS)[number];
 
 // Destinations avec photos (= dossiers de photos, cf. src/content/photos.ts)
 export const TRAVEL_IDS = [
-  "seoul",
-  "toronto",
-  "brighton-dubrovnik",
+  "busan",
+  "berlin",
   "tokyo",
   "shanghai",
+  "paris",
+  "brighton-dubrovnik",
+  "toronto",
+  "seoul",
 ] as const;
 export type TravelId = (typeof TRAVEL_IDS)[number];
 
@@ -354,20 +357,47 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     },
   ],
 
+  // Du plus récent au plus ancien. Années tirées des dates EXIF des photos.
   travels: [
     {
-      id: "seoul",
+      id: "busan",
       places: [
-        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
+        place({ fr: "Busan", en: "Busan" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
       ],
-      year: 2023,
+      year: 2026,
       photos: "available",
       anecdotes: [],
     },
     {
-      id: "toronto",
-      places: [place(same("Toronto"), same("Canada"), "CA")],
-      year: 2024,
+      id: "berlin",
+      places: [place(same("Berlin"), { fr: "Allemagne", en: "Germany" }, "DE")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [],
+    },
+    {
+      id: "tokyo",
+      places: [place(same("Tokyo"), { fr: "Japon", en: "Japan" }, "JP")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [],
+    },
+    {
+      id: "shanghai",
+      places: [place(same("Shanghai"), { fr: "Chine", en: "China" }, "CN")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [
+        {
+          fr: "Les gens fument à l'intérieur des restaurants… ça m'a vraiment choqué !",
+          en: "People smoke inside restaurants… that really shocked me!",
+        },
+      ],
+    },
+    {
+      id: "paris",
+      places: [place(same("Paris"), same("France"), "FR")],
+      year: 2025,
       photos: "available",
       anecdotes: [],
     },
@@ -382,23 +412,20 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       anecdotes: [],
     },
     {
-      id: "tokyo",
-      places: [place(same("Tokyo"), { fr: "Japon", en: "Japan" }, "JP")],
-      year: null, // TODO: année du voyage
-      photos: "coming",
+      id: "toronto",
+      places: [place(same("Toronto"), same("Canada"), "CA")],
+      year: 2024,
+      photos: "available",
       anecdotes: [],
     },
     {
-      id: "shanghai",
-      places: [place(same("Shanghai"), { fr: "Chine", en: "China" }, "CN")],
-      year: null, // TODO: année du voyage
-      photos: "coming",
-      anecdotes: [
-        {
-          fr: "Les gens fument à l'intérieur des restaurants… ça m'a vraiment choqué !",
-          en: "People smoke inside restaurants… that really shocked me!",
-        },
+      id: "seoul",
+      places: [
+        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
       ],
+      year: 2023,
+      photos: "available",
+      anecdotes: [],
     },
   ],
 
@@ -408,12 +435,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     place(same("Rome"), { fr: "Italie", en: "Italy" }, "IT"),
     place(same("Milan"), { fr: "Italie", en: "Italy" }, "IT"),
     place({ fr: "Londres", en: "London" }, { fr: "Royaume-Uni", en: "United Kingdom" }, "GB"),
-    place(same("Paris"), same("France"), "FR"),
     place({ fr: "Barcelone", en: "Barcelona" }, { fr: "Espagne", en: "Spain" }, "ES"),
     place({ fr: "Lisbonne", en: "Lisbon" }, same("Portugal"), "PT"),
     place(same("Porto"), same("Portugal"), "PT"),
     place(same("Split"), { fr: "Croatie", en: "Croatia" }, "HR"),
-    place(same("Berlin"), { fr: "Allemagne", en: "Germany" }, "DE"),
     place(same("Amsterdam"), { fr: "Pays-Bas", en: "Netherlands" }, "NL"),
   ],
 
