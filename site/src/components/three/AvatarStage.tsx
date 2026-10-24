@@ -8,7 +8,8 @@ import { pageFromPathname } from "@/lib/pages";
 import type { AvatarInput } from "@/lib/avatar/controller";
 import { modelUrl } from "@/lib/avatar/assets";
 import { preferredModelQuality } from "@/lib/avatar/device";
-import { cameraForFraming, FRAMINGS, STAGE_FOV, STAGE_LIGHTS, type Framing } from "@/lib/avatar/framing";
+import { cameraForFraming, FRAMINGS, STAGE_FOV, type Framing } from "@/lib/avatar/framing";
+import { STAGE_GL, STAGE_LIGHTS } from "@/lib/avatar/look";
 import { useEffectiveOutfit } from "@/lib/avatar/hooks";
 import { avatarStore, useAvatar, type AvatarAnchorVariant, type AvatarOutfit } from "@/lib/avatar/store";
 import { AvatarModel } from "./AvatarModel";
@@ -32,6 +33,9 @@ const IDLE_AFTER_MS = 8000;
 const EYE_HEIGHT = 1.5;
 /** Après ce délai sans mouvement du pointeur, Rominou regarde de nouveau devant lui (ms). */
 const LOOK_TIMEOUT = 4000;
+/** Options du renderer : fond transparent (décor SVG derrière), tone mapping du look Cosy. */
+const GL_OPTIONS = { alpha: true, antialias: true, powerPreference: "default", ...STAGE_GL } as const;
+const { hemisphere, key: keyLight, rim: rimLight } = STAGE_LIGHTS;
 
 export default function AvatarStage() {
   const [failed, setFailed] = useState(false);
@@ -95,7 +99,7 @@ function StageCanvas({ onError }: { onError: () => void }) {
       <Canvas
         frameloop={active ? "demand" : "never"}
         dpr={[1, MAX_DPR]}
-        gl={{ alpha: true, antialias: true, powerPreference: "default" }}
+        gl={GL_OPTIONS}
         camera={cameraOptions}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
@@ -107,11 +111,10 @@ function StageCanvas({ onError }: { onError: () => void }) {
       >
         <FrameDriver active={active} />
         <StageCamera framing={framing} />
-        <ambientLight intensity={STAGE_LIGHTS.ambient} />
-        <directionalLight
-          intensity={STAGE_LIGHTS.directional.intensity}
-          position={STAGE_LIGHTS.directional.position as [number, number, number]}
-        />
+        {/* Lumière « pâte à modeler » : ciel crème / sol sable, clé chaude, contre-jour froid */}
+        <hemisphereLight args={[hemisphere.sky, hemisphere.ground, hemisphere.intensity]} />
+        <directionalLight color={keyLight.color} intensity={keyLight.intensity} position={keyLight.position} />
+        <directionalLight color={rimLight.color} intensity={rimLight.intensity} position={rimLight.position} />
         <Suspense fallback={null}>
           <AvatarModel key={url} url={url} outfit={outfit} getLook={getLook} />
         </Suspense>

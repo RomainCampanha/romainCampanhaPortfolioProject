@@ -4,17 +4,27 @@
     "description": "Chat with the AI version of {name}: ask about his background, projects and passions."
   },
   "hero": {
-    "title": "Talk with Romain's AI",
-    "intro": "Ask Rominou, the guide, anything: he's Romain's AI version. He answers in writing and can also show you around the site."
+    "kicker": "Let's chat",
+    "title": "Talk with {name}’s AI",
+    "intro": "Ask Rominou, the guide, anything: he's {name}'s AI version. He answers in writing and can also show you around the site."
   },
-  "notice": "You're chatting with Rominou, the AI version of Romain: it can make mistakes. For reliable info, email {email}.",
+  "notice": "Rominou is an AI, so he can make mistakes. For reliable info, email <link>{email}</link>.",
+  "window": {
+    "title": "Rominou, the guide",
+    "subtitle": "<nw>{name}'s AI version ·</nw> <nw>replies in writing</nw>",
+    "status": {
+      "online": "Online",
+      "away": "On a break"
+    }
+  },
+  "today": "Today",
   "panelLabel": "Conversation with Rominou",
-  "welcome": "Hi, I'm Rominou, the guide and Romain's AI version! Ask me anything about my background, my job or my travels.",
+  "welcome": "Hi, I'm Rominou, the guide and {name}'s AI version! Ask me anything about my background, my job or my travels.",
   "roles": {
-    "user": "You",
+    "user": "You:",
     "assistant": "Rominou"
   },
-  "thinking": "Rominou is thinking…",
+  "thinking": "Rominou is typing…",
   "stopped": "Answer stopped.",
   "suggestions": {
     "label": "Question ideas",
@@ -31,25 +41,25 @@
     "stop": "Stop"
   },
   "tools": {
-    "navigate": "Rominou is taking you to the {page} page.",
-    "showTrip": "Rominou is opening the trip: {destination}.",
+    "navigate": "Heading to the {page} page",
+    "showTrip": "Rominou is opening the trip: {destination}",
     "playAnimation": {
-      "wave": "Rominou waves at you.",
-      "bow": "Rominou takes a bow.",
-      "walk": "Rominou goes for a stroll.",
-      "run": "Rominou breaks into a sprint."
+      "wave": "Rominou waves at you",
+      "bow": "Rominou takes a bow",
+      "walk": "Rominou goes for a stroll",
+      "run": "Rominou breaks into a sprint"
     },
-    "failed": "Rominou couldn't do that."
+    "failed": "Rominou couldn't do that"
   },
   "live": {
     "reply": "Rominou: {text}"
   },
   "errors": {
-    "unavailable": "Rominou is taking a break right now. Write to Romain directly:",
+    "unavailable": "Rominou is taking a break right now. Write to {name} directly:",
     "rate_limited": "Easy there! That's a lot of messages at once. Try again in a minute.",
-    "daily_limit": "Rominou has talked a lot today and will be back tomorrow. Meanwhile, write to Romain:",
-    "forbidden": "Your request was blocked by the anti-bot protection. Reload the page or write to Romain:",
-    "generic": "Oops, something went wrong. Try again, or write to Romain:",
+    "daily_limit": "Rominou has talked a lot today and will be back tomorrow. Meanwhile, write to {name}:",
+    "forbidden": "Your request was blocked by the anti-bot protection. Reload the page or write to {name}:",
+    "generic": "Oops, something went wrong. Try again, or write to {name}:",
     "retry": "Try again"
   }
 }

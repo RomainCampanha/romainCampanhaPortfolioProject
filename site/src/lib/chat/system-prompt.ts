@@ -1,4 +1,5 @@
 import {
+  educationTitle,
   getAge,
   profile,
   pick,
@@ -61,7 +62,7 @@ function educationLine(e: Education, locale: AppLocale): string {
       ? `since ${e.startYear}, in progress`
       : `${e.startYear}–${e.endYear ?? "?"}, obtained`;
   const details = e.details ? ` ${pick(e.details, locale)}` : "";
-  return `${pick(e.title, locale)} — ${school}, ${period}.${details}`;
+  return `${educationTitle(e, locale)} — ${school}, ${period}.${details}`;
 }
 
 /** Provenance d'une compétence, telle que le modèle doit la comprendre. */

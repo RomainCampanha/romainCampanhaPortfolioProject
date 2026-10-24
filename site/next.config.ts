@@ -49,9 +49,10 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
       {
-        // Modèles 3D, photos, logos, icônes et captures de projets : rarement modifiés.
-        // Noms non hashés, donc pas "immutable" : 1 jour de cache, puis revalidation.
-        source: "/:dir(models|photos|brand|skills|projects)/:path*",
+        // Modèles 3D, photos, logos, posters de Rominou (public/scenes : image LCP du hero) et
+        // captures de projets : rarement modifiés. Noms non hashés, donc pas "immutable" :
+        // 1 jour de cache, puis revalidation.
+        source: "/:dir(models|photos|brand|scenes|projects)/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
         ],

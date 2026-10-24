@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import type { AppLocale } from "@/i18n/routing";
@@ -7,8 +6,6 @@ import { pick, profile } from "@/content/profile";
 import { buildPageMetadata } from "@/lib/seo";
 import { inSentence } from "@/lib/text";
 import { PageShell } from "@/components/site/PageShell";
-import { GuidedLayout } from "@/components/site/GuidedLayout";
-import { RominouGuide } from "@/components/site/RominouGuide";
 import { ProHero } from "@/components/pro/ProHero";
 import { PathSection } from "@/components/pro/PathSection";
 import { SkillsSection } from "@/components/pro/SkillsSection";
@@ -16,9 +13,12 @@ import { ProjectSection } from "@/components/pro/ProjectSection";
 import { ContactSection } from "@/components/pro/ContactSection";
 import { PersonJsonLd } from "@/components/pro/PersonJsonLd";
 
-// Page Pro (accueil). Phase 1 : version texte complète, rendue côté serveur.
-// La visite guidée animée de Rominou (phase 2) s'appuiera sur les ids stables
-// des sections : #parcours (+ #experience), #competences, #projets, #contact.
+// Page Pro (accueil), direction « Cosy » : hero + diorama de Rominou sur son île du Léman
+// (complementary « Rominou, le guide »), mur des diplômes, inventaire des compétences,
+// projet (dans une bande ondulée, pour le rythme) et contact. Version texte complète, rendue
+// côté serveur. Page pleine largeur (bleed) : chaque bloc pose son conteneur.
+// Ids stables (visite guidée de Rominou, chat) : #parcours (+ #experience), #competences,
+// #projets, #contact.
 
 // Page statique. Pas de `revalidate` ici : avec l'ISR, Next 16.4 laisse une requête de
 // prefetch de "/" pendante sur l'accueil (constaté en local). L'âge se met à jour dans
@@ -44,22 +44,19 @@ export async function generateMetadata({
 export default function ProPage({ params }: PageProps<"/[locale]">) {
   const { locale } = use(params);
   setRequestLocale(locale as AppLocale);
-  const t = useTranslations("pro.guide");
-  const tAvatar = useTranslations("common.avatar");
 
   return (
-    <PageShell theme="pro">
+    <PageShell theme="pro" bleed>
       <PersonJsonLd locale={locale as AppLocale} />
-      <GuidedLayout
-        guideLabel={tAvatar("guideLabel")}
-        guide={<RominouGuide label={tAvatar("label")} message={t("bubble")} mobile="hero" desktop="column" />}
-      >
+      <div className="site-container">
         <ProHero />
         <PathSection />
         <SkillsSection />
-        <ProjectSection />
+      </div>
+      <ProjectSection />
+      <div className="site-container">
         <ContactSection />
-      </GuidedLayout>
+      </div>
     </PageShell>
   );
 }

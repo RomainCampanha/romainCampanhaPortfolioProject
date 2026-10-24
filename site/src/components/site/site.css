@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Shell du site « Cosy » : racine thémée, conteneur, header (marque, onglets,
+   langue), barre d'onglets mobile (dock), footer, lien d'évitement.
+   ========================================================================== */
+
+@layer components {
+  /* ---------- Racine thémée ---------- */
+  .theme-root {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    color: var(--theme-fg);
+  }
+  /* Fond avoine + grain, fixe (plus fluide que background-attachment: fixed sur iOS) */
+  .theme-root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--theme-bg);
+    background-image: var(--texture-grain);
+  }
+
+  /* ---------- Conteneur commun (header, pages, footer) ---------- */
+  .site-container {
+    inline-size: 100%;
+    max-inline-size: 77.5rem; /* 1240 px */
+    margin-inline: auto;
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  }
+  @media (min-width: 40rem) {
+    .site-container {
+      padding-inline: 1.5rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .site-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Contenu d'une page (wrapper PageShell) */
+  .page-shell {
+    color: var(--theme-fg);
+  }
+
+  /* ---------- Main : Hobby et Chat plongent dans leur bande (bord ondulé) ---------- */
+  .site-main {
+    flex: 1;
+    position: relative;
+  }
+  .theme-root:is([data-theme="hobby"], [data-theme="chat"]) {
+    --page-band: var(--theme-band);
+  }
+  .theme-root:is([data-theme="hobby"], [data-theme="chat"]) > .site-main {
+    margin-block-start: 2.25rem;
+    background-color: var(--page-band);
+    background-image: var(--texture-grain);
+  }
+  .theme-root:is([data-theme="hobby"], [data-theme="chat"]) > .site-main::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: -27px;
+    block-size: 28px;
+    background-color: var(--page-band);
+    background-image: var(--texture-grain);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 28' preserveAspectRatio='none'><path d='M0 28V16C14 16 18 4 40 4S66 16 80 16V28z'/></svg>")
+      0 0 / 160px 28px repeat-x;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 28' preserveAspectRatio='none'><path d='M0 28V16C14 16 18 4 40 4S66 16 80 16V28z'/></svg>")
+      0 0 / 160px 28px repeat-x;
+    pointer-events: none;
+  }
+
+  /* ---------- Lien d'évitement ---------- */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100%;
+    z-index: 100;
+    padding: 0.625rem 1rem;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-cream);
+    font-weight: 800;
+    box-shadow: var(--shadow-float);
+  }
+  .skip-link:focus {
+    top: 0.75rem;
+  }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: relative;
+    z-index: 30;
+    padding-block: 0.875rem 0.25rem;
+  }
+  .site-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  @media (min-width: 48rem) {
+    .site-header {
+      padding-block: 1.25rem 0.5rem;
+    }
+    .site-header-inner {
+      gap: 1.5rem;
+    }
+  }
+  /* lg : onglets vraiment centrés */
+  @media (min-width: 64rem) {
+    .site-header-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+    .site-header-inner > .lang-toggle {
+      justify-self: end;
+    }
+  }
+
+  /* Marque : tête de Rominou + nom + accroche */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-inline-size: 0;
+    border-radius: 999px;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .brand .coin-avatar {
+    --coin-size: 42px;
+    transition: rotate 0.3s var(--ease-squish);
+  }
+  .brand:hover .coin-avatar {
+    rotate: -8deg;
+  }
+  .brand-text {
+    display: grid;
+    min-inline-size: 0;
+    line-height: 1.15;
+  }
+  .brand-name {
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-variation-settings: var(--fvs-label);
+    font-weight: 650;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .brand-tagline {
+    display: none;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+  /* Très petits écrans (< 360 px) : marque et langue compactes, sans débordement à 320 px */
+  @media (max-width: 22.49rem) {
+    .site-header-inner {
+      gap: 0.5rem;
+    }
+    .brand {
+      gap: 0.5rem;
+    }
+    .brand .coin-avatar {
+      --coin-size: 36px;
+    }
+    .brand-name {
+      font-size: 1rem;
+    }
+    .lang-toggle > .lang-option {
+      min-inline-size: 2.25rem;
+      padding-inline: 0.5rem;
+      font-size: 0.8125rem;
+    }
+  }
+  @media (min-width: 48rem) {
+    .brand {
+      gap: 0.75rem;
+    }
+    .brand .coin-avatar {
+      --coin-size: 48px;
+    }
+    .brand-name {
+      font-size: 1.25rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .brand-tagline {
+      display: block;
+    }
+  }
+
+  /* Onglets des pages : rail en creux (desktop), dock flottant en bas (mobile) */
+  .page-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0.375rem;
+    list-style: none;
+    border-radius: 999px;
+    background: var(--color-oat-deep);
+    box-shadow:
+      inset 0 2px 4px rgb(92 64 40 / 0.12),
+      inset 0 -1px 0 rgb(255 255 255 / 0.7);
+  }
+  .page-tabs > li {
+    display: flex;
+  }
+  .page-tab {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
+    border-radius: 999px;
+    color: var(--color-ink-soft);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      translate 0.15s ease;
+  }
+  .page-tab > .icon {
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+  }
+  .page-tab:hover {
+    color: var(--color-ink);
+  }
+  .page-tab[aria-current="page"] {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    translate: 0 -2px;
+    box-shadow:
+      inset 0 2px 0 #fff,
+      0 4px 0 var(--color-cream-edge),
+      0 10px 18px -10px rgb(92 64 40 / 0.45);
+  }
+  .page-tab[aria-current="page"] > .icon {
+    color: var(--color-clay);
+  }
+  @media (min-width: 64rem) {
+    .page-tab {
+      padding-inline: 1.25rem;
+    }
+  }
+
+  /* Mobile (< 48rem) : la même nav devient un dock fixé en bas (zones sûres respectées) */
+  @media (max-width: 47.99rem) {
+    .page-nav {
+      position: fixed;
+      z-index: 50;
+      inset-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
+      inset-block-end: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+    .page-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      max-inline-size: 30rem;
+      margin-inline: auto;
+      border-radius: 26px;
+      background: var(--color-cream);
+      box-shadow:
+        inset 0 2px 0 #fff,
+        0 5px 0 var(--color-cream-edge),
+        0 18px 30px -12px rgb(43 36 51 / 0.35);
+    }
+    .page-tab {
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.125rem;
+      min-block-size: 3.5rem;
+      padding: 0.5rem 0.25rem;
+      border-radius: 20px;
+      font-size: 0.8125rem;
+      font-weight: 900;
+    }
+    .page-tab > .icon {
+      inline-size: 1.375rem;
+      block-size: 1.375rem;
+    }
+    .page-tab[aria-current="page"] {
+      translate: none;
+      background: var(--color-clay);
+      color: #fff;
+      box-shadow:
+        inset 0 2px 0 rgb(255 255 255 / 0.25),
+        0 4px 0 var(--color-clay-edge);
+    }
+    .page-tab[aria-current="page"] > .icon {
+      color: inherit;
+    }
+    /* Clavier virtuel ouvert (saisie) : le dock s'efface pour ne pas masquer le champ */
+    .theme-root:has(:is(input:not([type="checkbox"], [type="radio"]), textarea):focus) .page-nav {
+      display: none;
+    }
+  }
+
+  /* Choix de langue : pilule crème, langue active en encre */
+  .lang-toggle {
+    display: flex;
+    flex: none;
+    gap: 0.125rem;
+    padding: 0.3125rem;
+    border-radius: 999px;
+    background: var(--color-cream);
+    box-shadow:
+      0 4px 0 var(--color-cream-edge),
+      0 14px 22px -16px rgb(92 64 40 / 0.5);
+  }
+  .lang-option {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.5rem;
+    min-block-size: 2.25rem;
+    padding: 0.3125rem 0.75rem;
+    border-radius: 999px;
+    color: var(--color-ink-soft);
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .lang-option:hover {
+    color: var(--color-ink);
+  }
+  .lang-option[aria-current="true"] {
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    padding-block: 3.5rem 2.5rem;
+  }
+  /* Hobby, Chat : le footer prolonge la bande de la page */
+  .theme-root:is([data-theme="hobby"], [data-theme="chat"]) > .site-footer {
+    background-color: var(--page-band);
+    background-image: var(--texture-grain);
+  }
+  .site-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding-block-start: 2rem;
+    border-block-start: 2px dashed var(--theme-dash);
+  }
+  .footer-sign {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: 800;
+  }
+  .footer-sign .coin-avatar {
+    --coin-size: 34px;
+    --ring: 2px;
+  }
+  /* Page avec sa propre section contact (#contact, page Pro) : pas de doublon des mêmes
+     boutons juste en dessous */
+  .theme-root:has(#contact) .footer-nav {
+    display: none;
+  }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    min-block-size: 2.75rem;
+    padding: 0.5625rem 1rem;
+    border-radius: 999px;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 4px 0 var(--theme-edge);
+    transition:
+      translate 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .footer-link > .icon {
+    inline-size: 1.0625rem;
+    block-size: 1.0625rem;
+    color: var(--color-clay);
+  }
+  .footer-link:hover {
+    translate: 0 -2px;
+    box-shadow: 0 6px 0 var(--theme-edge);
+  }
+  .footer-link:active {
+    translate: 0 3px;
+    box-shadow: 0 1px 0 var(--theme-edge);
+  }
+  .footer-meta {
+    margin-block-start: 1.25rem;
+    color: var(--color-ink-soft);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  /* Mobile : place pour le dock (+ zone sûre) sous le contenu du footer */
+  @media (max-width: 47.99rem) {
+    .site-footer {
+      padding-block: 2.75rem calc(6.75rem + env(safe-area-inset-bottom));
+    }
+    .site-footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  /* ---------- Ancres de l'avatar : espace réservé (affiné par les pages) ---------- */
+  .avatar-anchor {
+    width: 100%;
+    pointer-events: none;
+  }
+  .avatar-anchor[data-avatar-anchor="hero"] {
+    height: min(60vh, 32rem);
+  }
+  .avatar-anchor[data-avatar-anchor="column"] {
+    height: min(50vh, 26rem);
+  }
+  .avatar-anchor[data-avatar-anchor="chat"] {
+    height: min(40vh, 20rem);
+  }
+}

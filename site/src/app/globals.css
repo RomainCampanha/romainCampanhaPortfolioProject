@@ -1,112 +1,340 @@
 @import "tailwindcss";
-@import "@fontsource-variable/orbitron";
-@import "@fontsource-variable/inter";
+/* Polices : Fraunces (tous les axes : wght, opsz, SOFT, WONK) et Nunito (wght), fichiers
+   @fontsource chargés par next/font (src/app/fonts.ts : préchargement + police de secours aux
+   métriques ajustées) -> variables --font-fraunces / --font-nunito posées sur <html>.
+   Jua (coréen) : chargée uniquement par le composant <Hangul> (src/components/ui/Hangul.tsx). */
+@import "../components/ui/ui.css";
+@import "../components/site/site.css";
 
 /* ==========================================================================
-   Design system — Romain Campanha
-   - Palette fixe (tokens @theme) + variables sémantiques par page (data-theme).
-   - Utilitaires sémantiques qui suivent le thème : text-fg, text-muted,
-     text-accent, bg-surface, border-line, shadow-glow, text-shadow-neon…
+   Design system « Cosy » — Romain Campanha
+   Pâte à modeler mate, pastels, détails de HUD de jeu cosy.
+   - Palette fixe (tokens @theme static : toujours émis en variables CSS, donc
+     utilisables aussi dans les CSS modules : var(--color-lake-800)…).
+   - Variables sémantiques par page (data-theme) + utilitaires qui suivent le thème :
+     text-fg, text-muted, text-accent, bg-surface, bg-page, bg-band, border-line…
+   - Tons pastel (tone-sage, tone-peach, tone-butter, tone-lake, tone-lilac) :
+     bg-tone-100, text-tone-800, border-tone-300…
+   Règle de contraste : un pastel porte TOUJOURS le texte de sa teinte profonde (-800).
+   Documentation : src/components/ui/README.md
    ========================================================================== */
 
-@theme {
+@theme static {
   /* Typo */
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Orbitron Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  /* --font-nunito / --font-fraunces : famille next/font + secours ajusté + pile système */
+  --font-sans: var(--font-nunito, ui-rounded, system-ui, sans-serif);
+  --font-display: var(--font-fraunces, Georgia, serif);
+  --font-ko: "Jua", var(--font-nunito, sans-serif);
 
-  /* Pro : nuit -> prune -> cyan */
-  --color-night: #0a0a1f;
-  --color-plum: #2a153a;
-  --color-cyan: #00c1ff;
+  /* Base : avoine, crème, encre */
+  --color-oat: #f5eee3; /* fond de page */
+  --color-oat-deep: #ede3d3; /* creux : rails, plateaux, murs */
+  --color-cream: #fffbf4; /* surfaces */
+  --color-cream-edge: #e6d8c5; /* épaisseur « argile » sous une surface crème */
+  --color-sand: #e4d6c3; /* traits, bordures */
+  --color-ink: #2b2433; /* texte : 12.99:1 sur oat */
+  --color-ink-soft: #5e5568; /* texte secondaire : 6.12:1 sur oat, 5.66:1 sur bande pêche */
 
-  /* Hobby : jaune chaud / ambre, texte brun foncé */
-  --color-sun: #ffd95a;
-  --color-honey: #f59e0b;
-  --color-cocoa: #3b2410;
+  /* Pastels : 100 (fond doux), 200 (pastille, tag), 300 (bord, cadre), 500 (data, bord fort),
+     800 (TEXTE sur 100/200 : >= 5.1:1). */
+  --color-sage-100: #e6f0e1;
+  --color-sage-200: #cfe3c8;
+  --color-sage-300: #b9d4b4;
+  --color-sage-500: #8fb58c;
+  --color-sage-800: #2f5a3b;
 
-  /* Chat : violet -> rose néon / indigo */
-  --color-grape: #7928ca;
-  --color-neon-pink: #ff00c3;
-  /* Rose clair : texte de petite taille sur fond sombre (contraste AA, >= 4.5:1) */
-  --color-neon-pink-light: #ff6bdc;
-  --color-indigo-night: #140b33;
+  --color-peach-100: #fcebdf;
+  --color-peach-200: #f8d9c6;
+  --color-peach-300: #f2b596;
+  --color-peach-500: #d98f6e;
+  --color-peach-800: #8a3f24;
 
-  /* Rayons */
-  --radius-card: 1.25rem;
-  --radius-bubble: 1.75rem;
+  --color-butter-100: #fcf4d6;
+  --color-butter-200: #f8e7a8;
+  --color-butter-300: #f6de8d;
+  --color-butter-500: #e9c75a;
+  --color-butter-800: #7a5a0e;
 
-  /* Glows néon fixes */
-  --shadow-glow-cyan: 0 0 8px rgb(0 193 255 / 0.55), 0 0 28px rgb(0 193 255 / 0.35);
-  --shadow-glow-pink: 0 0 8px rgb(255 0 195 / 0.55), 0 0 28px rgb(255 0 195 / 0.35);
-  --shadow-glow-sun: 0 0 8px rgb(245 158 11 / 0.55), 0 0 28px rgb(255 217 90 / 0.45);
+  --color-lake-100: #e4f1f6;
+  --color-lake-200: #cfe6ef;
+  --color-lake-300: #a9cfe0;
+  --color-lake-500: #6fa8c4;
+  --color-lake-800: #275d78;
+
+  --color-lilac-100: #f0ebf9;
+  --color-lilac-200: #e2d8f3;
+  --color-lilac-300: #d5c8ee;
+  --color-lilac-500: #ae9dd6;
+  --color-lilac-800: #5b478f;
+
+  /* Argile (bouton principal) : texte blanc 5.71:1 */
+  --color-clay: #a84a2a;
+  --color-clay-edge: #7c3519;
+
+  /* Bandes de page */
+  --color-band-peach: #f9e2d1;
+  --color-band-lilac: #ece6f7;
+
+  /* Rayons « argile » */
+  --radius-clay-sm: 14px;
+  --radius-clay-md: 20px;
+  --radius-clay-lg: 28px;
+  --radius-clay-xl: 40px;
+  --radius-card: 28px;
+  --radius-bubble: 28px;
+
+  /* Ombres « argile » : reflet en haut + épaisseur pleine en bas + ombre portée douce */
+  --shadow-clay:
+    inset 0 2px 0 rgb(255 255 255 / 0.95), 0 6px 0 var(--color-cream-edge),
+    0 26px 44px -22px rgb(92 64 40 / 0.38);
+  --shadow-clay-sm:
+    inset 0 2px 0 #fff, 0 4px 0 var(--color-cream-edge), 0 14px 22px -16px rgb(92 64 40 / 0.5);
+  --shadow-clay-pressed:
+    inset 0 2px 0 rgb(255 255 255 / 0.9), 0 1px 0 var(--color-cream-edge),
+    0 6px 10px -8px rgb(92 64 40 / 0.4);
+  /* Creux (plateau, rail d'onglets) */
+  --shadow-well: inset 0 3px 6px rgb(92 64 40 / 0.13), inset 0 -2px 0 rgb(255 255 255 / 0.7);
+  /* Ombre portée seule (stickers, éléments flottants) */
+  --shadow-float: 0 18px 30px -16px rgb(92 64 40 / 0.45);
+
+  /* Mouvement (coupé par prefers-reduced-motion, cf. fin de fichier) */
+  --ease-squish: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-float: float 4.5s ease-in-out infinite;
+  --animate-nudge: nudge 1.1s ease-in-out infinite;
+
+  @keyframes float {
+    50% {
+      translate: 0 -6px;
+    }
+  }
+  @keyframes nudge {
+    50% {
+      translate: 0 3px;
+    }
+  }
 }
 
-/* Couleurs sémantiques liées au thème courant (résolues à l'usage) */
+/* Polices de secours aux métriques de Fraunces / Nunito (src/app/fonts.ts) : pendant le
+   chargement, le texte occupe (presque) la même place qu'une fois la police arrivée, donc pas
+   de saut de mise en page (CLS). size-adjust mesuré sur les textes du site (largeurs comparées
+   à Arial / Times New Roman, ou leurs équivalents métriques : Liberation sous Linux, Arimo /
+   Tinos sous ChromeOS ; Roboto sous Android) ; un réglage pour le texte courant (<= 550) et un
+   pour le gras (titres Fraunces 640+, libellés Nunito 600+), car le gras de secours est plus
+   large. ascent / descent : métriques de Fraunces et Nunito, ramenées à ce size-adjust. */
+@font-face {
+  font-family: "Fraunces Fallback";
+  src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"),
+    local("LiberationSerif-Bold"), local("Tinos Bold");
+  font-weight: 100 1000;
+  ascent-override: 102.9%;
+  descent-override: 26.85%;
+  line-gap-override: 0%;
+  size-adjust: 95%;
+}
+@font-face {
+  font-family: "Nunito Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"),
+    local("Arimo"), local("Roboto");
+  font-weight: 100 550;
+  ascent-override: 100.68%;
+  descent-override: 35.15%;
+  line-gap-override: 0%;
+  size-adjust: 100.4%;
+}
+@font-face {
+  font-family: "Nunito Fallback";
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("LiberationSans-Bold"), local("Arimo Bold"), local("Roboto Bold"), local("Roboto-Bold");
+  font-weight: 551 1000;
+  ascent-override: 108.13%;
+  descent-override: 37.75%;
+  line-gap-override: 0%;
+  size-adjust: 93.5%;
+}
+
+/* Couleurs sémantiques résolues à l'usage (thème de page + ton local). */
 @theme inline {
+  --color-page: var(--theme-bg);
+  --color-band: var(--theme-band);
   --color-fg: var(--theme-fg);
   --color-muted: var(--theme-muted);
+  /* Accent texte (kickers, liens) : teinte profonde, AA sur le fond de page */
   --color-accent: var(--theme-accent);
-  --color-accent-2: var(--theme-accent-2);
+  /* Accent fort (icônes, boutons) */
+  --color-accent-strong: var(--theme-accent-strong);
   --color-surface: var(--theme-surface);
   --color-line: var(--theme-line);
-  --shadow-glow: 0 0 8px var(--theme-glow), 0 0 28px var(--theme-glow);
-  --text-shadow-neon: 0 0 10px var(--theme-glow), 0 0 24px var(--theme-glow);
+  --color-edge: var(--theme-edge);
+
+  /* Ton local (classe tone-* ou data-tone) */
+  --color-tone-100: var(--tone-100);
+  --color-tone-200: var(--tone-200);
+  --color-tone-300: var(--tone-300);
+  --color-tone-500: var(--tone-500);
+  --color-tone-800: var(--tone-800);
+  --color-tone-edge: var(--tone-edge);
 }
 
 /* --------------------------------------------------------------------------
    Thèmes par page : data-theme="pro" | "hobby" | "chat"
+   Le haut de page (header) est toujours sur l'avoine ; Hobby et Chat plongent
+   ensuite dans leur bande (bord ondulé), jusqu'au footer.
    -------------------------------------------------------------------------- */
 
 :root,
 [data-theme="pro"] {
-  --theme-bg:
-    radial-gradient(ellipse 80% 60% at 85% 105%, rgb(0 193 255 / 0.22), transparent 65%),
-    radial-gradient(ellipse 70% 50% at 10% 0%, rgb(42 21 58 / 0.9), transparent 70%),
-    linear-gradient(160deg, var(--color-night) 0%, var(--color-plum) 55%, var(--color-night) 100%);
-  --theme-base: var(--color-night);
-  --theme-fg: #ecebff;
-  --theme-muted: #b9b4d6;
-  --theme-accent: var(--color-cyan);
-  --theme-accent-2: #a78bfa;
-  --theme-surface: rgb(255 255 255 / 0.06);
-  --theme-line: rgb(255 255 255 / 0.14);
-  --theme-glow: rgb(0 193 255 / 0.45);
-  --theme-focus: var(--color-cyan);
-  color-scheme: dark;
-}
-
-[data-theme="hobby"] {
-  --theme-bg:
-    radial-gradient(ellipse 70% 50% at 90% 0%, rgb(255 255 255 / 0.35), transparent 60%),
-    linear-gradient(165deg, #ffe58f 0%, var(--color-sun) 40%, var(--color-honey) 100%);
-  --theme-base: var(--color-sun);
-  --theme-fg: var(--color-cocoa);
-  --theme-muted: #5c3d1e;
-  /* Rouille foncée : contraste AA sur jaune ET sur ambre */
-  --theme-accent: #7a2410;
-  --theme-accent-2: #92400e;
-  --theme-surface: rgb(255 255 255 / 0.45);
-  --theme-line: rgb(59 36 16 / 0.2);
-  --theme-glow: rgb(245 158 11 / 0.55);
-  --theme-focus: var(--color-cocoa);
+  --theme-bg: var(--color-oat);
+  /* Bande de section par défaut (WavyBand tone="theme") */
+  --theme-band: var(--color-oat-deep);
+  --theme-fg: var(--color-ink);
+  --theme-muted: var(--color-ink-soft);
+  --theme-accent: var(--color-peach-800);
+  --theme-accent-strong: var(--color-clay);
+  --theme-surface: var(--color-cream);
+  --theme-line: var(--color-sand);
+  /* Épaisseur des surfaces crème posées sur le fond */
+  --theme-edge: var(--color-cream-edge);
+  /* Traits pointillés (séparateurs, footer) */
+  --theme-dash: var(--color-sand);
+  --theme-focus: var(--color-lake-800);
   color-scheme: light;
 }
 
+[data-theme="hobby"] {
+  --theme-band: var(--color-band-peach);
+  --theme-accent: var(--color-peach-800);
+  --theme-edge: #e9cbb4;
+  --theme-dash: var(--color-peach-300);
+}
+
 [data-theme="chat"] {
-  --theme-bg:
-    radial-gradient(ellipse 70% 55% at 100% 100%, rgb(255 0 195 / 0.3), transparent 65%),
-    radial-gradient(ellipse 60% 50% at 0% 0%, rgb(121 40 202 / 0.55), transparent 70%),
-    linear-gradient(155deg, var(--color-indigo-night) 0%, #2b0f57 50%, var(--color-indigo-night) 100%);
-  --theme-base: var(--color-indigo-night);
-  --theme-fg: #f6eeff;
-  --theme-muted: #cdbde6;
-  --theme-accent: var(--color-neon-pink);
-  --theme-accent-2: #c084fc;
-  --theme-surface: rgb(255 255 255 / 0.07);
-  --theme-line: rgb(255 255 255 / 0.16);
-  --theme-glow: rgb(255 0 195 / 0.45);
-  --theme-focus: var(--color-neon-pink-light);
-  color-scheme: dark;
+  --theme-band: var(--color-band-lilac);
+  --theme-accent: var(--color-lilac-800);
+  --theme-edge: #d7cbee;
+  --theme-dash: var(--color-lilac-300);
+}
+
+/* Tons pastel : posent --tone-* (utilisés par les primitives et bg-tone-100, text-tone-800…).
+   Usage : className="tone-lake" ou data-tone="lake". Neutre (crème) par défaut. */
+:root {
+  --tone-100: var(--color-cream);
+  --tone-200: var(--color-oat-deep);
+  --tone-300: var(--color-sand);
+  --tone-500: #cdbba3;
+  --tone-800: var(--color-ink);
+  --tone-edge: var(--color-cream-edge);
+
+  /* Grain « papier » très léger (SVG, quelques octets, mis en cache par le navigateur) */
+  --texture-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .30  0 0 0 0 .2  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.22'/></svg>");
+
+  /* Réglages Fraunces (axes variables) */
+  --fvs-display: "SOFT" 100, "WONK" 1, "opsz" 144;
+  --fvs-title: "SOFT" 100, "WONK" 1, "opsz" 96;
+  --fvs-label: "SOFT" 100, "WONK" 0, "opsz" 36;
+}
+
+.tone-sage,
+[data-tone="sage"] {
+  --tone-100: var(--color-sage-100);
+  --tone-200: var(--color-sage-200);
+  --tone-300: var(--color-sage-300);
+  --tone-500: var(--color-sage-500);
+  --tone-800: var(--color-sage-800);
+  --tone-edge: var(--color-sage-300);
+}
+.tone-peach,
+[data-tone="peach"] {
+  --tone-100: var(--color-peach-100);
+  --tone-200: var(--color-peach-200);
+  --tone-300: var(--color-peach-300);
+  --tone-500: var(--color-peach-500);
+  --tone-800: var(--color-peach-800);
+  --tone-edge: var(--color-peach-300);
+}
+.tone-butter,
+[data-tone="butter"] {
+  --tone-100: var(--color-butter-100);
+  --tone-200: var(--color-butter-200);
+  --tone-300: var(--color-butter-300);
+  --tone-500: var(--color-butter-500);
+  --tone-800: var(--color-butter-800);
+  --tone-edge: var(--color-butter-300);
+}
+.tone-lake,
+[data-tone="lake"] {
+  --tone-100: var(--color-lake-100);
+  --tone-200: var(--color-lake-200);
+  --tone-300: var(--color-lake-300);
+  --tone-500: var(--color-lake-500);
+  --tone-800: var(--color-lake-800);
+  --tone-edge: var(--color-lake-300);
+}
+.tone-lilac,
+[data-tone="lilac"] {
+  --tone-100: var(--color-lilac-100);
+  --tone-200: var(--color-lilac-200);
+  --tone-300: var(--color-lilac-300);
+  --tone-500: var(--color-lilac-500);
+  --tone-800: var(--color-lilac-800);
+  --tone-edge: var(--color-lilac-300);
+}
+
+/* --------------------------------------------------------------------------
+   Typographie (utilitaires) : Fraunces douce (SOFT 100) pour les titres
+   -------------------------------------------------------------------------- */
+
+/* Titre héros (h1) : 52 -> 112 px */
+@utility type-hero {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-weight: 640;
+  font-size: clamp(3.25rem, 7.4vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+}
+/* Titre de section (h2) : 36 -> 60 px */
+@utility type-h2 {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-weight: 640;
+  font-size: clamp(2.25rem, 4.4vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+/* Grand titre de carte (cadre de diplôme, ville) : 30 -> 40 px */
+@utility type-h3 {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-title);
+  font-weight: 650;
+  font-size: clamp(1.875rem, 1.4rem + 1.4vw, 2.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+/* Petit titre display (valeur de fait, titre de groupe, nom) : 21 px */
+@utility type-title {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-weight: 650;
+  font-size: 1.3125rem;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+}
+/* Sur-titre / étiquette HUD : 13 px, capitales espacées */
+@utility type-kicker {
+  font-size: 0.8125rem;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+/* Chapeau : 18.5 -> 22 px, gras doux, couleur secondaire */
+@utility type-lede {
+  font-size: clamp(1.15625rem, 1rem + 0.6vw, 1.375rem);
+  line-height: 1.5;
+  font-weight: 650;
+  color: var(--theme-muted);
+  /* Pas de mot seul en dernière ligne */
+  text-wrap: pretty;
 }
 
 /* --------------------------------------------------------------------------
@@ -115,24 +343,33 @@
 
 @layer base {
   html {
-    background-color: var(--color-night);
+    background-color: var(--color-oat);
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Zone d'overscroll assortie à la page courante */
+  /* Zone d'overscroll assortie à la bande de la page courante */
   html:has(.theme-root[data-theme="hobby"]) {
-    background-color: var(--color-honey);
+    background-color: var(--color-band-peach);
   }
   html:has(.theme-root[data-theme="chat"]) {
-    background-color: var(--color-indigo-night);
+    background-color: var(--color-band-lilac);
   }
 
   body {
     min-height: 100dvh;
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    font-weight: 500;
+    color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  @media (min-width: 48rem) {
+    body {
+      font-size: 1.0625rem;
+    }
   }
 
   [data-theme] {
@@ -145,11 +382,25 @@
     text-wrap: balance;
   }
 
-  /* Focus visible partout, couleur selon le thème */
+  /* Fraunces toujours en version « douce » (opsz automatique selon la taille) */
+  .font-display {
+    font-variation-settings: "SOFT" 100;
+  }
+
+  /* Texte coréen : Jua (chargée par <Hangul>), sinon police système */
+  :where([lang|="ko"]) {
+    font-family: var(--font-ko);
+  }
+
+  ::selection {
+    background: var(--color-butter-200);
+    color: var(--color-ink);
+  }
+
+  /* Focus visible partout : anneau bleu lac (>= 5.5:1 sur tous les fonds du site) */
   :focus-visible {
     outline: 3px solid var(--theme-focus);
     outline-offset: 3px;
-    border-radius: 0.375rem;
   }
 
   #main:focus {
@@ -158,170 +409,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   Composants du shell
-   -------------------------------------------------------------------------- */
-
-@layer components {
-  .theme-root {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    flex-direction: column;
-    min-height: 100dvh;
-    color: var(--theme-fg);
-  }
-  /* Fond dégradé fixe (plus fluide que background-attachment: fixed, surtout sur iOS) */
-  .theme-root::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background: var(--theme-bg);
-  }
-
-  .site-main {
-    flex: 1;
-  }
-
-  /* Contenu d'une page (wrapper PageShell) */
-  .page-shell {
-    margin-inline: auto;
-    width: 100%;
-    max-width: 72rem;
-    padding-inline: 1rem;
-    color: var(--theme-fg);
-  }
-
-  .skip-link {
-    position: absolute;
-    left: 1rem;
-    top: -100%;
-    z-index: 100;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    background: var(--theme-base);
-    color: var(--theme-fg);
-    font-weight: 600;
-    box-shadow: var(--shadow-glow);
-  }
-  .skip-link:focus {
-    top: 1rem;
-  }
-
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    border-bottom: 1px solid var(--theme-line);
-    background: color-mix(in srgb, var(--theme-base) 72%, transparent);
-    backdrop-filter: blur(12px);
-  }
-
-  .nav-link {
-    display: inline-block;
-    padding: 0.4rem 0.5rem;
-    border-radius: 9999px;
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--theme-muted);
-    transition:
-      color 200ms ease,
-      background-color 200ms ease,
-      box-shadow 200ms ease;
-  }
-  @media (min-width: 40rem) {
-    .nav-link {
-      padding-inline: 0.75rem;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-    }
-  }
-  .nav-link:hover {
-    color: var(--theme-fg);
-    background: var(--theme-surface);
-  }
-  .nav-link[aria-current="page"] {
-    color: var(--theme-fg);
-    background: var(--theme-surface);
-    box-shadow: inset 0 0 0 1px var(--theme-accent), var(--shadow-glow);
-  }
-
-  .lang-switcher {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.125rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-  .lang-link {
-    padding: 0.25rem 0.4rem;
-    border-radius: 0.375rem;
-    color: var(--theme-muted);
-  }
-  .lang-link:hover {
-    color: var(--theme-fg);
-  }
-  .lang-link[aria-current="true"] {
-    color: var(--theme-accent);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-
-  .site-footer {
-    border-top: 1px solid var(--theme-line);
-  }
-  .footer-link {
-    color: var(--theme-fg);
-    text-decoration: underline;
-    text-decoration-color: var(--theme-line);
-    text-underline-offset: 4px;
-  }
-  .footer-link:hover {
-    text-decoration-color: var(--theme-accent);
-  }
-
-  /* Bouton néon générique */
-  .btn-neon {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    border-radius: 9999px;
-    border: 1px solid var(--theme-accent);
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: var(--theme-fg);
-    background: var(--theme-surface);
-    transition: box-shadow 200ms ease, transform 200ms ease;
-  }
-  .btn-neon:hover {
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-1px);
-  }
-
-  /* Ancres de l'avatar : espace réservé (affiné par l'agent avatar) */
-  .avatar-anchor {
-    width: 100%;
-    pointer-events: none;
-  }
-  .avatar-anchor[data-avatar-anchor="hero"] {
-    height: min(60vh, 32rem);
-  }
-  .avatar-anchor[data-avatar-anchor="column"] {
-    height: min(50vh, 26rem);
-  }
-  .avatar-anchor[data-avatar-anchor="chat"] {
-    height: min(40vh, 20rem);
-  }
-}
-
-/* --------------------------------------------------------------------------
-   Mouvement réduit : coupe animations, transitions et scroll fluide
+   Mouvement réduit : coupe animations (flottements, rebonds), transitions et
+   scroll fluide
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

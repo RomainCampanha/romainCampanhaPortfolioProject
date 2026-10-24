@@ -2,42 +2,50 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import type { ChatUIMessage } from "@/lib/chat/tools";
-import { ChatToolActivity } from "./ChatToolActivity";
+import { RominouHead } from "@/components/ui/RominouHead";
+import type { ChatUIMessage, ChatUIPart } from "@/lib/chat/tools";
+import { ChatToolActivity, isChatToolPart, type ChatToolPart } from "./ChatToolActivity";
 import type { TripLabels } from "./types";
+import styles from "./Chat.module.css";
 
-type Role = "user" | "assistant";
-
-/** Bulle de message ; le rôle est annoncé aux lecteurs d'écran ("Toi" / "Rominou"). */
-export function ChatBubble({ role, children }: { role: Role; children: ReactNode }) {
+/** Bulle de Rominou : petite tête à gauche, nom en capitales puis le texte. */
+export function AssistantBubble({ children }: { children: ReactNode }) {
   const t = useTranslations("chat.roles");
-  const isUser = role === "user";
-
   return (
-    <div
-      className={[
-        "flex max-w-[min(100%,36rem)] flex-col gap-1",
-        isUser ? "ml-auto items-end" : "mr-auto items-start",
-      ].join(" ")}
-    >
-      <p
-        className={[
-          "px-1 font-display text-[0.7rem] font-semibold uppercase tracking-wider",
-          // Petit texte : rose clair (le rose néon #FF00C3 ne passe pas 4.5:1 à cette taille)
-          isUser ? "text-muted" : "text-neon-pink-light",
-        ].join(" ")}
-      >
-        {t(role)}
-      </p>
-      <div
-        className={[
-          "flex min-w-0 max-w-full flex-col gap-2 break-words rounded-bubble px-4 py-2.5 leading-relaxed",
-          isUser
-            ? "rounded-br-md bg-grape/70 text-fg"
-            : "rounded-bl-md border border-line bg-indigo-night/60 text-fg",
-        ].join(" ")}
-      >
-        {children}
+    <div className={styles.row}>
+      <RominouHead ring="theme" className={styles.botAvatar} />
+      <div className={`${styles.bubble} ${styles.bubbleBot}`}>
+        <p className={styles.name}>{t("assistant")}</p>
+        <div className={styles.body}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Bulle du visiteur (pilule encre à droite) ; « Toi : » est lu par les lecteurs d'écran. */
+export function UserBubble({ children }: { children: ReactNode }) {
+  const t = useTranslations("chat.roles");
+  return (
+    <div className={`${styles.row} ${styles.rowUser}`}>
+      <div className={`${styles.bubble} ${styles.bubbleUser}`}>
+        <p className="sr-only">{t("user")} :</p>
+        <div className={styles.body}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** « Rominou écrit… » : trois points animés (texte pour les lecteurs d'écran). */
+export function TypingBubble() {
+  const t = useTranslations("chat");
+  return (
+    <div className={styles.row}>
+      <RominouHead ring="theme" className={styles.botAvatar} />
+      <div className={`${styles.bubble} ${styles.bubbleBot} ${styles.typing}`}>
+        <span className="sr-only">{t("thinking")}</span>
+        <i aria-hidden="true" />
+        <i aria-hidden="true" />
+        <i aria-hidden="true" />
       </div>
     </div>
   );
@@ -46,7 +54,36 @@ export function ChatBubble({ role, children }: { role: Role; children: ReactNode
 /** Mention "Réponse interrompue." après un clic sur "Arrêter". */
 export function StoppedNote() {
   const t = useTranslations("chat");
-  return <p className="text-sm italic text-muted">{t("stopped")}</p>;
+  return <p className={styles.note}>{t("stopped")}</p>;
+}
+
+type Segment =
+  | { kind: "text"; key: string; nodes: ReactNode[] }
+  | { kind: "tool"; key: string; part: ChatToolPart };
+
+/**
+ * Découpe un message en segments affichables, dans l'ordre : les textes consécutifs
+ * forment une bulle, chaque action d'outil devient une notification entre les bulles.
+ */
+function toSegments(parts: ChatUIPart[]): Segment[] {
+  const segments: Segment[] = [];
+  parts.forEach((part, index) => {
+    if (part.type === "text") {
+      const text = part.text.trim();
+      if (!text) return;
+      const node = (
+        <p key={index} className="whitespace-pre-wrap">
+          {text}
+        </p>
+      );
+      const last = segments.at(-1);
+      if (last?.kind === "text") last.nodes.push(node);
+      else segments.push({ kind: "text", key: `text-${index}`, nodes: [node] });
+    } else if (isChatToolPart(part)) {
+      segments.push({ kind: "tool", key: part.toolCallId, part });
+    }
+  });
+  return segments;
 }
 
 type ChatMessageProps = {
@@ -56,27 +93,29 @@ type ChatMessageProps = {
   stopped?: boolean;
 };
 
-// Rendu d'un message : texte brut (React échappe tout, aucun HTML injecté)
-// et une ligne discrète pour chaque action d'outil.
+// Rendu d'un message : texte brut (React échappe tout, aucun HTML injecté) en bulles,
+// et une notification pour chaque action d'outil de Rominou.
 export function ChatMessage({ message, tripLabels, stopped = false }: ChatMessageProps) {
-  const role: Role = message.role === "user" ? "user" : "assistant";
+  const segments = toSegments(message.parts);
 
-  const content = message.parts.flatMap((part, index) => {
-    if (part.type === "text") {
-      const text = part.text.trim();
-      return text ? [<p key={index} className="whitespace-pre-wrap">{text}</p>] : [];
-    }
-    if (
-      part.type === "tool-navigate" ||
-      part.type === "tool-playAnimation" ||
-      part.type === "tool-showTrip"
-    ) {
-      return [<ChatToolActivity key={part.toolCallId} part={part} tripLabels={tripLabels} />];
-    }
-    return [];
-  });
+  if (message.role === "user") {
+    const nodes = segments.flatMap((segment) => (segment.kind === "text" ? segment.nodes : []));
+    return nodes.length > 0 ? <UserBubble>{nodes}</UserBubble> : null;
+  }
 
-  if (stopped) content.push(<StoppedNote key="stopped" />);
-  if (content.length === 0) return null;
-  return <ChatBubble role={role}>{content}</ChatBubble>;
+  if (stopped) {
+    const note = <StoppedNote key="stopped" />;
+    const last = segments.at(-1);
+    if (last?.kind === "text") last.nodes.push(note);
+    else segments.push({ kind: "text", key: "stopped", nodes: [note] });
+  }
+  if (segments.length === 0) return null;
+
+  return segments.map((segment) =>
+    segment.kind === "text" ? (
+      <AssistantBubble key={segment.key}>{segment.nodes}</AssistantBubble>
+    ) : (
+      <ChatToolActivity key={segment.key} part={segment.part} tripLabels={tripLabels} />
+    ),
+  );
 }

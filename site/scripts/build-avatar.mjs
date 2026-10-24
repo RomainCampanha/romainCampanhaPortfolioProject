@@ -10,10 +10,11 @@
 //   - romain-mobile.glb   petits écrans / appareils modestes : idem, maillage plus léger, texture 1024 ;
 //   - romain-vacances.glb tenue vacances : clips idle, bow ; texture 2048 ;
 //   - romain-vacances-mobile.glb  idem, texture 1024 (même maillage : déjà léger) ;
-//   - romain-poster.webp, romain-vacances-poster.webp : posters transparents (pose idle, de face),
-//     rendus avec three.js dans Chromium headless (Playwright), même cadrage et mêmes lumières que
-//     le Canvas du site (src/lib/avatar/stage-config.json). Affichés pendant le chargement, sans
-//     WebGL ou avec prefers-reduced-motion.
+//   - public/scenes/rominou-poster.webp, rominou-vacances-poster.webp : posters transparents (pose
+//     idle, de face), rendus avec three.js dans Chromium headless (Playwright), même cadrage, même
+//     look « pâte à modeler » (matériau mat, tone mapping) et mêmes lumières que le Canvas du site
+//     (src/lib/avatar/stage-config.json). Affichés pendant le chargement, sans WebGL ou avec
+//     prefers-reduced-motion.
 //
 // Pipeline : fusion des clips -> clip "idle" (pose neutre figée, 1re frame de "bow") ->
 // matériau allégé (MeshStandardMaterial côté three) -> weld -> simplification meshoptimizer
@@ -112,6 +113,10 @@ for (const key of /** @type {const} */ (["desktop", "mobile", "vacances"])) {
 }
 const only = new Set((args.only ?? "desktop,mobile,vacances,posters").split(","));
 const OUT_DIR = path.resolve(args.out);
+// Posters : public/scenes (décors des cadres), sauf sortie personnalisée (--out, QA).
+const POSTER_DIR = args.out === undefined || path.resolve(args.out) === path.join(SITE_DIR, "public/models")
+  ? path.join(SITE_DIR, "public/scenes")
+  : OUT_DIR;
 
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
@@ -155,8 +160,8 @@ if (overBudget) process.exitCode = 1;
 if (only.has("posters")) {
   try {
     await renderPosters([
-      { model: PRESETS.desktop.file, out: "romain-poster.webp" },
-      { model: PRESETS.vacances.file, out: "romain-vacances-poster.webp" },
+      { model: PRESETS.desktop.file, out: "rominou-poster.webp" },
+      { model: PRESETS.vacances.file, out: "rominou-vacances-poster.webp" },
     ]);
   } catch (error) {
     console.error("[assets:avatar] Posters non générés :", error instanceof Error ? error.message : error);
@@ -474,21 +479,30 @@ const framing = config.framings[config.poster.framing];
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(width, height);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; // comme R3F par défaut
+// Look « pâte à modeler » : mêmes réglages que le Canvas (src/lib/avatar/look.ts)
+const toneMappings = { aces: THREE.ACESFilmicToneMapping, agx: THREE.AgXToneMapping, neutral: THREE.NeutralToneMapping, none: THREE.NoToneMapping };
+renderer.toneMapping = toneMappings[config.look.toneMapping] ?? THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = config.look.exposure;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
 document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
-scene.add(new THREE.AmbientLight(0xffffff, config.lights.ambient));
-const light = new THREE.DirectionalLight(0xffffff, config.lights.directional.intensity);
-light.position.fromArray(config.lights.directional.position);
-scene.add(light);
+const { hemisphere, key, rim } = config.lights;
+scene.add(new THREE.HemisphereLight(hemisphere.sky, hemisphere.ground, hemisphere.intensity));
+for (const l of [key, rim]) {
+  const light = new THREE.DirectionalLight(l.color, l.intensity);
+  light.position.fromArray(l.position);
+  scene.add(light);
+}
 const centerY = framing.top - framing.height / 2;
 const distance = framing.height / 2 / Math.tan(THREE.MathUtils.degToRad(config.fov / 2));
 const camera = new THREE.PerspectiveCamera(config.fov, width / height, 0.1, 30);
 camera.position.set(0, centerY, distance);
 camera.lookAt(0, centerY, 0);
 const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(new URLSearchParams(location.search).get("model"));
+gltf.scene.traverse((o) => {
+  if (o.isMesh && o.material.isMeshStandardMaterial) Object.assign(o.material, config.look.material);
+});
 scene.add(gltf.scene);
 const mixer = new THREE.AnimationMixer(gltf.scene);
 mixer.clipAction(THREE.AnimationClip.findByName(gltf.animations, "idle")).play();
@@ -543,7 +557,8 @@ async function renderPosters(jobs) {
         .resize(width, height, { kernel: "lanczos3" })
         .webp({ quality: 82, alphaQuality: 90, effort: 6, smartSubsample: true })
         .toBuffer();
-      const out = path.join(OUT_DIR, job.out);
+      await mkdir(POSTER_DIR, { recursive: true });
+      const out = path.join(POSTER_DIR, job.out);
       await writeFile(out, webp);
       log(`${job.out.padEnd(28)} ${(webp.length / 1024).toFixed(0)} Ko (${width}×${height})`);
     }

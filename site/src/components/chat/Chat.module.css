@@ -1,0 +1,548 @@
+/* ==========================================================================
+   Page Chat « Cosy » : fenêtre de discussion (carte crème sur la bande lilas),
+   bulles, notifications d'action, suggestions, saisie en pilule.
+   Tokens : src/app/globals.css · primitives : src/components/ui (README).
+   Contraste : texte encre / encre douce sur crème ou avoine, pastel 200 + teinte 800.
+   ========================================================================== */
+
+/* ---------- Grille de la page ----------
+   Mobile : texte, fenêtre de chat, avertissement IA, Rominou (la saisie arrive vite à l'écran).
+   Tablette (48rem) : texte | Rominou, puis la fenêtre et l'avertissement en pleine largeur.
+   Desktop (64rem) : texte, avertissement et Rominou à gauche, fenêtre à droite. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "intro"
+    "window"
+    "notice"
+    "guide";
+  align-items: start;
+  gap: 1.5rem;
+}
+.intro {
+  grid-area: intro;
+  min-inline-size: 0;
+}
+.windowSlot {
+  grid-area: window;
+  min-inline-size: 0;
+}
+/* Cadre de Rominou : hauteur explicite (l'ancre est un conteneur de requêtes « size ») */
+.guide {
+  grid-area: guide;
+  block-size: 13rem;
+}
+
+@media (min-width: 40rem) {
+  .layout {
+    gap: 2.25rem;
+  }
+  .guide {
+    block-size: 16rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    grid-template-areas:
+      "intro guide"
+      "window window"
+      "notice notice";
+    column-gap: 2rem;
+  }
+  .guide {
+    align-self: stretch;
+    block-size: auto;
+    min-block-size: 15rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "intro window"
+      "notice window"
+      "guide window";
+    column-gap: 3rem;
+    row-gap: 1.5rem;
+  }
+  .intro {
+    padding-block-start: 1rem;
+  }
+  .guide {
+    align-self: start;
+    block-size: 17.5rem;
+    min-block-size: 0;
+    margin-block-start: 0.5rem;
+  }
+}
+
+@media (min-width: 80rem) {
+  .layout {
+    column-gap: 4.5rem;
+  }
+}
+
+/* ---------- Avertissement IA ---------- */
+.notice {
+  grid-area: notice;
+  min-inline-size: 0;
+  max-inline-size: 36rem;
+  padding: 0.875rem 1.125rem;
+  border: 1.5px dashed var(--color-lilac-300);
+  border-radius: 1.125rem;
+  background: color-mix(in srgb, var(--color-cream) 70%, transparent);
+  color: var(--color-ink-soft);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+/* Adresse d'un seul tenant (tient sur une ligne dès 320 px) */
+.notice a {
+  color: var(--theme-accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.notice a:hover {
+  text-decoration-color: var(--color-lilac-500);
+}
+
+/* ---------- Fenêtre ---------- */
+.window {
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 7px 0 var(--theme-edge),
+    0 34px 50px -28px color-mix(in srgb, var(--color-lilac-800) 45%, transparent);
+}
+
+/* En-tête : avatar, nom, sous-titre, pastille de présence */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1.125rem 1.375rem;
+  border-block-end: 2px dashed var(--color-sand);
+}
+.headAvatar {
+  --coin-size: 48px;
+}
+.who {
+  display: grid;
+  min-inline-size: 0;
+  line-height: 1.25;
+}
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 1.1875rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.subtitle {
+  color: var(--color-ink-soft);
+  font-size: 0.84375rem;
+  font-weight: 700;
+}
+/* Deux morceaux insécables : la coupure tombe après « · », jamais devant */
+.subtitle > span {
+  white-space: nowrap;
+}
+.presence {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  margin-inline-start: auto;
+}
+.dot {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 50%;
+  /* Vert « en ligne » (>= 3:1 sur crème) */
+  background: color-mix(in oklab, var(--color-sage-500) 55%, var(--color-sage-800));
+  box-shadow: 0 0 0 4px var(--color-sage-200);
+  animation: presence 2.8s ease-in-out infinite;
+}
+.presence[data-state="away"] .dot {
+  background: var(--color-butter-500);
+  box-shadow: 0 0 0 4px var(--color-butter-200);
+  animation: none;
+}
+@keyframes presence {
+  50% {
+    box-shadow: 0 0 0 6px var(--color-sage-200);
+  }
+}
+
+/* ---------- Conversation (zone défilante) ----------
+   Hauteur minimale = celle du message d'accueil (pas plus) : la fenêtre épouse son contenu,
+   la saisie reste visible sans défiler sur un écran de portable (1280 × 720) et sur un
+   téléphone ; le minimum absorbe le changement de police au chargement (pas de saut). La zone
+   grandit ensuite avec la conversation, jusqu'au plafond (puis défilement). */
+.log {
+  flex: 1;
+  min-block-size: 11.5rem;
+  max-block-size: min(56svh, 34rem);
+  padding: 1.5rem 1.375rem 0.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Anneau de focus à l'intérieur (la carte coupe ce qui dépasse) */
+.log:focus-visible {
+  outline-offset: -3px;
+  border-radius: var(--radius-clay-sm);
+}
+
+.day {
+  margin-block-end: 1rem;
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Une ligne = une bulle (avatar à gauche pour Rominou, à droite sans avatar pour le visiteur) */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.625rem;
+  min-inline-size: 0;
+  animation: rise 0.35s var(--ease-squish) both;
+}
+.rowUser {
+  justify-content: flex-end;
+}
+.botAvatar {
+  --coin-size: 36px;
+  box-shadow:
+    0 0 0 2px var(--color-cream),
+    0 0 0 4px var(--color-lilac-300);
+}
+.bubble {
+  min-inline-size: 0;
+  max-inline-size: 82%;
+  padding: 0.75rem 1rem 0.8125rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.bubbleBot {
+  border: 1.5px solid var(--color-sand);
+  border-radius: 22px 22px 22px 6px;
+  background: var(--color-oat);
+  color: var(--color-ink);
+}
+.bubbleUser {
+  border-radius: 22px 22px 6px 22px;
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+.name {
+  margin-block-end: 0.125rem;
+  color: var(--color-peach-800);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+.body > * + * {
+  margin-block-start: 0.5rem;
+}
+.note {
+  color: var(--color-ink-soft);
+  font-size: 0.9375rem;
+  font-style: italic;
+}
+
+/* « Rominou écrit… » : trois points (fixes si mouvement réduit) */
+.typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 1rem;
+}
+.typing > i {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--color-lilac-800);
+  opacity: 0.35;
+  animation: typing 1.2s ease-in-out infinite;
+}
+.typing > i:nth-child(2) {
+  opacity: 0.6;
+  animation-delay: 0.15s;
+}
+.typing > i:nth-child(3) {
+  opacity: 0.9;
+  animation-delay: 0.3s;
+}
+@keyframes typing {
+  30% {
+    translate: 0 -4px;
+  }
+  60% {
+    translate: 0 0;
+  }
+}
+
+/* Notification d'action de Rominou (outil) : pastille beurre, façon jeu cosy */
+.toast {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 0.5rem;
+  max-inline-size: 100%;
+  padding: 0.4375rem 0.9375rem 0.4375rem 0.6875rem;
+  border: 2.5px solid var(--color-cream);
+  border-radius: 1.25rem;
+  background: var(--color-butter-200);
+  color: var(--color-butter-800);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-wrap: balance;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--color-butter-800) 16%, transparent);
+  animation: pop 0.4s var(--ease-squish) both;
+}
+.toast > svg {
+  inline-size: 1.0625rem;
+  block-size: 1.0625rem;
+  fill: var(--color-butter-100);
+}
+.toast[data-state="failed"] {
+  background: var(--color-oat-deep);
+  color: var(--color-ink-soft);
+  box-shadow: 0 4px 0 var(--color-cream-edge);
+}
+.toast[data-state="failed"] > svg {
+  fill: none;
+}
+
+/* ---------- Suggestions (puces lilas cliquables) ---------- */
+.suggest {
+  padding: 1rem 1.375rem 0;
+}
+.suggestList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.suggestion {
+  min-block-size: 2.5rem;
+  padding: 0.4375rem 0.9375rem;
+  border-width: 2px;
+  font-size: 0.90625rem;
+  font-weight: 800;
+  text-align: start;
+}
+.suggestion:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  translate: none;
+  box-shadow: none;
+}
+
+/* ---------- Erreur / indisponible ---------- */
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 1rem 1.375rem 0;
+  padding: 0.875rem 1rem;
+  border: 1.5px solid var(--tone-300);
+  border-radius: var(--radius-clay-md);
+  background: var(--tone-100);
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1.45;
+  animation: pop 0.4s var(--ease-squish) both;
+}
+.errorText {
+  display: flex;
+  flex: 1 1 14rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+.errorText a {
+  color: var(--tone-800);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Saisie : pilule en creux + bouton rond d'argile ---------- */
+.form {
+  padding: 1rem 1.375rem 1.375rem;
+}
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 1.25rem;
+  border-radius: 1.875rem;
+  background: var(--color-oat);
+  box-shadow: inset 0 2px 4px rgb(92 64 40 / 0.14);
+}
+/* Focus du champ : l'anneau entoure toute la pilule (le champ n'a pas de cadre propre) ;
+   le bouton garde son propre anneau (pas de double contour) */
+.composer:has(.input:focus-visible) {
+  outline: 3px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+/* Plusieurs lignes : la pilule devient un galet (coins moins ronds, le texte n'est pas rogné) */
+.composer[data-multiline="true"] {
+  border-radius: 1.5rem;
+}
+/* Arrêter : carré plein, bien lisible */
+.stop > svg {
+  fill: currentColor;
+}
+.input {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 3rem;
+  max-block-size: 8.5rem;
+  padding: 0.75rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  /* >= 16 px : pas de zoom automatique sur iOS */
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+}
+.input::placeholder {
+  color: var(--color-ink-soft);
+  opacity: 1;
+}
+.input:focus,
+.input:focus-visible {
+  outline: none;
+}
+/* Aide + compteur sous la pilule. Éléments masqués (sr-only) : hors flux, la ligne s'efface. */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 1rem;
+  padding-inline: 1.25rem;
+  color: var(--color-ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.meta > * {
+  margin-block-start: 0.5rem;
+}
+.counter {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+.counter[data-full="true"] {
+  color: var(--color-peach-800);
+  font-weight: 800;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 39.99rem) {
+  .top {
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+  .headAvatar {
+    --coin-size: 40px;
+  }
+  .title {
+    font-size: 1.0625rem;
+  }
+  .subtitle {
+    font-size: 0.8125rem;
+  }
+  .log {
+    min-block-size: 14rem;
+    padding: 1.25rem 0.875rem 0.375rem;
+  }
+  .row {
+    gap: 0.5rem;
+  }
+  .botAvatar {
+    --coin-size: 30px;
+  }
+  .bubble {
+    max-inline-size: 88%;
+    padding: 0.6875rem 0.875rem 0.75rem;
+  }
+  /* Une seule rangée de puces, qui défile à l'horizontale (fondu à droite) : la saisie reste
+     haute à l'écran. Marges intérieures : place pour l'anneau de focus (le défilement rogne). */
+  .suggest {
+    padding: 0.5rem 0 0;
+  }
+  .suggestList {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.375rem 0.875rem 0.5rem;
+    scroll-padding-inline: 0.875rem;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.25rem), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 2.25rem), transparent);
+  }
+  .suggestList::-webkit-scrollbar {
+    display: none;
+  }
+  .suggestList > li {
+    flex: none;
+  }
+  .suggestion {
+    white-space: nowrap;
+  }
+  .error {
+    margin-inline: 0.875rem;
+  }
+  .form {
+    padding: 0.875rem 0.875rem 1rem;
+  }
+  .composer {
+    padding-inline-start: 1rem;
+  }
+  .meta {
+    padding-inline: 1rem;
+  }
+}
+
+/* ---------- Mouvement (coupé par prefers-reduced-motion : règle globale) ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+}

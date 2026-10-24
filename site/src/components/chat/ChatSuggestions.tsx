@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import styles from "./Chat.module.css";
 
 const SUGGESTION_KEYS = ["who", "travels", "work"] as const;
 
@@ -10,28 +11,32 @@ type ChatSuggestionsProps = {
   onPick: (text: string) => void;
   /** Employeur actuel (profil). */
   company: string;
+  /** Textes déjà envoyés par le visiteur : ces questions ne sont plus proposées. */
+  asked: ReadonlySet<string>;
 };
 
-// Questions toutes prêtes pour lancer la conversation.
-export function ChatSuggestions({ disabled, onPick, company }: ChatSuggestionsProps) {
+// Questions toutes prêtes (puces lilas) : restent proposées tant qu'elles n'ont pas été posées.
+export function ChatSuggestions({ disabled, onPick, company, asked }: ChatSuggestionsProps) {
   const t = useTranslations("chat.suggestions");
-  const label = (key: (typeof SUGGESTION_KEYS)[number]) => t(key, { company });
+  const remaining = SUGGESTION_KEYS.map((key) => t(key, { company })).filter((label) => !asked.has(label));
+  if (remaining.length === 0) return null;
 
   return (
-    <div>
-      <p id="chat-suggestions-label" className="mb-2 text-sm text-muted">
+    <div className={styles.suggest}>
+      <p id="chat-suggestions-label" className="sr-only">
         {t("label")}
       </p>
-      <ul aria-labelledby="chat-suggestions-label" className="flex flex-wrap gap-2">
-        {SUGGESTION_KEYS.map((key) => (
-          <li key={key}>
+      <ul aria-labelledby="chat-suggestions-label" className={styles.suggestList}>
+        {remaining.map((label) => (
+          <li key={label}>
             <button
               type="button"
               disabled={disabled}
-              onClick={() => onPick(label(key))}
-              className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm text-fg transition-[box-shadow,border-color] duration-200 hover:border-accent hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => onPick(label)}
+              className={`chip ${styles.suggestion}`}
+              data-tone="lilac"
             >
-              {label(key)}
+              {label}
             </button>
           </li>
         ))}

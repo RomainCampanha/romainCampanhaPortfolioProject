@@ -1,44 +1,62 @@
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import type { AppLocale } from "@/i18n/routing";
 import { pick, profile } from "@/content/profile";
-import { ExternalLink } from "@/components/site/ExternalLink";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { ArrowIcon } from "./icons";
+import { Button, Chip, ClayCard, Icon, Sticker, WavyBand } from "@/components/ui";
+import styles from "./ProjectSection.module.css";
 
-// #projets : aujourd'hui GE-Soif, projet d'école du CFPT (pas un projet perso).
-// Tout vient de profile.ts : capture, points clés, stack et lien "Visiter" ne sont
+// #projets : aujourd'hui GE-Soif, projet d'école du CFPT (pas un projet perso), dans une bande
+// pleine largeur à bords ondulés (avoine foncé, la bande du thème Pro) : elle rythme la page.
+// Tout vient de profile.ts : capture, points clés, stack et lien « Visiter » ne sont
 // affichés que s'ils sont renseignés (rien d'inventé, pas de lien mort).
 export function ProjectSection() {
   const t = useTranslations("pro.project");
-  const locale = useLocale();
+  const locale = useLocale() as AppLocale;
+  const { projects } = profile;
+  if (projects.length === 0) return null;
 
   return (
-    <section id="projets" aria-labelledby="projets-title" className="scroll-mt-20 py-12 sm:py-16">
-      <SectionHeading id="projets-title" title={t("title", { count: profile.projects.length })} />
+    <WavyBand edges="both" id="projets" aria-labelledby="projets-title" className={styles.section}>
+      <div className="site-container">
+        <SectionHeading
+          id="projets-title"
+          kicker={t("kicker", { count: projects.length })}
+          kickerIcon="code"
+          title={t("title")}
+        />
 
-      <ul className="grid gap-6">
-        {profile.projects.map((project) => {
-          const host = project.url ? new URL(project.url).hostname : null;
-          const context = [pick(project.context, locale), project.year ? String(project.year) : null]
-            .filter(Boolean)
-            .join(" · ");
+        <ul className={styles.list}>
+          {projects.map((project) => {
+            const host = project.url ? new URL(project.url).hostname : null;
+            const context = [pick(project.context, locale), project.year ? String(project.year) : null]
+              .filter(Boolean)
+              .join(" · ");
 
-          return (
-            <li key={project.id}>
-              <article
-                aria-labelledby={`project-${project.id}`}
-                className="overflow-hidden rounded-card border border-line bg-surface"
-              >
-                <div className="grid md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+            return (
+              <li key={project.id}>
+                <ClayCard
+                  as="article"
+                  aria-labelledby={`project-${project.id}`}
+                  className={styles.card}
+                  data-has-image={project.image ? true : undefined}
+                >
                   {project.image ? (
-                    <div className="border-b border-line bg-night/40 p-3 sm:p-4 md:border-b-0 md:border-r">
-                      {/* Mini fenêtre de navigateur autour de la capture */}
-                      <figure className="overflow-hidden rounded-xl border border-line bg-night shadow-glow">
-                        <div aria-hidden="true" className="flex items-center gap-1.5 border-b border-line px-3 py-2">
-                          <span className="size-2 rounded-full bg-white/25" />
-                          <span className="size-2 rounded-full bg-white/25" />
-                          <span className="size-2 rounded-full bg-white/25" />
-                          {host ? <span className="ml-2 truncate text-xs text-muted">{host}</span> : null}
+                    <div className={styles.desk}>
+                      {/* Capture dans une fenêtre de navigateur en argile */}
+                      <figure className={styles.browser}>
+                        <div aria-hidden="true" className={styles.browserBar}>
+                          <span className={styles.browserDots}>
+                            <span />
+                            <span />
+                            <span />
+                          </span>
+                          {host ? (
+                            <span className={styles.browserUrl}>
+                              <Icon name="globe" size={14} />
+                              {host}
+                            </span>
+                          ) : null}
                         </div>
                         <Image
                           src={project.image.src}
@@ -47,61 +65,60 @@ export function ProjectSection() {
                           height={project.image.height}
                           // Capture déjà optimisée (WebP 1280 px, ~60 Ko) : servie telle quelle
                           unoptimized
-                          className="h-auto w-full"
+                          className={styles.shot}
                         />
                       </figure>
                     </div>
                   ) : null}
 
-                  <div className="flex flex-col p-5 sm:p-7">
-                    <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                  <div className={styles.body}>
+                    <Sticker as="p" tone={project.kind === "school" ? "lilac" : "butter"} icon={project.kind === "school" ? "graduation" : "sparkle"}>
                       {t(`kind.${project.kind}`)}
-                    </p>
-                    <h3 id={`project-${project.id}`} className="mt-2 font-display text-2xl font-bold">
+                    </Sticker>
+                    <h3 id={`project-${project.id}`} className={`type-h3 ${styles.title}`}>
                       {project.name}
                     </h3>
-                    <p className="mt-1 text-sm font-semibold text-muted">{context}</p>
-                    <p className="mt-3 text-lg">{pick(project.description, locale)}</p>
-                    {project.url && host ? (
-                      <div className="mt-6">
-                        <ExternalLink href={project.url} className="btn-neon">
-                          {t("visit", { name: host })}
-                          <ArrowIcon direction="up-right" />
-                        </ExternalLink>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
+                    <p className={styles.context}>{context}</p>
+                    <p className={styles.description}>{pick(project.description, locale)}</p>
+                    {project.pitch ? <p className={styles.pitch}>{pick(project.pitch, locale)}</p> : null}
 
-                {project.pitch || project.highlights.length > 0 || project.stack.length > 0 ? (
-                  <div className="border-t border-line p-5 sm:p-7">
-                    {project.pitch ? <p className="text-muted">{pick(project.pitch, locale)}</p> : null}
                     {project.highlights.length > 0 ? (
-                      <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                      <ul aria-label={t("highlightsLabel", { name: project.name })} className={styles.highlights}>
                         {project.highlights.map((highlight) => (
-                          <li key={highlight.en} className="flex gap-2.5">
-                            <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" />
+                          <li key={highlight.en}>
+                            <span aria-hidden="true" className={styles.check}>
+                              <Icon name="check" size={14} />
+                            </span>
                             <span>{pick(highlight, locale)}</span>
                           </li>
                         ))}
                       </ul>
                     ) : null}
+
                     {project.stack.length > 0 ? (
-                      <ul className="mt-4 flex flex-wrap gap-2 text-sm">
+                      <ul aria-label={t("stackLabel")} className={styles.stack}>
                         {project.stack.map((tech) => (
-                          <li key={tech} className="rounded-full border border-line px-3 py-1">
+                          <Chip as="li" key={tech}>
                             {tech}
-                          </li>
+                          </Chip>
                         ))}
                       </ul>
                     ) : null}
+
+                    {project.url && host ? (
+                      <div className={styles.actions}>
+                        <Button href={project.url} iconEnd="arrow-up-right">
+                          {t("visit", { name: host })}
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </article>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+                </ClayCard>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </WavyBand>
   );
 }

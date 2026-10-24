@@ -55,29 +55,55 @@ test("Pro : GE-Soif, projet d'école du CFPT, avec capture et lien", async ({ pa
   await expect(page.locator("#projets").getByRole("link", { name: /Visit ge-soif\.ch/ })).toBeVisible();
 });
 
-test("Hobby : les 8 cartes d'embarquement et l'album replié", async ({ page }) => {
-  await page.goto("/hobby");
-  const cards = page.locator("#voyages > ul > li > article");
-  await expect(cards).toHaveCount(8);
-  for (const id of ["busan", "berlin", "tokyo", "shanghai", "paris", "brighton-dubrovnik", "toronto", "seoul"]) {
-    await expect(page.locator(`article#${id}`)).toBeVisible();
-  }
-  await expect(page.locator("#voyages-title + p")).toContainText("de Séoul (2023) à Busan (2026)");
+test.describe("mouvement réduit", () => {
+  // Rominou reste visible (colonne collante) et le WebGL logiciel de Chromium headless ralentit
+  // chaque action : ce parcours d'albums tourne avec le poster (prefers-reduced-motion).
+  test.use({ reducedMotion: "reduce" });
 
-  // Gros album (Shanghai, 14 photos) : 6 d'office, le reste derrière "Voir les 8 autres photos"
-  const shanghai = page.locator("article#shanghai");
-  await expect(shanghai.getByRole("list", { name: "Photos de Shanghai" }).getByRole("listitem")).toHaveCount(6);
-  const more = shanghai.getByRole("list", { name: "Autres photos de Shanghai" });
-  await expect(more).toBeHidden();
-  await shanghai.getByText("Voir les 8 autres photos").click();
-  await expect(more).toBeVisible();
-  await expect(more.getByRole("listitem")).toHaveCount(8);
-  await expect(shanghai.getByText("Masquer ces photos")).toBeVisible();
+  test("Hobby : les 8 cartes d'embarquement et leurs albums", async ({ page }) => {
+    await page.goto("/hobby");
+    const cards = page.locator("#voyages > ul > li > article");
+    await expect(cards).toHaveCount(8);
+    for (const id of ["busan", "berlin", "tokyo", "shanghai", "paris", "brighton-dubrovnik", "toronto", "seoul"]) {
+      await expect(page.locator(`article#${id}`)).toBeVisible();
+    }
+    await expect(page.locator("#voyages-title + p")).toContainText("de Séoul (2023) à Busan (2026)");
+    // Nom coréen (Jua) à côté du nom latin
+    await expect(page.locator("#seoul-title")).toContainText("서울");
 
-  // Petit album (Berlin, 2 photos) : tout est affiché, pas de bouton
-  const berlin = page.locator("article#berlin");
-  await expect(berlin.getByRole("listitem")).toHaveCount(2);
-  await expect(berlin.locator("summary")).toHaveCount(0);
+    // Album (Shanghai, 14 photos) : replié derrière « Voir les 14 photos », puis toutes les photos
+    const shanghai = page.locator("article#shanghai");
+    const album = shanghai.getByRole("list", { name: "Photos de Shanghai" });
+    await expect(album).toBeHidden();
+    const toggle = shanghai.getByRole("button", { name: "Voir les 14 photos" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await toggle.click();
+    await expect(album).toBeVisible();
+    await expect(album.getByRole("listitem")).toHaveCount(14);
+    await expect(shanghai.getByRole("button", { name: "Masquer les photos" })).toHaveAttribute("aria-expanded", "true");
+
+    // Visionneuse : dialog modal, flèches, Échap rend le focus à la vignette
+    await album.getByRole("button").nth(2).click();
+    const viewer = page.getByRole("dialog", { name: "Photos de Shanghai" });
+    await expect(viewer).toBeVisible();
+    await expect(viewer).toContainText("Photo 3 sur 14");
+    await page.keyboard.press("ArrowRight");
+    await expect(viewer).toContainText("Photo 4 sur 14");
+    await page.keyboard.press("Escape");
+    await expect(viewer).toBeHidden();
+    await expect(album.getByRole("button").nth(2)).toBeFocused();
+
+    // Petit album (Berlin, 2 photos)
+    const berlin = page.locator("article#berlin");
+    await berlin.getByRole("button", { name: "Voir les 2 photos" }).click();
+    await expect(berlin.getByRole("list", { name: "Photos de Berlin" }).getByRole("listitem")).toHaveCount(2);
+  });
+});
+
+test("Hobby : /hobby#seoul (outil showTrip) ouvre l'album de Séoul", async ({ page }) => {
+  await page.goto("/hobby#seoul");
+  await expect(page.locator("article#seoul").getByRole("list", { name: "Photos de Séoul" })).toBeVisible();
+  await expect(page.locator("article#busan").getByRole("list", { name: "Photos de Busan" })).toBeHidden();
 });
 
 test("Hobby : carte LoL, rap français et jeux (sans pseudo)", async ({ page }) => {

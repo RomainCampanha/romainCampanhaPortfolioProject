@@ -1,5 +1,5 @@
 {
-  "$comment": "Cadrage de Rominou, partagé par le Canvas (src/lib/avatar/framing.ts) et le rendu des posters (scripts/build-avatar.mjs). Unités : mètres, pieds à y = 0, regard vers +Z.",
+  "$comment": "Cadrage et rendu de Rominou, partagés par le Canvas (src/lib/avatar/framing.ts, look.ts) et le rendu des posters (scripts/build-avatar.mjs). Unités : mètres, pieds à y = 0, regard vers +Z. feet = hauteur du bas visible des chaussures en pose idle, head = hauteur du haut des cheveux (mesurées sur les posters). look + lights = rendu « pâte à modeler » mat et chaud de la DA Cosy.",
   "aspect": [2, 3],
   "fov": 26,
   "framings": {
@@ -8,8 +8,16 @@
     "chat": { "top": 2.0, "height": 1.15 }
   },
   "poster": { "framing": "hero", "width": 720, "height": 1080 },
+  "feet": { "default": 0.072, "vacances": 0.022 },
+  "head": { "default": 1.718, "vacances": 1.691 },
+  "look": {
+    "toneMapping": "aces",
+    "exposure": 1,
+    "material": { "metalness": 0, "roughness": 0.85, "emissiveIntensity": 0.6 }
+  },
   "lights": {
-    "ambient": 1,
-    "directional": { "intensity": 1.4, "position": [2, 5, 5] }
+    "hemisphere": { "sky": "#fff1dc", "ground": "#e2cdb8", "intensity": 1.1 },
+    "key": { "color": "#ffe3c6", "intensity": 1.6, "position": [-2.2, 4, 4.5] },
+    "rim": { "color": "#e0e7ff", "intensity": 0.5, "position": [3, 2.5, -3] }
   }
 }

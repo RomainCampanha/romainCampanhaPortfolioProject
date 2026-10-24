@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/site/PageShell";
+import { Button } from "@/components/ui/Button";
+import { RominouHead } from "@/components/ui/RominouHead";
+import { Sticker } from "@/components/ui/Sticker";
 
 // 404 localisée (déclenchée par notFound() sous [locale], ex. via [...rest]).
 export default function LocaleNotFound() {
@@ -8,15 +10,18 @@ export default function LocaleNotFound() {
 
   return (
     <PageShell theme="pro">
-      <section aria-labelledby="not-found-title" className="py-20 text-center">
-        <p className="font-display text-6xl font-bold text-accent text-shadow-neon">404</p>
-        <h1 id="not-found-title" className="mt-4 font-display text-3xl font-semibold">
+      <section aria-labelledby="not-found-title" className="flex flex-col items-center py-16 text-center sm:py-24">
+        <RominouHead size={96} ring="raised" />
+        <Sticker as="p" tone="lilac" icon="pin" tilt={-3} className="mt-8">
+          404
+        </Sticker>
+        <h1 id="not-found-title" className="type-h2 mt-5">
           {t("title")}
         </h1>
-        <p className="mt-4 text-muted">{t("description")}</p>
-        <Link href="/" className="btn-neon mt-8">
+        <p className="type-lede mt-4 max-w-[34ch]">{t("description")}</p>
+        <Button href="/" icon="briefcase" className="mt-9">
           {t("backHome")}
-        </Link>
+        </Button>
       </section>
     </PageShell>
   );

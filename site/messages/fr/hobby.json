@@ -5,53 +5,72 @@
   },
   "guide": {
     "label": "Rominou en tenue de vacances",
-    "bubble": "Rominou, le guide, en tenue de vacances ! Ici, c'est le côté perso de Romain."
+    "bubble": "En tenue de vacances ! Ici, c'est le côté perso de {name}."
   },
   "hero": {
+    "kicker": "Côté perso",
     "title": "Mes hobbies",
-    "intro": "Quand je ne suis ni au boulot ni en cours, je voyage, j'écoute du rap français et je joue aux jeux vidéo. Bienvenue de mon côté perso !",
-    "listLabel": "Mes passions en bref"
+    "intro": "Quand je ne suis ni au boulot ni en cours, je voyage, j'écoute du {genre} et je joue aux jeux vidéo. Bienvenue de mon côté perso !",
+    "listLabel": "Mes passions en bref",
+    "musicSr": "{genre} : {artists}",
+    "lol": "LoL · {role} · {rank}",
+    "lolSr": "League of Legends : {role}, meilleur rang {rank}"
   },
   "travels": {
+    "kicker": "Carnet de voyage",
     "title": "Mes voyages",
-    "intro": "{count} cartes d'embarquement, de {first} ({firstYear}) à {last} ({lastYear}) : les voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
+    "intro": "{count} cartes d'embarquement, de {first} ({firstYear}) à {last} ({lastYear}) : les voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
     "introShort": "Les cartes d'embarquement des voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
     "pass": "Carte d'embarquement",
-    "passenger": "Passager",
     "destination": "Destination",
+    "passenger": "Passager",
     "year": "Année",
     "photos": "Photos",
     "photoCount": "{count, plural, =0 {aucune} one {# photo} other {# photos}}",
+    "photosSoon": "Bientôt",
+    "photoCounter": "{index} / {count}",
+    "showPhotos": "{count, plural, one {Voir la photo} other {Voir les # photos}}",
+    "hidePhotos": "Masquer les photos",
+    "galleryLabel": "Photos de {place}",
+    "openPhoto": "Agrandir : {alt}",
     "photosComing": "Photos bientôt en ligne",
     "photosComingHint": "Je trie encore mes photos de {place}. Reviens bientôt !",
-    "galleryLabel": "Photos de {place}",
-    "galleryMoreLabel": "Autres photos de {place}",
-    "morePhotos": "{count, plural, one {Voir la dernière photo} other {Voir les # autres photos}}",
-    "lessPhotos": "Masquer ces photos",
     "anecdote": "Anecdote",
-    "otherTitle": "J'ai aussi posé mes valises à…",
+    "otherTitle": "J’ai aussi posé mes valises à…",
     "otherIntro": "D'autres villes visitées, sans carte d'embarquement (pour l'instant).",
-    "photosSoon": "Bientôt"
+    "lightbox": {
+      "counter": "Photo {index} sur {count}",
+      "close": "Fermer",
+      "previous": "Photo précédente",
+      "next": "Photo suivante"
+    }
   },
   "passions": {
+    "kicker": "Pause détente",
     "title": "Musique & jeux",
-    "intro": "Du rap français dans les oreilles, une manette (ou une souris) dans les mains.",
+    "intro": "Du {genre} dans les oreilles, une manette (ou une souris) dans les mains.",
     "soon": "Bientôt",
+    "music": {
+      "kicker": "Dans mes oreilles",
+      "title": "Le coin musique",
+      "soon": "Bientôt ici : une sélection de mes sons préférés."
+    },
     "lol": {
+      "kicker": "Carte de joueur",
       "title": "Ma carte League of Legends",
       "role": "Rôle",
       "peak": "Meilleur rang",
       "champions": "Champions préférés",
-      "otherGames": "À part League of Legends, je joue aussi à {games}."
-    },
-    "music": {
-      "title": "Le coin musique",
-      "text": "Grand fan de rap français, surtout de {artists}.",
-      "soon": "Bientôt ici : une sélection de mes sons préférés."
+      "otherGames": "Aussi dans ma ludothèque"
     },
     "game": {
-      "title": "Le jeu : un runner",
-      "text": "Un petit jeu de course arrive bientôt sur cette page, à jouer directement dans ton navigateur."
+      "kicker": "Prochain jeu",
+      "title": "La course de Rominou",
+      "text": "Un petit runner à jouer directement dans ton navigateur : Rominou court à travers mes voyages, et chaque niveau terminé débloque la carte postale de la ville.",
+      "levelsLabel": "Les niveaux prévus",
+      "start": "Départ",
+      "level": "Niveau {n}",
+      "locked": "Carte postale à débloquer"
     }
   }
 }

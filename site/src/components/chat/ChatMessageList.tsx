@@ -3,29 +3,36 @@
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { isToolUIPart } from "ai";
-import { ChatMessage, ChatBubble, StoppedNote } from "./ChatMessage";
+import { AssistantBubble, ChatMessage, StoppedNote, TypingBubble } from "./ChatMessage";
 import type { ChatViewProps, TripLabels } from "./types";
+import styles from "./Chat.module.css";
 
 type ChatMessageListProps = ChatViewProps & {
   tripLabels: TripLabels;
   /** Messages après lesquels le visiteur a arrêté la réponse (bouton "Arrêter"). */
   stoppedIds: ReadonlySet<string>;
+  /** Prénom de Romain (profil), pour le message d'accueil. */
+  name: string;
 };
 
 /** Distance (px) sous laquelle on considère l'utilisateur "en bas" de la liste. */
 const STICK_THRESHOLD_PX = 80;
 
-// Liste des messages dans une zone défilante (focusable au clavier).
+// Conversation dans une zone défilante (focusable au clavier) : séparateur « Aujourd'hui »,
+// bulles, notifications d'action, « Rominou écrit… ».
 // Volontairement PAS une région aria-live : seul ChatAnnouncer annonce la réponse finale.
-export function ChatMessageList({ messages, status, tripLabels, stoppedIds }: ChatMessageListProps) {
+export function ChatMessageList({ messages, status, tripLabels, stoppedIds, name }: ChatMessageListProps) {
   const t = useTranslations("chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
 
-  // Suit le bas de la conversation pendant le stream, sauf si l'utilisateur remonte
+  // Suit le bas de la conversation pendant le stream, sauf si l'utilisateur remonte ;
+  // un message envoyé par le visiteur ramène toujours en bas.
   useEffect(() => {
     const el = scrollRef.current;
-    if (el && stickToBottom.current) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    if (messages.at(-1)?.role === "user") stickToBottom.current = true;
+    if (stickToBottom.current) el.scrollTop = el.scrollHeight;
   }, [messages, status]);
 
   function handleScroll() {
@@ -48,14 +55,15 @@ export function ChatMessageList({ messages, status, tripLabels, stoppedIds }: Ch
       role="region"
       aria-label={t("panelLabel")}
       tabIndex={0}
-      className="max-h-[min(60vh,34rem)] min-h-56 overflow-y-auto overscroll-contain rounded-xl pr-1"
+      className={styles.log}
     >
-      <ol className="flex flex-col gap-3">
+      <p className={styles.day}>{t("today")}</p>
+      <ol className="flex flex-col gap-4">
         {/* Accueil statique de Rominou (pas envoyé au modèle) */}
-        <li>
-          <ChatBubble role="assistant">
-            <p className="whitespace-pre-wrap">{t("welcome")}</p>
-          </ChatBubble>
+        <li className="flex flex-col">
+          <AssistantBubble>
+            <p className="whitespace-pre-wrap">{t("welcome", { name })}</p>
+          </AssistantBubble>
         </li>
 
         {messages.map((message, index) => {
@@ -64,26 +72,24 @@ export function ChatMessageList({ messages, status, tripLabels, stoppedIds }: Ch
           const stoppedBeforeReply =
             stopped && message.role === "user" && messages[index + 1]?.role !== "assistant";
           return (
-            <li key={message.id} className="flex flex-col gap-3">
+            <li key={message.id} className="flex flex-col gap-4 empty:hidden">
               <ChatMessage
                 message={message}
                 tripLabels={tripLabels}
                 stopped={stopped && message.role === "assistant"}
               />
               {stoppedBeforeReply && (
-                <ChatBubble role="assistant">
+                <AssistantBubble>
                   <StoppedNote />
-                </ChatBubble>
+                </AssistantBubble>
               )}
             </li>
           );
         })}
 
         {waitingForFirstToken && (
-          <li>
-            <ChatBubble role="assistant">
-              <p className="text-muted motion-safe:animate-pulse">{t("thinking")}</p>
-            </ChatBubble>
+          <li className="flex flex-col">
+            <TypingBubble />
           </li>
         )}
       </ol>

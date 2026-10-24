@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useChat } from "@ai-sdk/react";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { ClayCard } from "@/components/ui/ClayCard";
 import {
   getChat,
   getServerStoppedIds,
@@ -12,28 +13,34 @@ import {
   registerChatBridge,
   subscribeStopped,
 } from "@/lib/chat/client-chat";
-import { getChatErrorKind } from "@/lib/chat/errors";
+import { getChatErrorKind, type ChatErrorKind } from "@/lib/chat/errors";
 import { ChatAnnouncer } from "./ChatAnnouncer";
 import { ChatComposer } from "./ChatComposer";
 import { ChatErrorNotice } from "./ChatErrorNotice";
+import { ChatHeader } from "./ChatHeader";
 import { ChatMessageList } from "./ChatMessageList";
 import { ChatSuggestions } from "./ChatSuggestions";
-import type { TripLabels } from "./types";
+import { messageText, type TripLabels } from "./types";
+import styles from "./Chat.module.css";
 
 type ChatExperienceProps = {
   /** Libellés localisés des voyages (calculés côté serveur depuis le profil). */
   tripLabels: TripLabels;
   /** E-mail de contact (profil), affiché en cas d'erreur. */
   email: string;
+  /** Prénom de Romain (profil) : « version IA de Romain », « écris à Romain ». */
+  name: string;
   /** Employeur actuel (profil), pour la suggestion de question sur le job. */
   company: string;
 };
 
-// Interface du chat : conversation, suggestions, saisie, erreurs.
+/** Erreurs où Rominou est « en pause » : pastille beurre, plus de suggestions. */
+const PAUSED: readonly ChatErrorKind[] = ["unavailable", "daily_limit"];
+
+// Fenêtre de chat « Cosy » : en-tête, conversation, suggestions, erreurs, saisie.
 // L'état vit dans une instance Chat partagée (client-chat.ts) : il survit
 // aux changements de page déclenchés par Rominou.
-export function ChatExperience({ tripLabels, email, company }: ChatExperienceProps) {
-  const t = useTranslations("chat");
+export function ChatExperience({ tripLabels, email, name, company }: ChatExperienceProps) {
   const locale = useLocale();
   const router = useRouter();
   const [chat] = useState(getChat);
@@ -47,6 +54,8 @@ export function ChatExperience({ tripLabels, email, company }: ChatExperiencePro
 
   const busy = status === "submitted" || status === "streaming";
   const errorKind = getChatErrorKind(error);
+  const paused = errorKind !== null && PAUSED.includes(errorKind);
+  const asked = new Set(messages.filter((message) => message.role === "user").map(messageText));
 
   // Donne au chat (module) accès au routeur localisé tant que la page est affichée
   useEffect(
@@ -78,17 +87,21 @@ export function ChatExperience({ tripLabels, email, company }: ChatExperiencePro
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-3 shadow-glow backdrop-blur-sm sm:p-5">
-      <p role="note" className="rounded-xl border border-line px-3 py-2 text-sm text-muted">
-        {t("notice", { email })}
-      </p>
+    <ClayCard className={`${styles.window} flex min-w-0 flex-col`}>
+      <ChatHeader away={paused} name={name} />
 
-      <ChatMessageList messages={messages} status={status} tripLabels={tripLabels} stoppedIds={stoppedIds} />
+      <ChatMessageList
+        messages={messages}
+        status={status}
+        tripLabels={tripLabels}
+        stoppedIds={stoppedIds}
+        name={name}
+      />
 
-      {messages.length === 0 && <ChatSuggestions disabled={busy} onPick={send} company={company} />}
+      {!paused && <ChatSuggestions disabled={busy} onPick={send} company={company} asked={asked} />}
 
       {errorKind && (
-        <ChatErrorNotice kind={errorKind} email={email} onRetry={busy ? undefined : handleRetry} />
+        <ChatErrorNotice kind={errorKind} email={email} name={name} onRetry={busy ? undefined : handleRetry} />
       )}
 
       <ChatComposer
@@ -101,6 +114,6 @@ export function ChatExperience({ tripLabels, email, company }: ChatExperiencePro
       />
 
       <ChatAnnouncer messages={messages} status={status} />
-    </div>
+    </ClayCard>
   );
 }

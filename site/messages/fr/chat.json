@@ -1,24 +1,34 @@
 {
   "meta": {
     "title": "Chat",
-    "description": "Discute avec la version IA de {name} : questions sur son parcours, ses projets et ses passions."
+    "description": "Discute avec la version IA de {name} : questions sur son parcours, ses projets et ses passions."
   },
   "hero": {
-    "title": "Parle avec l'IA de Romain",
-    "intro": "Pose tes questions à Rominou, le guide : c'est la version IA de Romain. Il répond par écrit et peut aussi te faire visiter le site."
+    "kicker": "Ici, on papote",
+    "title": "Parle avec l’IA de {name}",
+    "intro": "Pose tes questions à Rominou, le guide : c'est la version IA de {name}. Il répond par écrit et peut aussi te faire visiter le site."
   },
-  "notice": "Tu discutes avec Rominou, la version IA de Romain : il peut se tromper. Pour une info sûre, écris à {email}.",
+  "notice": "Rominou est une IA, il peut se tromper. Pour une info sûre, écris à <link>{email}</link>.",
+  "window": {
+    "title": "Rominou, le guide",
+    "subtitle": "<nw>Version IA de {name} ·</nw> <nw>répond par écrit</nw>",
+    "status": {
+      "online": "En ligne",
+      "away": "En pause"
+    }
+  },
+  "today": "Aujourd'hui",
   "panelLabel": "Conversation avec Rominou",
-  "welcome": "Salut, moi c'est Rominou, le guide et la version IA de Romain ! Demande-moi ce que tu veux sur mon parcours, mon job ou mes voyages.",
+  "welcome": "Salut, moi c'est Rominou, le guide et la version IA de {name} ! Demande-moi ce que tu veux sur mon parcours, mon job ou mes voyages.",
   "roles": {
-    "user": "Toi",
+    "user": "Toi :",
     "assistant": "Rominou"
   },
-  "thinking": "Rominou réfléchit…",
+  "thinking": "Rominou écrit…",
   "stopped": "Réponse interrompue.",
   "suggestions": {
     "label": "Idées de questions",
-    "who": "Qui es-tu ?",
+    "who": "Qui es-tu ?",
     "travels": "Parle-moi de tes voyages",
     "work": "Tu fais quoi chez {company} ?"
   },
@@ -31,25 +41,25 @@
     "stop": "Arrêter"
   },
   "tools": {
-    "navigate": "Rominou t'emmène vers la page {page}.",
-    "showTrip": "Rominou ouvre le voyage : {destination}.",
+    "navigate": "Direction la page {page}",
+    "showTrip": "Rominou ouvre le voyage : {destination}",
     "playAnimation": {
-      "wave": "Rominou te fait coucou.",
-      "bow": "Rominou fait une révérence.",
-      "walk": "Rominou se balade.",
-      "run": "Rominou pique un sprint."
+      "wave": "Rominou te fait coucou",
+      "bow": "Rominou fait une révérence",
+      "walk": "Rominou se balade",
+      "run": "Rominou pique un sprint"
     },
-    "failed": "Rominou n'a pas pu faire cette action."
+    "failed": "Rominou n'a pas pu faire cette action"
   },
   "live": {
     "reply": "Rominou : {text}"
   },
   "errors": {
-    "unavailable": "Rominou fait une pause pour le moment. Écris directement à Romain :",
-    "rate_limited": "Doucement ! Ça fait beaucoup de messages d'un coup. Réessaie dans une minute.",
-    "daily_limit": "Rominou a beaucoup parlé aujourd'hui, il reprend demain. En attendant, écris à Romain :",
-    "forbidden": "Ta requête a été bloquée par la protection anti-robots. Recharge la page ou écris à Romain :",
-    "generic": "Oups, quelque chose a coincé. Réessaie, ou écris à Romain :",
+    "unavailable": "Rominou fait une pause pour le moment. Écris directement à {name} :",
+    "rate_limited": "Doucement ! Ça fait beaucoup de messages d'un coup. Réessaie dans une minute.",
+    "daily_limit": "Rominou a beaucoup parlé aujourd'hui, il reprend demain. En attendant, écris à {name} :",
+    "forbidden": "Ta requête a été bloquée par la protection anti-robots. Recharge la page ou écris à {name} :",
+    "generic": "Oups, quelque chose a coincé. Réessaie, ou écris à {name} :",
     "retry": "Réessayer"
   }
 }

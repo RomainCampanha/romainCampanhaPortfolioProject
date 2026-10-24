@@ -6,6 +6,7 @@ import { useGLTF } from "@react-three/drei";
 import type { Object3D, SkinnedMesh } from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { AvatarController, type AvatarInput } from "@/lib/avatar/controller";
+import { applyStageLook } from "@/lib/avatar/look";
 import { avatarStore, type AvatarOutfit } from "@/lib/avatar/store";
 import { rememberModel } from "./modelCache";
 
@@ -16,9 +17,9 @@ type AvatarModelProps = {
   getLook: () => AvatarInput["look"];
 };
 
-// Rominou dans le Canvas : charge le GLB (meshopt), clone la scène (squelette propre à
-// cette instance), branche le contrôleur d'animation sur le store et signale "ready"
-// une fois les shaders compilés.
+// Rominou dans le Canvas : charge le GLB (meshopt), le rend mat (look « pâte à modeler »),
+// clone la scène (squelette propre à cette instance), branche le contrôleur d'animation sur
+// le store et signale "ready" une fois les shaders compilés.
 export function AvatarModel({ url, outfit, getLook }: AvatarModelProps) {
   // Pas de Draco (fichiers meshopt) ; décodeur meshopt inclus (WASM inline).
   const gltf = useGLTF(url, false, true);
@@ -27,6 +28,7 @@ export function AvatarModel({ url, outfit, getLook }: AvatarModelProps) {
 
   // Clone : géométries / matériaux / texture partagés avec le cache, os indépendants.
   const model = useMemo(() => {
+    applyStageLook(gltf.scene);
     const root = cloneSkinned(gltf.scene);
     root.traverse((object: Object3D) => {
       // Une seule mesh, animée : pas de frustum culling (bounding sphere figée en T-pose).

@@ -1,0 +1,167 @@
+/* Hero Pro.
+   Mobile / tablette (une colonne) : sticker, nom, accroche, diorama, faits, boutons
+   (le bloc texte passe en display: contents pour intercaler le diorama).
+   Desktop (>= 64rem) : texte à gauche, diorama à droite. */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: 1.5rem 0.5rem;
+}
+
+.copy {
+  display: contents;
+}
+
+.sticker {
+  order: 1;
+  justify-self: start;
+}
+.title {
+  order: 2;
+  margin-block-start: 1.125rem;
+}
+.lede {
+  order: 3;
+  max-inline-size: 34ch;
+  margin-block-start: 1rem;
+}
+.stage {
+  order: 4;
+  margin-block: 1.75rem 1.375rem;
+}
+.facts {
+  order: 5;
+  margin-block-start: 1.75rem;
+  padding: 0.625rem;
+}
+.ctas {
+  order: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.875rem;
+  margin-block-start: 1.75rem;
+}
+.ctas > * {
+  flex: 1 1 auto;
+}
+
+/* ---------- Barre d'inventaire « En bref » ---------- */
+.factsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+.fact {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  padding: 0.8125rem 0.875rem 0.9375rem;
+}
+.factLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--tone-800);
+  font-size: 0.71875rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.factCoin {
+  color: var(--tone-800);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.8),
+    0 2px 0 var(--tone-300);
+}
+.factValue {
+  margin: 0.75rem 0 0;
+  /* « Infomaniak » tient sur une ligne jusqu'à 320 px (18.7 px à 320, 21 px dès ~370) */
+  font-size: clamp(1.125rem, 0.25rem + 4.6vw, 1.3125rem);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+.factExtra {
+  margin: auto 0 0;
+  padding-block-start: 0.5rem;
+}
+.factNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  color: var(--tone-800);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+@media (max-width: 22.49rem) {
+  .facts {
+    padding: 0.5rem;
+  }
+  .factsGrid {
+    gap: 0.5rem;
+  }
+  .fact {
+    padding-inline: 0.6875rem;
+  }
+}
+
+@media (min-width: 40rem) {
+  .factValue {
+    font-size: 1.3125rem;
+  }
+  /* Une rangée : colonnes à la largeur de leur contenu (« 24 ans » étroit, « Bachelor HES-SO » large) */
+  .factsGrid {
+    grid-template-columns: repeat(var(--facts, 4), auto);
+    gap: 0.625rem;
+  }
+  .ctas > * {
+    flex: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 25rem;
+    column-gap: 3rem;
+    align-items: center;
+    padding-block: 2.5rem 1rem;
+  }
+  .copy {
+    display: block;
+  }
+  .stage {
+    grid-row: 1;
+    grid-column: 2;
+    margin: 0 0 1.875rem;
+  }
+  .title {
+    margin-block-start: 1.375rem;
+  }
+  .lede {
+    margin-block-start: 1.625rem;
+  }
+  .facts {
+    margin-block-start: 2.125rem;
+  }
+  .ctas {
+    margin-block-start: 2.375rem;
+  }
+  /* Colonne de texte plus étroite : faits en 2 × 2 */
+  .factsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 80rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 29.375rem;
+    column-gap: 4rem;
+  }
+  .factsGrid {
+    grid-template-columns: repeat(var(--facts, 4), auto);
+  }
+}

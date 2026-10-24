@@ -5,12 +5,12 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { pick, profile } from "@/content/profile";
 import { routing } from "@/i18n/routing";
 import { SITE_NAME, SITE_URL, ogLocale } from "@/lib/seo";
-import { Providers } from "@/components/site/Providers";
 import { PageThemeRoot } from "@/components/site/PageThemeRoot";
 import { SkipLink } from "@/components/site/SkipLink";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { AvatarStageLoader } from "@/components/three/AvatarStageLoader";
+import { fontVariables } from "../fonts";
 import "../globals.css";
 
 // Pré-rendu statique de chaque langue ; toute autre valeur de [locale]
@@ -22,8 +22,10 @@ export function generateStaticParams() {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A1F",
-  colorScheme: "dark light",
+  themeColor: "#F5EEE3",
+  colorScheme: "light",
+  // Zones sûres (encoche, barre d'accueil) : le dock mobile utilise env(safe-area-inset-*)
+  viewportFit: "cover",
 };
 
 export async function generateMetadata({
@@ -67,21 +69,19 @@ export default async function LocaleLayout({
   const { common } = await getMessages();
 
   return (
-    <html lang={locale} data-scroll-behavior="smooth">
+    <html lang={locale} data-scroll-behavior="smooth" className={fontVariables}>
       <body>
         <NextIntlClientProvider messages={{ common }}>
-          <Providers>
-            <PageThemeRoot>
-              <SkipLink />
-              <SiteHeader name={profile.name} initials={`${profile.firstName[0]}${profile.lastName[0]}`} />
-              {/* Canvas 3D unique, persistant entre les pages (client only) */}
-              <AvatarStageLoader />
-              <main id="main" tabIndex={-1} className="site-main">
-                {children}
-              </main>
-              <SiteFooter />
-            </PageThemeRoot>
-          </Providers>
+          <PageThemeRoot>
+            <SkipLink />
+            <SiteHeader name={profile.name} guide={profile.guideName} />
+            {/* Canvas 3D unique, persistant entre les pages (client only) */}
+            <AvatarStageLoader />
+            <main id="main" tabIndex={-1} className="site-main">
+              {children}
+            </main>
+            <SiteFooter />
+          </PageThemeRoot>
         </NextIntlClientProvider>
       </body>
     </html>

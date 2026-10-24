@@ -155,6 +155,158 @@ const ALT_OVERRIDES = {
   "brighton-dubrovnik/4.jpeg": {
     fr: "Selfie de Romain au-dessus de la vieille ville de Dubrovnik et de la mer, au coucher du soleil",
     en: "Romain's selfie above Dubrovnik's old town and the sea at sunset",
+  },  // Busan
+  "busan/IMG_3290.jpg": {
+    fr: "Romain assis dans un grand cadre blanc au milieu d'un jardin fleuri, la mer, un pont et des tours au loin",
+    en: "Romain sitting inside a large white frame in a flower garden, the sea, a bridge and towers in the distance",
+  },
+  "busan/IMG_3340.jpg": {
+    fr: "Romain assis sur une terrasse en bois au-dessus de la baie, les gratte-ciel de Busan au loin",
+    en: "Romain sitting on a wooden deck above the bay, Busan's skyscrapers in the distance",
+  },
+  "busan/IMG_3394.jpg": {
+    fr: "Romain attablé près d'une grande baie vitrée qui donne sur la ville et les montagnes",
+    en: "Romain at a table by a large window overlooking the city and the mountains",
+  },
+  "busan/IMG_3404.jpg": {
+    fr: "Romain dans une rue en pente, face à un quartier de maisons colorées accroché à la colline",
+    en: "Romain on a sloping street, facing a neighbourhood of colourful houses clinging to the hillside",
+  },
+  // Berlin (la salle de concert : confirmée par Romain)
+  "berlin/IMG_1013.jpg": {
+    fr: "Romain avec sa valise devant la porte de Brandebourg, par un jour ensoleillé",
+    en: "Romain with his suitcase in front of the Brandenburg Gate on a sunny day",
+  },
+  "berlin/IMG_1847.jpg": {
+    fr: "Romain, de dos, dans les gradins d'une grande salle de concert à Berlin, face à la scène et à ses projecteurs avant le spectacle",
+    en: "Romain, seen from behind, in the stands of a big Berlin concert hall, facing the stage and its lighting rig before the show",
+  },
+  // Paris
+  "paris/IMG_6772.jpg": {
+    fr: "Romain, bras croisés en doudoune blanche, devant la tour Eiffel par un jour gris",
+    en: "Romain, arms crossed in a white puffer jacket, in front of the Eiffel Tower on a grey day",
+  },
+  "paris/IMG_6776.jpg": {
+    fr: "Petit-déjeuner dans un café : croissant, jus d'orange, café et boisson chaude, devant une chemise aux motifs colorés",
+    en: "Breakfast in a café: a croissant, orange juice, coffee and a hot drink, in front of a colourful patterned shirt",
+  },
+  "paris/IMG_6779.jpg": {
+    fr: "Une lampe décorée de plumes roses et de lunettes en forme de cœur, dans un bar tamisé",
+    en: "A lamp decorated with pink feathers and heart-shaped sunglasses, in a dimly lit bar",
+  },
+  "paris/IMG_6780.jpg": {
+    fr: "Deux cocktails sur un comptoir en bois, dans un bar tamisé",
+    en: "Two cocktails on a wooden bar counter, in a dimly lit bar",
+  },
+  "paris/IMG_6805.jpg": {
+    fr: "Romain tient une peluche de cochon rose dans une boutique éphémère « Fashion Week » toute rose",
+    en: "Romain holding a pink pig plush in an all-pink “Fashion Week” pop-up shop",
+  },
+  "paris/IMG_6816.jpg": {
+    fr: "Romain en doudoune blanche sur les pavés, devant l'Arc de triomphe",
+    en: "Romain in a white puffer jacket on the cobblestones, in front of the Arc de Triomphe",
+  },
+  "paris/IMG_6888.jpg": {
+    fr: "Le quartier de La Défense à la tombée du jour : deux tours de verre et une sculpture géante en forme de pouce",
+    en: "La Défense at dusk: two glass towers and a giant thumb-shaped sculpture",
+  },
+  // Tokyo
+  "tokyo/IMG_8706-2.jpg": {
+    fr: "Romain, sacs de shopping à la main, au milieu de la foule d'une rue animée",
+    en: "Romain, shopping bags in hand, in the crowd of a busy street",
+  },
+  "tokyo/IMG_8807.jpg": {
+    fr: "Romain au milieu d'une large avenue au crépuscule, bordée d'enseignes lumineuses",
+    en: "Romain in the middle of a wide avenue at dusk, lined with illuminated signs",
+  },
+  "tokyo/IMG_8873-2.jpg": {
+    fr: "Romain assis sur la pelouse d'un parc, un arbre en fleurs roses derrière lui",
+    en: "Romain sitting on the lawn of a park, a tree in pink blossom behind him",
+  },
+  "tokyo/IMG_8884.jpg": {
+    fr: "Romain sur un pont en bois d'un jardin japonais, un étang et des tours de bureaux derrière lui",
+    en: "Romain on a wooden bridge in a Japanese garden, a pond and office towers behind him",
+  },
+  "tokyo/IMG_8910.jpg": {
+    fr: "Une ruelle étroite bordée de petits restaurants et de lanternes en papier",
+    en: "A narrow alley lined with small restaurants and paper lanterns",
+  },
+  "tokyo/IMG_9032.jpg": {
+    fr: "Un assortiment de sushis sur un plateau doré, au comptoir d'un restaurant",
+    en: "An assortment of sushi on a golden board, at a restaurant counter",
+  },
+  "tokyo/IMG_9050.jpg": {
+    fr: "Les rangées de machines colorées d'une salle de pachinko",
+    en: "Rows of colourful machines in a pachinko parlour",
+  },
+  "tokyo/IMG_9195.jpg": {
+    fr: "Romain prend un selfie dans une salle d'art numérique immersive, entre fleurs projetées et traits de lumière",
+    en: "Romain taking a selfie in an immersive digital art room, among projected flowers and streaks of light",
+  },
+  "tokyo/IMG_9224.jpg": {
+    fr: "Un bol de thé vert où s'épanouissent des fleurs de lumière projetées",
+    en: "A bowl of green tea with projected flowers of light blooming in it",
+  },
+  "tokyo/IMG_9243.jpg": {
+    fr: "Romain pose la nuit devant la tour de Tokyo illuminée en orange",
+    en: "Romain posing at night in front of Tokyo Tower, lit up in orange",
+  },
+  // Shanghai
+  "shanghai/00D2F6FF-FC1D-49AD-BD15-E855DAF9A941.jpg": {
+    fr: "Une rue piétonne bordée de bâtiments traditionnels chinois et de lanternes rouges, des gratte-ciel au loin",
+    en: "A pedestrian street lined with traditional Chinese buildings and red lanterns, skyscrapers in the distance",
+  },
+  "shanghai/IMG_7369.jpg": {
+    fr: "Romain sur les quais, la nuit, devant les gratte-ciel illuminés de Pudong et la tour de la Perle de l'Orient",
+    en: "Romain on the waterfront at night, in front of Pudong's illuminated skyscrapers and the Oriental Pearl Tower",
+  },
+  "shanghai/IMG_7491.jpg": {
+    fr: "Romain sourit au pied de très hauts gratte-ciel, dont la Shanghai Tower et sa silhouette torsadée",
+    en: "Romain smiling at the foot of very tall skyscrapers, including the twisting Shanghai Tower",
+  },
+  "shanghai/IMG_7557-2.jpg": {
+    fr: "Romain en doudoune blanche devant la tour de la Perle de l'Orient",
+    en: "Romain in a white puffer jacket in front of the Oriental Pearl Tower",
+  },
+  "shanghai/IMG_7770.jpg": {
+    fr: "Romain, de dos, contemple un jardin chinois traditionnel : rocaille, pavillon et une tour au loin",
+    en: "Romain, seen from behind, looking out over a traditional Chinese garden: rockery, pavilion and a tower in the distance",
+  },
+  "shanghai/IMG_7903.jpg": {
+    fr: "Romain adossé au mur vert d'un couloir à l'architecture courbe et futuriste",
+    en: "Romain leaning against the green wall of a curved, futuristic corridor",
+  },
+  "shanghai/IMG_7922.jpg": {
+    fr: "Romain et deux amis sur une passerelle, au milieu des plantes tropicales d'une serre",
+    en: "Romain and two friends on a walkway among the tropical plants of a greenhouse",
+  },
+  "shanghai/IMG_7991.jpg": {
+    fr: "Romain au pied d'un grand escalier qui mène à un temple chinois traditionnel",
+    en: "Romain at the foot of a wide staircase leading up to a traditional Chinese temple",
+  },
+  "shanghai/IMG_8025.jpg": {
+    fr: "Romain adossé à un pilier dans la galerie sculptée d'un temple",
+    en: "Romain leaning against a pillar in the carved gallery of a temple",
+  },
+  "shanghai/IMG_8131.jpg": {
+    fr: "Selfie de Romain et deux amis faisant le signe de la victoire, dans une rue illuminée de rouge",
+    en: "Selfie of Romain and two friends making peace signs, in a street lit up in red",
+  },
+  "shanghai/IMG_8148.jpg": {
+    fr: "Une immense lanterne illuminée en forme de chevaux et de fleurs, la nuit, devant des bâtiments traditionnels",
+    en: "A huge illuminated lantern shaped like horses and flowers, at night, in front of traditional buildings",
+  },
+  "shanghai/IMG_8159.jpg": {
+    fr: "Romain et deux amis posent la nuit sur le balcon en bois d'un bâtiment traditionnel éclairé de rouge",
+    en: "Romain and two friends posing at night on the wooden balcony of a traditional building lit in red",
+  },
+  "shanghai/IMG_8160.jpg": {
+    fr: "Romain brandit une lance à pompon rouge devant un pavillon traditionnel illuminé, la nuit",
+    en: "Romain holding up a spear with a red tassel in front of an illuminated traditional pavilion, at night",
+  },
+  "shanghai/IMG_8162.jpg": {
+    fr: "Romain attablé dans un café plein de plantes, une main au premier plan lève un verre de vin blanc vers lui",
+    en: "Romain at a table in a café full of plants, a hand in the foreground raising a glass of white wine towards him",
   },
 };
 

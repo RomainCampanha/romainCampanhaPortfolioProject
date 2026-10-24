@@ -1,7 +1,8 @@
 import type { PageId } from "@/lib/pages";
 import type { AvatarClip, AvatarOutfit } from "./store";
 
-// Fichiers produits par scripts/build-avatar.mjs (npm run assets:avatar), servis depuis public/.
+// Fichiers produits par scripts/build-avatar.mjs (npm run assets:avatar), servis depuis public/
+// (modèles : public/models ; posters : public/scenes).
 
 export type ModelQuality = "desktop" | "mobile";
 
@@ -11,9 +12,14 @@ const MODELS: Record<AvatarOutfit, Record<ModelQuality, string>> = {
   vacances: { desktop: "/models/romain-vacances.glb", mobile: "/models/romain-vacances-mobile.glb" },
 };
 
+/**
+ * Posters transparents (pose idle, cadrage plein pied) rendus avec le look « pâte à modeler »
+ * du Canvas (stage-config.json) : affichés pendant le chargement, sans WebGL ou avec
+ * prefers-reduced-motion, dans le même cadre et devant le même décor que la 3D.
+ */
 export const POSTERS: Record<AvatarOutfit, string> = {
-  default: "/models/romain-poster.webp",
-  vacances: "/models/romain-vacances-poster.webp",
+  default: "/scenes/rominou-poster.webp",
+  vacances: "/scenes/rominou-vacances-poster.webp",
 };
 
 /** Clips présents dans chaque modèle (en plus de "idle", la pose neutre). */

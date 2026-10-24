@@ -1,0 +1,57 @@
+/* Diorama de Rominou (hero Pro) : le cadre vient de l'ancre (components/three).
+   Mobile / tablette : bulle en haut de la fenêtre (dans le flux), Rominou sur son île dessous.
+   Desktop (>= 64rem) : fenêtre haute à droite du texte, bulle qui déborde à gauche. */
+
+.stage {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 34rem;
+  justify-self: center;
+}
+
+/* Hauteur explicite obligatoire (cadre = conteneur de requêtes). Mobile / tablette : Rominou
+   remplit la scène sous la bulle (fit="fill"), sur l'axe de la queue de la bulle (55 %). */
+.anchor {
+  block-size: 34rem;
+  --rominou-x: 55cqw;
+}
+
+.bubble {
+  margin: 1.5rem 0.75rem 0;
+}
+
+@media (min-width: 48rem) {
+  .anchor {
+    block-size: 38rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .stage {
+    max-inline-size: none;
+  }
+  .anchor {
+    block-size: clamp(36rem, 46vw, 42.5rem);
+    /* Fenêtre plus étroite (64-80rem) : Rominou décalé à droite, sa tête hors de la bulle */
+    --rominou-x: 63cqw;
+    --rominou-h: min(76cqh, 132cqw);
+  }
+  .bubble {
+    position: absolute;
+    inset-block-start: 2.75rem;
+    inset-inline-start: -5rem;
+    inline-size: 15.5rem;
+    margin: 0;
+  }
+}
+
+@media (min-width: 80rem) {
+  .anchor {
+    --rominou-x: 57cqw;
+    --rominou-h: min(80cqh, 132cqw);
+  }
+  .bubble {
+    inset-inline-start: -5.5rem;
+    inline-size: 19rem;
+  }
+}
