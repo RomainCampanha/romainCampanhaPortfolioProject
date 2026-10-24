@@ -5,16 +5,17 @@
   },
   "guide": {
     "label": "Rominou en tenue de vacances",
-    "bubble": "Tenue de vacances activée ! Ici, c'est le côté perso de Romain."
+    "bubble": "Rominou, le guide, en tenue de vacances ! Ici, c'est le côté perso de Romain."
   },
   "hero": {
     "title": "Mes hobbies",
-    "intro": "Quand je ne suis ni au boulot ni en cours, je voyage, j'écoute (et je fais) du rap, et je joue. Bienvenue de mon côté perso !",
+    "intro": "Quand je ne suis ni au boulot ni en cours, je voyage, j'écoute du rap français et je joue aux jeux vidéo. Bienvenue de mon côté perso !",
     "listLabel": "Mes passions en bref"
   },
   "travels": {
     "title": "Mes voyages",
-    "intro": "Les cartes d'embarquement des voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
+    "intro": "{count} cartes d'embarquement, de {first} ({firstYear}) à {last} ({lastYear}) : les voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
+    "introShort": "Les cartes d'embarquement des voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
     "pass": "Carte d'embarquement",
     "passenger": "Passager",
     "destination": "Destination",
@@ -24,26 +25,33 @@
     "photosComing": "Photos bientôt en ligne",
     "photosComingHint": "Je trie encore mes photos de {place}. Reviens bientôt !",
     "galleryLabel": "Photos de {place}",
+    "galleryMoreLabel": "Autres photos de {place}",
+    "morePhotos": "{count, plural, one {Voir la dernière photo} other {Voir les # autres photos}}",
+    "lessPhotos": "Masquer ces photos",
     "anecdote": "Anecdote",
     "otherTitle": "J'ai aussi posé mes valises à…",
     "otherIntro": "D'autres villes visitées, sans carte d'embarquement (pour l'instant).",
     "photosSoon": "Bientôt"
   },
-  "soon": {
-    "title": "Bientôt ici",
-    "intro": "Le site grandit par étapes. Voici ce qui arrive sur cette page.",
-    "badge": "Bientôt",
-    "game": {
-      "title": "Le jeu : un runner musical",
-      "text": "Cours, saute et attrape des notes de musique : celles que tu récoltes débloquent mes sons de rap."
+  "passions": {
+    "title": "Musique & jeux",
+    "intro": "Du rap français dans les oreilles, une manette (ou une souris) dans les mains.",
+    "soon": "Bientôt",
+    "lol": {
+      "title": "Ma carte League of Legends",
+      "role": "Rôle",
+      "peak": "Meilleur rang",
+      "champions": "Champions préférés",
+      "otherGames": "À part League of Legends, je joue aussi à {games}."
     },
     "music": {
       "title": "Le coin musique",
-      "text": "Les sons que je fais avec des potes, à écouter ici. Côté inspirations, je suis fan de {artists}."
+      "text": "Grand fan de rap français, surtout de {artists}.",
+      "soon": "Bientôt ici : une sélection de mes sons préférés."
     },
-    "lol": {
-      "title": "Ma carte League of Legends",
-      "text": "Ma carte LoL arrive bientôt. À part League of Legends, je joue aussi à {games}."
+    "game": {
+      "title": "Le jeu : un runner",
+      "text": "Un petit jeu de course arrive bientôt sur cette page, à jouer directement dans ton navigateur."
     }
   }
 }

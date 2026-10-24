@@ -12,11 +12,11 @@ import { RominouGuide } from "@/components/site/RominouGuide";
 import { HobbyOutfit } from "@/components/hobby/HobbyOutfit";
 import { HobbyHero } from "@/components/hobby/HobbyHero";
 import { TravelsSection } from "@/components/hobby/TravelsSection";
-import { ComingSoonSection } from "@/components/hobby/ComingSoonSection";
+import { MusicGamesSection } from "@/components/hobby/MusicGamesSection";
 
-// Page Hobby. Phase 1 : voyages (cartes d'embarquement + photos) et teasers.
-// Ids stables : #voyages (+ une carte par voyage : #seoul, #toronto, #brighton-dubrovnik,
-// #tokyo, #shanghai), #bientot (#jeu, #musique, #lol).
+// Page Hobby : voyages (cartes d'embarquement + photos), musique et jeux.
+// Ids stables : #voyages (+ une carte par voyage = son id dans profile.travels, ex. #busan,
+// #tokyo, #brighton-dubrovnik), #musique-jeux (#lol, #musique, #jeu).
 
 export async function generateMetadata({
   params,
@@ -58,7 +58,7 @@ export default function HobbyPage({ params }: PageProps<"/[locale]/hobby">) {
       >
         <HobbyHero />
         <TravelsSection />
-        <ComingSoonSection />
+        <MusicGamesSection />
       </GuidedLayout>
     </PageShell>
   );

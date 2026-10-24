@@ -46,11 +46,6 @@ export function DiplomaFrame({ education: e, tiltClassName = "" }: DiplomaFrameP
             {" · "}
             {pick(e.school.name, locale)}
           </p>
-          {e.nickname ? (
-            <p className="mt-2 text-sm italic text-muted">
-              {t("nickname", { nickname: pick(e.nickname, locale) })}
-            </p>
-          ) : null}
           {e.details ? <p className="mt-2 text-sm">{pick(e.details, locale)}</p> : null}
         </div>
       </div>

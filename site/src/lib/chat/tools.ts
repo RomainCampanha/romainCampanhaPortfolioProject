@@ -25,7 +25,7 @@ export const PRO_PAGE_TOPICS = [
 
 export const chatTools = {
   navigate: tool({
-    description: `Open a page of the website in the visitor's browser. pro = home (${PRO_PAGE_TOPICS}); hobby = travels, music, games; chat = this conversation.`,
+    description: `Open a page of the website in the visitor's browser (it leaves this chat), right after your text. Only when the visitor explicitly asks to go there, or accepts your offer. pro = home (${PRO_PAGE_TOPICS}); hobby = travels, music, games; chat = this conversation.`,
     inputSchema: z.object({ page: z.enum(PAGE_IDS) }),
     outputSchema: toolOutputSchema,
     strict: true,
@@ -37,7 +37,7 @@ export const chatTools = {
     strict: true,
   }),
   showTrip: tool({
-    description: `Open the Hobby page on the card of one of ${firstName}'s trips (photos and anecdotes).`,
+    description: `Open the Hobby page on the card of one of ${firstName}'s trips (photos and anecdotes), right after your text. Only when the visitor asks to see that trip, or accepts your offer.`,
     inputSchema: z.object({ destination: z.enum(TRAVEL_IDS) }),
     outputSchema: toolOutputSchema,
     strict: true,

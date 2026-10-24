@@ -19,20 +19,32 @@ export function pick<T>(value: Localized<T>, locale: AppLocale): T {
 }
 
 export const SKILL_GROUP_IDS = [
-  "frontend",
-  "fullstack",
-  "languages",
+  "programming",
+  "web",
+  "databases",
   "infrastructure",
+  "project-management",
+  "business",
 ] as const;
 export type SkillGroupId = (typeof SKILL_GROUP_IDS)[number];
 
+/**
+ * Où la compétence a été acquise (cf. LinkedIn de Romain) : une école, le job,
+ * ou "Projets" (projets perso / autodidacte).
+ */
+export const SKILL_SOURCES = ["ESIG", "CFPT", "HEG", "Infomaniak", "Projets"] as const;
+export type SkillSource = (typeof SKILL_SOURCES)[number];
+
 // Destinations avec photos (= dossiers de photos, cf. src/content/photos.ts)
 export const TRAVEL_IDS = [
-  "seoul",
-  "toronto",
-  "brighton-dubrovnik",
+  "busan",
+  "berlin",
   "tokyo",
   "shanghai",
+  "paris",
+  "brighton-dubrovnik",
+  "toronto",
+  "seoul",
 ] as const;
 export type TravelId = (typeof TRAVEL_IDS)[number];
 
@@ -47,13 +59,19 @@ const placeSchema = z.object({
 });
 export type Place = z.infer<typeof placeSchema>;
 
+const skillSchema = z.object({
+  /** Nom affiché (identique en fr/en pour les noms techniques). */
+  name: localizedSchema,
+  /** Où la compétence a été acquise (plusieurs possibles). */
+  sources: z.array(z.enum(SKILL_SOURCES)).min(1),
+});
+export type Skill = z.infer<typeof skillSchema>;
+
 const educationSchema = z.object({
   id: z.string(),
   title: localizedSchema,
   /** Intitulé court (fiche "En bref", mur des diplômes), ex. "CFC", "Bachelor HES-SO". */
   shortTitle: localizedSchema,
-  /** Appellation courante utilisée par Romain */
-  nickname: localizedSchema.nullable(),
   school: z.object({
     name: localizedSchema,
     shortName: z.string(),
@@ -87,6 +105,8 @@ export const profileSchema = z.object({
   birthPlace: localizedSchema,
   location: localizedSchema,
   headline: localizedSchema,
+  /** Titre de son profil LinkedIn (tel quel en français). */
+  linkedinHeadline: localizedSchema,
   /** Phrase perso de la bio (page Pro), à la 1re personne. */
   aboutMe: localizedSchema,
   work: z.object({
@@ -106,7 +126,7 @@ export const profileSchema = z.object({
     z.object({
       id: z.enum(SKILL_GROUP_IDS),
       label: localizedSchema,
-      skills: z.array(z.string()).min(1),
+      skills: z.array(skillSchema).min(1),
     }),
   ),
   projects: z.array(
@@ -115,10 +135,27 @@ export const profileSchema = z.object({
       name: z.string(),
       /** null tant que le site n'est pas en ligne / l'URL pas confirmée : aucun lien affiché. */
       url: z.url().nullable(),
+      /** "school" : projet réalisé dans le cadre d'une formation ; "personal" : projet perso. */
+      kind: z.enum(["school", "personal"]),
+      /** Cadre du projet, en une phrase (ex. "Réalisé au CFPT pendant mon CFC"). */
+      context: localizedSchema,
+      /** Année de participation de Romain (null = inconnue). */
+      year: z.number().int().nullable(),
       description: localizedSchema,
       /** L'idée du projet en une phrase (optionnel). */
       pitch: localizedSchema.nullable(),
+      /** Fonctionnalités / faits marquants, constatés sur le site (rien d'inventé). */
+      highlights: z.array(localizedSchema),
       stack: z.array(z.string()),
+      /** Capture d'écran (public/projects/), dimensions intrinsèques en px. */
+      image: z
+        .object({
+          src: z.string().startsWith("/projects/"),
+          width: z.number().int().positive(),
+          height: z.number().int().positive(),
+          alt: localizedSchema,
+        })
+        .nullable(),
     }),
   ),
   travels: z.array(travelSchema),
@@ -130,18 +167,31 @@ export const profileSchema = z.object({
       description: localizedSchema,
     }),
   ),
+  /** Romain ÉCOUTE du rap français : il ne fait pas de musique lui-même. */
   music: z.object({
     genre: localizedSchema,
     favoriteArtists: z.array(z.string()),
-    tracks: z.array(z.object({ title: z.string(), src: z.string() })),
+    /** Ses sons préférés (d'autres artistes), à partager plus tard sur le site. */
+    favoriteTracks: z.array(
+      z.object({ title: z.string(), artist: z.string(), url: z.url().nullable() }),
+    ),
   }),
   gaming: z.object({
-    games: z.array(z.string()),
+    games: z.array(z.string()).min(1),
     leagueOfLegends: z
       .object({
-        summonerName: z.string(),
-        rank: z.string().nullable(),
-        mains: z.array(z.string()),
+        /** Rôle principal (ex. mid) */
+        role: localizedSchema,
+        /** Meilleur rang atteint */
+        peakRank: localizedSchema,
+        /** Champions préférés */
+        champions: z.array(z.string()).min(1),
+        /**
+         * Confidentialité : JAMAIS de pseudo de jeu ni de lien vers un site de stats.
+         * Seul alias autorisé, et seulement si c'est vraiment nécessaire : "Keresko"
+         * (null = ne nommer aucun pseudo, à préférer).
+         */
+        alias: z.literal("Keresko").nullable(),
       })
       .nullable(),
   }),
@@ -178,6 +228,12 @@ const place = (
 ): Place => ({ city, country, countryCode });
 
 const same = (value: string): Localized => ({ fr: value, en: value });
+
+/** Compétence : nom (chaîne = identique en fr/en) + provenance(s). */
+const skill = (name: string | Localized, ...sources: [SkillSource, ...SkillSource[]]): Skill => ({
+  name: typeof name === "string" ? same(name) : name,
+  sources,
+});
 
 /**
  * Typographie française : espace insécable avant « : » et dans les guillemets,
@@ -216,6 +272,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     fr: "Support technique hosting L2 chez Infomaniak et étudiant en informatique de gestion à Genève",
     en: "L2 hosting technical support at Infomaniak and Business IT student in Geneva",
   },
+  linkedinHeadline: {
+    fr: "Informaticien - Support IT",
+    en: "IT specialist - IT support",
+  },
   aboutMe: {
     fr: "Côté perso, j'aime coder, voyager, écouter du rap français… et la chasse, mais seulement dans l'assiette.",
     en: "Outside work, I love coding, travelling, French rap… and “la chasse”: game meat, on my plate only.",
@@ -241,7 +301,6 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         en: "Bachelor of Science HES-SO in Business Information Technology",
       },
       shortTitle: { fr: "Bachelor HES-SO", en: "HES-SO Bachelor" },
-      nickname: null,
       school: {
         name: {
           fr: "Haute école de gestion de Genève",
@@ -260,16 +319,16 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     },
     {
       id: "esig",
-      // TODO: confirmer l'intitulé officiel exact du diplôme
+      // Titre protégé + complément de titre "Professional Bachelor", autorisé pour tous les
+      // diplômes ES depuis le 1.10.2026 (après le titre, séparé par une virgule) :
+      // https://www.sbfi.admin.ch/fr/faq-paquet-de-mesures-formation-professionnelle-superieure-diplomes
+      // En anglais : "Professional Bachelor in <filière>". TODO : reprendre le nom anglais
+      // officiel de la filière, fixé d'ici au printemps 2027 dans le plan d'études cadre.
       title: {
-        fr: "Informaticien de gestion diplômé ES",
-        en: "Business IT specialist, Advanced Federal Diploma of Higher Education (Professional Bachelor ES)",
+        fr: "Informaticien de gestion diplômé ES, Professional Bachelor",
+        en: "Professional Bachelor in Business IT (Informaticien de gestion diplômé ES)",
       },
       shortTitle: { fr: "Diplôme ES", en: "ES diploma" },
-      nickname: {
-        fr: "Bachelor professionnel ES",
-        en: "ES Professional Bachelor",
-      },
       school: {
         // Nom officiel en français (pas de traduction officielle connue)
         name: same("École supérieure d'informatique de gestion"),
@@ -279,7 +338,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       startYear: 2023,
       endYear: 2025,
       status: "obtained",
-      details: null,
+      details: {
+        fr: "Complément « Professional Bachelor » officiel depuis 2026 pour les diplômes ES. Ce n'est pas un bachelor de haute école : d'où mon Bachelor à la HEG.",
+        en: "The “Professional Bachelor” supplement became official for ES diplomas in 2026. It is not a university-level bachelor, hence my Bachelor at HEG.",
+      },
     },
     {
       id: "cfpt",
@@ -288,7 +350,6 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         en: "Federal VET Diploma (CFC) in application development",
       },
       shortTitle: same("CFC"),
-      nickname: null,
       school: {
         name: same("Centre de formation professionnelle technique"),
         shortName: "CFPT",
@@ -310,64 +371,171 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     { name: { fr: "Anglais", en: "English" }, level: null },
   ],
 
+  // Compétences de son profil LinkedIn (avec l'école / le job où il les a acquises),
+  // + les technos web apprises sur ses projets, en autodidacte ("Projets").
   skillGroups: [
     {
-      id: "frontend",
-      label: same("Frontend"),
-      skills: ["React", "Next.js", "Tailwind CSS"],
+      id: "programming",
+      label: { fr: "Programmation", en: "Programming" },
+      skills: [
+        skill("Java", "ESIG"),
+        skill("C#", "CFPT"),
+        skill("Python", "ESIG"),
+        skill("Visual Basic", "ESIG"),
+        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
+        skill(
+          { fr: "Programmation orientée objet (POO)", en: "Object-oriented programming (OOP)" },
+          "ESIG",
+        ),
+        skill({ fr: "Élaboration de programmes", en: "Program development" }, "CFPT"),
+      ],
     },
     {
-      id: "fullstack",
-      label: same("Full stack"),
-      skills: ["Node.js", "PHP"],
+      id: "web",
+      label: { fr: "Développement web", en: "Web development" },
+      skills: [
+        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
+        skill("PHP", "ESIG"),
+        skill("React", "Projets"),
+        skill("Next.js", "Projets"),
+        skill("Node.js", "Projets"),
+        skill("Tailwind CSS", "Projets"),
+      ],
     },
     {
-      id: "languages",
-      label: { fr: "Langages", en: "Languages" },
-      skills: ["Python", "C#"],
+      id: "databases",
+      label: { fr: "Bases de données", en: "Databases" },
+      skills: [
+        skill("Oracle Database", "ESIG"),
+        skill("Oracle SQL Developer", "ESIG"),
+        skill("PostgreSQL", "ESIG"),
+        skill("MySQL", "Projets"),
+        skill({ fr: "Administration de bases de données", en: "Database administration" }, "ESIG"),
+      ],
     },
     {
       id: "infrastructure",
-      label: same("Infrastructure"),
-      skills: ["MySQL", "DNS", "Web hosting"],
+      label: { fr: "Infrastructure & hébergement", en: "Infrastructure & hosting" },
+      skills: [
+        skill({ fr: "Hébergement web", en: "Web hosting" }, "Infomaniak"),
+        skill({ fr: "Noms de domaine (DNS)", en: "Domain Name System (DNS)" }, "Infomaniak"),
+        skill({ fr: "Gestion DNS", en: "DNS management" }, "Infomaniak"),
+        skill({ fr: "Serveurs DNS", en: "DNS servers" }, "Infomaniak"),
+        skill({ fr: "Serveurs cloud", en: "Cloud servers" }, "Infomaniak"),
+        skill("Windows Server Update Services (WSUS)", "CFPT"),
+      ],
+    },
+    {
+      id: "project-management",
+      label: { fr: "Gestion de projet", en: "Project management" },
+      skills: [skill("Scrum", "ESIG"), skill("JIRA", "ESIG"), skill("Trello", "ESIG")],
+    },
+    {
+      id: "business",
+      label: { fr: "Gestion d'entreprise", en: "Business management" },
+      skills: [
+        skill({ fr: "Comptabilité", en: "Accounting" }, "ESIG"),
+        skill({ fr: "Droit du travail", en: "Employment law" }, "ESIG"),
+      ],
     },
   ],
 
   projects: [
     {
-      id: "gesoif",
-      name: "gesoif.ch",
-      // TODO(Romain): remettre "https://gesoif.ch" une fois le site en ligne. Le domaine ne
-      // répondait pas (NXDOMAIN) le 2026-10-24 ; un site homonyme "GE-Soif" existe sur
-      // ge-soif.ch (lien avec Romain inconnu). En attendant : pas de bouton "Visiter".
-      url: null,
+      id: "ge-soif",
+      name: "GE-Soif",
+      url: "https://ge-soif.ch",
+      // Projet collectif des élèves d'informatique du CFPT (plusieurs volées depuis 2014,
+      // cf. page "À propos" du site) : PAS un projet perso de Romain.
+      kind: "school",
+      context: {
+        fr: "Réalisé au CFPT pendant mon CFC",
+        en: "Built at the CFPT during my CFC (Federal VET Diploma)",
+      },
+      year: null, // TODO(Romain): année(s) de participation et ce qu'il y a fait
+      // Contenu vérifié sur https://ge-soif.ch (accueil + "À propos") le 2026-10-24.
       description: {
-        fr: "Un site qui recense les fontaines d'eau potable à Genève.",
-        en: "A website listing drinking-water fountains in Geneva.",
+        fr: "Une application web participative pour trouver une fontaine d'eau potable à Genève (et ailleurs), directement depuis son téléphone.",
+        en: "A collaborative web app to find a drinking-water fountain in Geneva (and beyond), right from your phone.",
       },
       pitch: {
-        fr: "L'idée : savoir où boire un coup d'eau fraîche (ou remplir sa gourde) quand on se balade en ville.",
-        en: "The idea: knowing where to grab a sip of fresh water (or refill your bottle) while walking around town.",
+        fr: "Un projet collectif des élèves d'informatique du CFPT, né d'une balade à vélo où la gourde s'est vidée plus vite que prévu… sans aucune fontaine en vue.",
+        en: "A group project by the CFPT's IT students, born on a bike ride when the water bottle ran dry sooner than planned… with no fountain in sight.",
       },
-      // TODO: stack technique et détails du projet.
+      highlights: [
+        {
+          fr: "Carte des fontaines autour de toi, avec l'itinéraire à pied",
+          en: "A map of the fountains around you, with walking directions",
+        },
+        {
+          fr: "Participatif : chacun peut ajouter une fontaine (avec photo) ou en signaler une",
+          en: "Collaborative: anyone can add a fountain (with a photo) or report one",
+        },
+        {
+          fr: "Un compteur de bouteilles en PET économisées par fontaine",
+          en: "A counter of plastic (PET) bottles saved at each fountain",
+        },
+        {
+          fr: "Lancé en 2014, le projet a reçu la Distinction cantonale du développement durable (Genève, 2016)",
+          en: "Launched in 2014, the project received Geneva's cantonal sustainable development award (2016)",
+        },
+      ],
+      // TODO(Romain): stack qu'il a utilisée. Le site en ligne montre une app Vue.js,
+      // une API PHP et Google Maps, mais sa version à lui n'est pas confirmée.
       stack: [],
+      image: {
+        src: "/projects/ge-soif.webp",
+        width: 1280,
+        height: 800,
+        alt: {
+          fr: "Capture d'écran de GE-Soif : « Localisez les fontaines autour de vous », avec l'application ouverte sur un téléphone (carte, fontaine sélectionnée, bouton « Afficher l'itinéraire »).",
+          en: "Screenshot of GE-Soif: “Localisez les fontaines autour de vous” (find the fountains around you), with the app open on a phone (map, selected fountain, “show directions” button).",
+        },
+      },
     },
   ],
 
+  // Du plus récent au plus ancien. Années tirées des dates EXIF des photos.
   travels: [
     {
-      id: "seoul",
+      id: "busan",
       places: [
-        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
+        place({ fr: "Busan", en: "Busan" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
       ],
-      year: 2023,
+      year: 2026,
       photos: "available",
       anecdotes: [],
     },
     {
-      id: "toronto",
-      places: [place(same("Toronto"), same("Canada"), "CA")],
-      year: 2024,
+      id: "berlin",
+      places: [place(same("Berlin"), { fr: "Allemagne", en: "Germany" }, "DE")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [],
+    },
+    {
+      id: "tokyo",
+      places: [place(same("Tokyo"), { fr: "Japon", en: "Japan" }, "JP")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [],
+    },
+    {
+      id: "shanghai",
+      places: [place(same("Shanghai"), { fr: "Chine", en: "China" }, "CN")],
+      year: 2026,
+      photos: "available",
+      anecdotes: [
+        {
+          fr: "Les gens fument à l'intérieur des restaurants… ça m'a vraiment choqué !",
+          en: "People smoke inside restaurants… that really shocked me!",
+        },
+      ],
+    },
+    {
+      id: "paris",
+      places: [place(same("Paris"), same("France"), "FR")],
+      year: 2025,
       photos: "available",
       anecdotes: [],
     },
@@ -382,23 +550,20 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       anecdotes: [],
     },
     {
-      id: "tokyo",
-      places: [place(same("Tokyo"), { fr: "Japon", en: "Japan" }, "JP")],
-      year: null, // TODO: année du voyage
-      photos: "coming",
+      id: "toronto",
+      places: [place(same("Toronto"), same("Canada"), "CA")],
+      year: 2024,
+      photos: "available",
       anecdotes: [],
     },
     {
-      id: "shanghai",
-      places: [place(same("Shanghai"), { fr: "Chine", en: "China" }, "CN")],
-      year: null, // TODO: année du voyage
-      photos: "coming",
-      anecdotes: [
-        {
-          fr: "Les gens fument à l'intérieur des restaurants… ça m'a vraiment choqué !",
-          en: "People smoke inside restaurants… that really shocked me!",
-        },
+      id: "seoul",
+      places: [
+        place({ fr: "Séoul", en: "Seoul" }, { fr: "Corée du Sud", en: "South Korea" }, "KR"),
       ],
+      year: 2023,
+      photos: "available",
+      anecdotes: [],
     },
   ],
 
@@ -408,12 +573,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
     place(same("Rome"), { fr: "Italie", en: "Italy" }, "IT"),
     place(same("Milan"), { fr: "Italie", en: "Italy" }, "IT"),
     place({ fr: "Londres", en: "London" }, { fr: "Royaume-Uni", en: "United Kingdom" }, "GB"),
-    place(same("Paris"), same("France"), "FR"),
     place({ fr: "Barcelone", en: "Barcelona" }, { fr: "Espagne", en: "Spain" }, "ES"),
     place({ fr: "Lisbonne", en: "Lisbon" }, same("Portugal"), "PT"),
     place(same("Porto"), same("Portugal"), "PT"),
     place(same("Split"), { fr: "Croatie", en: "Croatia" }, "HR"),
-    place(same("Berlin"), { fr: "Allemagne", en: "Germany" }, "DE"),
     place(same("Amsterdam"), { fr: "Pays-Bas", en: "Netherlands" }, "NL"),
   ],
 
@@ -422,29 +585,32 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       id: "music",
       label: { fr: "Rap français", en: "French rap" },
       description: {
-        fr: "Fan de Vald et Damso, et je fais aussi des sons avec des potes.",
-        en: "Big fan of Vald and Damso, and I also make tracks with friends.",
+        fr: "Grand fan de rap français, surtout de Vald et Damso.",
+        en: "Big fan of French rap, especially Vald and Damso.",
       },
     },
     {
       id: "gaming",
       label: { fr: "Jeux vidéo", en: "Video games" },
-      description: same("League of Legends, Overwatch, Cyberpunk 2077."),
+      description: {
+        fr: "League of Legends (en mid), Overwatch, Cyberpunk 2077 et Pokopia.",
+        en: "League of Legends (mid lane), Overwatch, Cyberpunk 2077 and Pokopia.",
+      },
     },
     {
       id: "coding",
       label: { fr: "Code", en: "Coding" },
       description: {
-        fr: "Coder des projets perso, comme gesoif.ch.",
-        en: "Building side projects, like gesoif.ch.",
+        fr: "Apprendre de nouvelles technos web en autodidacte, comme React ou Next.js.",
+        en: "Teaching myself new web tech, like React or Next.js.",
       },
     },
     {
       id: "travel",
       label: { fr: "Voyages", en: "Travel" },
       description: {
-        fr: "De Séoul à Toronto en passant par Dubrovnik : j'adore découvrir de nouvelles villes.",
-        en: "From Seoul to Toronto via Dubrovnik: I love discovering new cities.",
+        fr: "De Séoul à Busan, en passant par Toronto, Paris, Shanghai, Tokyo et Berlin : j'adore découvrir de nouvelles villes.",
+        en: "From Seoul to Busan, via Toronto, Paris, Shanghai, Tokyo and Berlin: I love discovering new cities.",
       },
     },
   ],
@@ -452,12 +618,17 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
   music: {
     genre: { fr: "Rap français", en: "French rap" },
     favoriteArtists: ["Vald", "Damso"],
-    tracks: [], // TODO: liste des sons de Romain et ses potes
+    favoriteTracks: [], // TODO(Romain): ses sons préférés, à partager plus tard
   },
 
   gaming: {
-    games: ["League of Legends", "Overwatch", "Cyberpunk 2077"],
-    leagueOfLegends: null, // TODO: détails de la carte LoL (pseudo, rang, mains)
+    games: ["League of Legends", "Overwatch", "Cyberpunk 2077", "Pokopia"],
+    leagueOfLegends: {
+      role: same("Mid"),
+      peakRank: { fr: "Platine 4", en: "Platinum 4" },
+      champions: ["Sett", "Azir", "LeBlanc", "Vel'Koz"],
+      alias: null, // Aucun pseudo affiché (choix de Romain)
+    },
   },
 
   funFacts: [

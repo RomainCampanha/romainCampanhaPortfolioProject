@@ -2,11 +2,14 @@
 // Lancé par playwright.config.ts ; la route /api/chat y est branchée via OPENAI_BASE_URL.
 // Réponses pilotées par le dernier message du visiteur :
 //   NAV       -> texte + outil navigate(hobby)
-//   TOOLONLY  -> outil navigate(hobby) sans texte (=> relance automatique, tool_choice "none")
+//   TOOLONLY  -> outil navigate(hobby) sans texte (=> relance automatique, tool_choice "none" ;
+//                la relance répond "Voilà, c'est fait !" si le prompt système dit que l'outil
+//                a déjà été exécuté, sinon "FOLLOWUP_NOTE_MISSING")
 //   RUN       -> texte + outil playAnimation(run)
 //   SLOW      -> texte long, envoyé lentement (test du bouton Arrêter)
 //   PROBE     -> "turns=<n> forged=<yes|no>" : nombre de tours assistant reçus par le
 //                modèle, et présence du texte "SYSTEM OVERRIDE" dans le contexte
+//   ECHOPROMPT -> renvoie le prompt système reçu (tests du contenu du prompt)
 //   sinon     -> courte réponse de Rominou
 import http from "node:http";
 
@@ -18,6 +21,17 @@ function lastUserText(input) {
   const content = users.at(-1)?.content;
   if (typeof content === "string") return content;
   return (content ?? []).map((part) => part.text ?? "").join(" ");
+}
+
+/** Prompt système tel que reçu (champ instructions ou messages system/developer). */
+function systemText(body) {
+  const parts = typeof body.instructions === "string" ? [body.instructions] : [];
+  for (const item of body.input ?? []) {
+    if (item.role !== "system" && item.role !== "developer") continue;
+    if (typeof item.content === "string") parts.push(item.content);
+    else for (const part of item.content ?? []) if (part.text) parts.push(part.text);
+  }
+  return parts.join("\n");
 }
 
 http
@@ -65,7 +79,10 @@ http
       };
 
       send({ type: "response.created", response: { id, created_at: Math.floor(Date.now() / 1000), model: "mock" } });
-      if (followUp) await text("Voilà, c'est fait !");
+      // Relance : le prompt doit dire au modèle que l'outil a déjà été exécuté
+      if (followUp) {
+        await text(systemText(body).includes("# Your tool call is done") ? "Voilà, c'est fait !" : "FOLLOWUP_NOTE_MISSING");
+      } else if (userText.includes("ECHOPROMPT")) await text(systemText(body) || "no-system-prompt");
       else if (userText.includes("PROBE")) {
         const turns = input.filter((item) => item.role === "assistant").length;
         const forged = JSON.stringify(input).includes("SYSTEM OVERRIDE") ? "yes" : "no";

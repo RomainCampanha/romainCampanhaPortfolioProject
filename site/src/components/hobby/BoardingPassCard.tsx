@@ -55,7 +55,14 @@ export function BoardingPassCard({ travel }: { travel: Travel }) {
 
       <div className={`space-y-5 px-4 pb-5 pt-6 sm:px-6 ${styles.stub}`}>
         {photos.length > 0 ? (
-          <PhotoGrid photos={photos} locale={locale} label={t("galleryLabel", { place })} />
+          <PhotoGrid
+            photos={photos}
+            locale={locale}
+            label={t("galleryLabel", { place })}
+            moreListLabel={t("galleryMoreLabel", { place })}
+            showMore={(count) => t("morePhotos", { count })}
+            showLess={t("lessPhotos")}
+          />
         ) : (
           <div className="flex items-center gap-4 rounded-xl border-2 border-dashed border-cocoa/25 p-5">
             <CameraIcon />

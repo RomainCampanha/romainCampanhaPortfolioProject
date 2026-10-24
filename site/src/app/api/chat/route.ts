@@ -28,8 +28,10 @@ import { SITE_URL } from "@/lib/site-url";
 //   4. historique signé (tours assistant vérifiés)     -> 400 si relance forgée
 //   5. Vercel BotID                                    -> 403 / 503
 //   6. limites partagées (visiteur/minute, global/jour) -> 429 (503 si stockage absent en prod)
-// Budget : ~1 500 tokens de prompt + historique (<= 6 000 caractères) + 350 tokens de sortie
-// ≈ 0,0005 $ par requête avec gpt-6-luna, soit ~7,5 $/mois au plafond de 500 requêtes/jour.
+// Budget : ~2 800 tokens de prompt (mis en cache par OpenAI) + historique (<= 6 000 caractères)
+// + 350 tokens de sortie max. Mesuré le 2026-10-24 avec gpt-6-luna (~50 tokens de sortie en
+// moyenne) : ≈ 0,0004 $ par requête à froid (écriture du cache), ≈ 0,0001 $ avec le cache,
+// soit au pire ~6 $/mois au plafond de 500 requêtes/jour.
 // Ce plafond est appliqué par le compteur partagé (rate-limit.ts) ; le plafond DUR reste le
 // budget du projet OpenAI (étape obligatoire de mise en ligne, voir README).
 
@@ -141,7 +143,7 @@ export async function POST(req: Request): Promise<Response> {
 
     const result = streamText({
       model: openai(env.model),
-      instructions: buildSystemPrompt({ locale, page }),
+      instructions: buildSystemPrompt({ locale, page, toolFollowUp: isToolFollowUp }),
       messages: await convertToModelMessages(messages, {
         tools: chatTools,
         ignoreIncompleteToolCalls: true,
@@ -158,6 +160,8 @@ export async function POST(req: Request): Promise<Response> {
         openai: {
           // Pas de stockage des réponses côté OpenAI (vie privée)
           store: false,
+          // Un seul outil par réponse (sinon ex. navigate + showTrip en même temps)
+          parallelToolCalls: false,
           // Regroupe les requêtes au même préfixe de prompt (cache OpenAI)
           promptCacheKey: `rominou-chat-${locale}`,
         },

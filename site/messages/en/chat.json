@@ -5,11 +5,11 @@
   },
   "hero": {
     "title": "Talk with Romain's AI",
-    "intro": "Ask the AI version of Romain anything. It can also guide you around the site."
+    "intro": "Ask Rominou, the guide, anything: he's Romain's AI version. He answers in writing and can also show you around the site."
   },
   "notice": "You're chatting with Rominou, the AI version of Romain: it can make mistakes. For reliable info, email {email}.",
   "panelLabel": "Conversation with Rominou",
-  "welcome": "Hi, I'm Rominou, Romain's AI version! Ask me anything about my background, my job or my travels.",
+  "welcome": "Hi, I'm Rominou, the guide and Romain's AI version! Ask me anything about my background, my job or my travels.",
   "roles": {
     "user": "You",
     "assistant": "Rominou"

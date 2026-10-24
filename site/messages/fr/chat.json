@@ -5,11 +5,11 @@
   },
   "hero": {
     "title": "Parle avec l'IA de Romain",
-    "intro": "Pose tes questions à la version IA de Romain. Elle peut aussi te guider sur le site."
+    "intro": "Pose tes questions à Rominou, le guide : c'est la version IA de Romain. Il répond par écrit et peut aussi te faire visiter le site."
   },
   "notice": "Tu discutes avec Rominou, la version IA de Romain : il peut se tromper. Pour une info sûre, écris à {email}.",
   "panelLabel": "Conversation avec Rominou",
-  "welcome": "Salut, moi c'est Rominou, la version IA de Romain ! Demande-moi ce que tu veux sur mon parcours, mon job ou mes voyages.",
+  "welcome": "Salut, moi c'est Rominou, le guide et la version IA de Romain ! Demande-moi ce que tu veux sur mon parcours, mon job ou mes voyages.",
   "roles": {
     "user": "Toi",
     "assistant": "Rominou"

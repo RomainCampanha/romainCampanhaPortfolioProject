@@ -48,7 +48,7 @@ export function ProHero() {
     previous.length > 0
       ? t("bioBefore", {
           diplomas: format.list(
-            previous.map((e) => `${pick(e.nickname ?? e.title, locale)} (${e.school.shortName})`),
+            previous.map((e) => `${pick(e.title, locale)} (${e.school.shortName})`),
             { type: "conjunction" },
           ),
         })

@@ -1,5 +1,3 @@
-import type { Localized } from "@/content/profile";
-
 // Visuels de la page Pro (fichiers WebP 128 px dans public/, issus de l'ancien site).
 
 /** Logos des écoles, par id de formation (profile.education[].id). null = monogramme. */
@@ -12,28 +10,19 @@ export const SCHOOL_LOGOS: Record<string, string | null> = {
 
 export const COMPANY_LOGO = "/brand/infomaniak.webp";
 
-type SkillVisual = {
-  icon: string;
-  /** Libellé traduit si le nom technique ne suffit pas. */
-  label?: Localized;
-};
-
-/** Icône (et libellé traduit éventuel) par nom de compétence (profile.skillGroups[].skills). */
-export const SKILL_VISUALS: Record<string, SkillVisual> = {
-  React: { icon: "/skills/react.webp" },
-  "Next.js": { icon: "/skills/nextjs.webp" },
-  "Tailwind CSS": { icon: "/skills/tailwindcss.webp" },
-  "Node.js": { icon: "/skills/nodejs.webp" },
-  PHP: { icon: "/skills/php.webp" },
-  Python: { icon: "/skills/python.webp" },
-  "C#": { icon: "/skills/csharp.webp" },
-  MySQL: { icon: "/skills/mysql.webp" },
-  DNS: {
-    icon: "/skills/dns.webp",
-    label: { fr: "Noms de domaine (DNS)", en: "Domain names (DNS)" },
-  },
-  "Web hosting": {
-    icon: "/skills/hosting.webp",
-    label: { fr: "Hébergement web", en: "Web hosting" },
-  },
+/**
+ * Icônes des compétences (ancien site), par nom anglais (profile.skillGroups[].skills[].name.en).
+ * Pas d'icône = puce texte seule (rien d'inventé, pas de logo approximatif).
+ */
+export const SKILL_ICONS: Record<string, string> = {
+  React: "/skills/react.webp",
+  "Next.js": "/skills/nextjs.webp",
+  "Tailwind CSS": "/skills/tailwindcss.webp",
+  "Node.js": "/skills/nodejs.webp",
+  PHP: "/skills/php.webp",
+  Python: "/skills/python.webp",
+  "C#": "/skills/csharp.webp",
+  MySQL: "/skills/mysql.webp",
+  "Domain Name System (DNS)": "/skills/dns.webp",
+  "Web hosting": "/skills/hosting.webp",
 };

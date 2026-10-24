@@ -1,10 +1,10 @@
 {
   "meta": {
     "title": "{name} · Parcours & compétences",
-    "description": "{name} : {headline}. Parcours, compétences, projet perso et contact."
+    "description": "{name} : {headline}. Parcours, compétences, projet et contact."
   },
   "guide": {
-    "bubble": "Salut, moi c'est Rominou, l'avatar de Romain ! Bientôt, je te fais la visite guidée. En attendant, tout est là, en version texte."
+    "bubble": "Salut, moi c'est Rominou, le guide ! Je suis l'avatar de Romain : bientôt, je te ferai visiter le site. En attendant, tout est là, en version texte."
   },
   "hero": {
     "kicker": "Salut, moi c'est {firstName}",
@@ -33,7 +33,6 @@
     },
     "period": "{start} – {end}",
     "since": "Depuis {start}",
-    "nickname": "Ce que j'appelle mon « {nickname} »",
     "experienceTitle": "Expérience",
     "experienceSince": "Depuis {date}",
     "experienceRate": "Taux d'activité : {rate}",
@@ -41,12 +40,23 @@
   },
   "skills": {
     "title": "Compétences",
-    "intro": "Les langages, frameworks et outils que j'ai appris au fil de mes formations et de mes projets.",
+    "intro": "Ce que j'ai appris en formation, au travail et sur mes projets. L'étiquette de chaque compétence indique où je l'ai acquise.",
+    "sourcePrefix": ", provenance : ",
+    "sources": {
+      "ESIG": "ESIG",
+      "CFPT": "CFPT",
+      "HEG": "HEG",
+      "Infomaniak": "Infomaniak",
+      "Projets": "Autodidacte"
+    },
     "languagesTitle": "Langues"
   },
   "project": {
-    "title": "Projet perso",
-    "kicker": "Side project",
+    "title": "{count, plural, one {Projet} other {Projets}}",
+    "kind": {
+      "school": "Projet d'école",
+      "personal": "Projet perso"
+    },
     "visit": "Visiter {name}"
   },
   "contact": {
