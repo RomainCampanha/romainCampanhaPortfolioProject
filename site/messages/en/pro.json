@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "title": "{name} · Background & skills",
+    "description": "{name}: {headline}. Background, skills, side project and contact."
+  },
+  "guide": {
+    "bubble": "Hi, I'm Rominou, Romain's avatar! Soon I'll give you the guided tour. Until then, everything's right here in text form."
+  },
+  "hero": {
+    "kicker": "Hi, I'm {firstName}",
+    "bioWork": "{native, select, true {Born and raised in {location}} other {Based in {location}}}, I've been working at {company} since {since}, at {rate}, as {role}.",
+    "bioStudies": "The rest of the time, I'm working towards my {studies} ({school}).",
+    "bioBefore": "Before that: {diplomas}.",
+    "factsLabel": "At a glance",
+    "facts": {
+      "age": "Age",
+      "city": "City",
+      "job": "Job",
+      "studies": "Studies"
+    },
+    "jobValue": "{company}, at {rate}",
+    "studiesValue": "{degree}, {school}",
+    "ctaChat": "Talk to my AI",
+    "ctaPath": "See my path"
+  },
+  "path": {
+    "title": "My path",
+    "intro": "My wall of diplomas: from the {first} to the {last}{city, select, none {} other {, all in {city}}}.",
+    "diplomasTitle": "Diplomas",
+    "status": {
+      "obtained": "Obtained",
+      "inProgress": "In progress"
+    },
+    "period": "{start} – {end}",
+    "since": "Since {start}",
+    "nickname": "What I call my “{nickname}”",
+    "experienceTitle": "Experience",
+    "experienceSince": "Since {date}",
+    "experienceRate": "Workload: {rate}",
+    "experienceText": "Alongside my studies ({schools})."
+  },
+  "skills": {
+    "title": "Skills",
+    "intro": "The languages, frameworks and tools I've picked up through my studies and my projects.",
+    "languagesTitle": "Languages"
+  },
+  "project": {
+    "title": "Side project",
+    "kicker": "Side project",
+    "visit": "Visit {name}"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "A question, an opportunity, or just want to talk rap and travel? Drop me a line!",
+    "email": "Email me",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram",
+    "chatHint": "Not in the mood for an email?",
+    "chatCta": "Ask my AI your questions"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$comment": "Cadrage de Rominou, partagé par le Canvas (src/lib/avatar/framing.ts) et le rendu des posters (scripts/build-avatar.mjs). Unités : mètres, pieds à y = 0, regard vers +Z.",
+  "aspect": [2, 3],
+  "fov": 26,
+  "framings": {
+    "hero": { "top": 2.0, "height": 2.06 },
+    "column": { "top": 2.0, "height": 2.06 },
+    "chat": { "top": 2.0, "height": 1.15 }
+  },
+  "poster": { "framing": "hero", "width": 720, "height": 1080 },
+  "lights": {
+    "ambient": 1,
+    "directional": { "intensity": 1.4, "position": [2, 5, 5] }
+  }
+}

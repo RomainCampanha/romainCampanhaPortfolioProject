@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "title": "Hobbies",
+    "description": "Le côté perso de {name} : ses voyages en photos ({places}…), le {music} et les jeux vidéo ({games})."
+  },
+  "guide": {
+    "label": "Rominou en tenue de vacances",
+    "bubble": "Tenue de vacances activée ! Ici, c'est le côté perso de Romain."
+  },
+  "hero": {
+    "title": "Mes hobbies",
+    "intro": "Quand je ne suis ni au boulot ni en cours, je voyage, j'écoute (et je fais) du rap, et je joue. Bienvenue de mon côté perso !",
+    "listLabel": "Mes passions en bref"
+  },
+  "travels": {
+    "title": "Mes voyages",
+    "intro": "Les cartes d'embarquement des voyages dont j'ai ramené des photos. Un globe interactif arrive bientôt pour tout explorer.",
+    "pass": "Carte d'embarquement",
+    "passenger": "Passager",
+    "destination": "Destination",
+    "year": "Année",
+    "photos": "Photos",
+    "photoCount": "{count, plural, =0 {aucune} one {# photo} other {# photos}}",
+    "photosComing": "Photos bientôt en ligne",
+    "photosComingHint": "Je trie encore mes photos de {place}. Reviens bientôt !",
+    "galleryLabel": "Photos de {place}",
+    "anecdote": "Anecdote",
+    "otherTitle": "J'ai aussi posé mes valises à…",
+    "otherIntro": "D'autres villes visitées, sans carte d'embarquement (pour l'instant).",
+    "photosSoon": "Bientôt"
+  },
+  "soon": {
+    "title": "Bientôt ici",
+    "intro": "Le site grandit par étapes. Voici ce qui arrive sur cette page.",
+    "badge": "Bientôt",
+    "game": {
+      "title": "Le jeu : un runner musical",
+      "text": "Cours, saute et attrape des notes de musique : celles que tu récoltes débloquent mes sons de rap."
+    },
+    "music": {
+      "title": "Le coin musique",
+      "text": "Les sons que je fais avec des potes, à écouter ici. Côté inspirations, je suis fan de {artists}."
+    },
+    "lol": {
+      "title": "Ma carte League of Legends",
+      "text": "Ma carte LoL arrive bientôt. À part League of Legends, je joue aussi à {games}."
+    }
+  }
+}

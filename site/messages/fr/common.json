@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "defaultTitle": "{name} · Portfolio",
+    "description": "Portfolio de {name}, à {city} : parcours, compétences, voyages et une IA pour discuter. Visite guidée par {guide}, son avatar 3D."
+  },
+  "skipLink": "Aller au contenu principal",
+  "nav": {
+    "label": "Navigation principale",
+    "home": "{name}, accueil",
+    "pro": "Pro",
+    "hobby": "Hobby",
+    "chat": "Chat"
+  },
+  "language": {
+    "label": "Choix de la langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "footer": {
+    "contact": "Contact",
+    "email": "E-mail :",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram",
+    "lastUpdated": "Mis à jour le {date}",
+    "copyright": "© {year} {name}",
+    "pages": "Pages du site",
+    "madeIn": "Fait à {city}, avec {guide} comme guide."
+  },
+  "age": "{age} ans",
+  "avatar": {
+    "label": "Rominou, l'avatar 3D de Romain",
+    "guideLabel": "Rominou, ton guide"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "Rominou a cherché partout, mais cette page n'existe pas.",
+    "backHome": "Retour à l'accueil"
+  },
+  "a11y": {
+    "newTab": "(nouvel onglet)"
+  }
+}

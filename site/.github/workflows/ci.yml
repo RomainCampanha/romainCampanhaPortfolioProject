@@ -1,0 +1,36 @@
+# CI du site.
+# GitHub ne lit que les workflows du .github/ à la RACINE d'un dépôt : ce fichier ne
+# s'exécute donc pas tant que site/ vit dans romainCampanhaPortfolioProject. Il s'activera
+# tel quel quand site/ deviendra son propre dépôt (ou le copier dans /.github/workflows/
+# en ajoutant `defaults: run: working-directory: site`).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      # Tests e2e (pages, i18n, 404, en-têtes, API du chat et parcours du chat avec un faux
+      # OpenAI : aucune clé ni dépense). Le serveur et le faux OpenAI sont lancés par Playwright.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "title": "Hobbies",
+    "description": "{name}'s personal side: travel photos ({places}…), {music} and video games ({games})."
+  },
+  "guide": {
+    "label": "Rominou in holiday outfit",
+    "bubble": "Holiday outfit on! This is Romain's personal side."
+  },
+  "hero": {
+    "title": "My hobbies",
+    "intro": "When I'm not at work or in class, I travel, listen to (and make) rap, and play games. Welcome to my personal side!",
+    "listLabel": "My passions at a glance"
+  },
+  "travels": {
+    "title": "My travels",
+    "intro": "Boarding passes from the trips I brought photos back from. An interactive globe is coming soon to explore them all.",
+    "pass": "Boarding pass",
+    "passenger": "Passenger",
+    "destination": "Destination",
+    "year": "Year",
+    "photos": "Photos",
+    "photoCount": "{count, plural, =0 {none} one {# photo} other {# photos}}",
+    "photosComing": "Photos coming soon",
+    "photosComingHint": "I'm still sorting my photos from {place}. Check back soon!",
+    "galleryLabel": "Photos from {place}",
+    "anecdote": "Anecdote",
+    "otherTitle": "I've also been to…",
+    "otherIntro": "Other cities I've visited, no boarding pass (yet).",
+    "photosSoon": "Soon"
+  },
+  "soon": {
+    "title": "Coming soon",
+    "intro": "The site is growing step by step. Here's what's coming to this page.",
+    "badge": "Soon",
+    "game": {
+      "title": "The game: a music runner",
+      "text": "Run, jump and grab music notes: the ones you collect unlock my rap tracks."
+    },
+    "music": {
+      "title": "The music corner",
+      "text": "The tracks I make with friends, to listen to right here. As for inspiration, I'm a fan of {artists}."
+    },
+    "lol": {
+      "title": "My League of Legends card",
+      "text": "My LoL card is coming soon. Besides League of Legends, I also play {games}."
+    }
+  }
+}

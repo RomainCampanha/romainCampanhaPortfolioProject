@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "title": "Chat",
+    "description": "Chat with the AI version of {name}: ask about his background, projects and passions."
+  },
+  "hero": {
+    "title": "Talk with Romain's AI",
+    "intro": "Ask the AI version of Romain anything. It can also guide you around the site."
+  },
+  "notice": "You're chatting with Rominou, the AI version of Romain: it can make mistakes. For reliable info, email {email}.",
+  "panelLabel": "Conversation with Rominou",
+  "welcome": "Hi, I'm Rominou, Romain's AI version! Ask me anything about my background, my job or my travels.",
+  "roles": {
+    "user": "You",
+    "assistant": "Rominou"
+  },
+  "thinking": "Rominou is thinking…",
+  "stopped": "Answer stopped.",
+  "suggestions": {
+    "label": "Question ideas",
+    "who": "Who are you?",
+    "travels": "Tell me about your travels",
+    "work": "What do you do at {company}?"
+  },
+  "composer": {
+    "label": "Your message to Rominou",
+    "placeholder": "Type your question…",
+    "hint": "Enter to send, Shift + Enter for a new line.",
+    "counter": "{count} / {max} characters",
+    "send": "Send",
+    "stop": "Stop"
+  },
+  "tools": {
+    "navigate": "Rominou is taking you to the {page} page.",
+    "showTrip": "Rominou is opening the trip: {destination}.",
+    "playAnimation": {
+      "wave": "Rominou waves at you.",
+      "bow": "Rominou takes a bow.",
+      "walk": "Rominou goes for a stroll.",
+      "run": "Rominou breaks into a sprint."
+    },
+    "failed": "Rominou couldn't do that."
+  },
+  "live": {
+    "reply": "Rominou: {text}"
+  },
+  "errors": {
+    "unavailable": "Rominou is taking a break right now. Write to Romain directly:",
+    "rate_limited": "Easy there! That's a lot of messages at once. Try again in a minute.",
+    "daily_limit": "Rominou has talked a lot today and will be back tomorrow. Meanwhile, write to Romain:",
+    "forbidden": "Your request was blocked by the anti-bot protection. Reload the page or write to Romain:",
+    "generic": "Oops, something went wrong. Try again, or write to Romain:",
+    "retry": "Try again"
+  }
+}

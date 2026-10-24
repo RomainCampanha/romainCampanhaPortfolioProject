@@ -1,0 +1,48 @@
+/* Carte d'embarquement : deux parties (billet + talon photos) séparées par une
+   ligne perforée, avec des encoches demi-cercle découpées par un masque CSS
+   (le fond dégradé de la page reste visible à travers). */
+
+.pass {
+  --notch: 0.8rem;
+  --paper: #fffaf0;
+  /* L'ombre est portée par le parent : un masque couperait box-shadow. */
+  filter: drop-shadow(0 10px 18px rgb(59 36 16 / 0.18)) drop-shadow(0 2px 3px rgb(59 36 16 / 0.15));
+}
+
+.ticket,
+.stub {
+  background: var(--paper);
+  color: #3b2410;
+}
+
+.ticket {
+  border-radius: 1.25rem 1.25rem 0 0;
+  overflow: hidden;
+  mask:
+    radial-gradient(circle at 0 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+}
+
+.stub {
+  position: relative;
+  border-radius: 0 0 1.25rem 1.25rem;
+  mask:
+    radial-gradient(circle at 0 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+}
+
+/* Perforation entre les encoches */
+.stub::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--notch) + 0.5rem);
+  right: calc(var(--notch) + 0.5rem);
+  border-top: 2px dashed rgb(59 36 16 / 0.28);
+}
+
+/* Bandeau du haut : brun foncé, texte jaune (contraste élevé) */
+.band {
+  background: linear-gradient(90deg, #3b2410, #5a3417);
+  color: #ffd95a;
+}
