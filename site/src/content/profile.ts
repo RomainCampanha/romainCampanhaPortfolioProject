@@ -113,6 +113,8 @@ export const profileSchema = z.object({
     company: z.string(),
     url: z.url(),
     role: localizedSchema,
+    /** Ce que Romain fait concrètement (ses mots), à la 1re personne. */
+    description: localizedSchema,
     /** "YYYY-MM" */
     since: z.string().regex(/^\d{4}-\d{2}$/),
     /** Taux d'activité actuel en % */
@@ -288,6 +290,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       fr: "Support technique hosting L2",
       en: "L2 hosting technical support",
     },
+    description: {
+      fr: "J'aide les clients à résoudre leurs problèmes de niveau 1 et 2 liés à l'hébergement de leur site web, et je contribue en interne à l'amélioration des produits.",
+      en: "I help customers solve level 1 and 2 issues with their website hosting, and I contribute internally to improving the products.",
+    },
     since: "2023-03",
     ratePercent: 70,
   },
@@ -382,10 +388,10 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
         skill("C#", "CFPT"),
         skill("Python", "ESIG"),
         skill("Visual Basic", "ESIG"),
-        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
         skill(
           { fr: "Programmation orientée objet (POO)", en: "Object-oriented programming (OOP)" },
           "ESIG",
+          "CFPT",
         ),
         skill({ fr: "Élaboration de programmes", en: "Program development" }, "CFPT"),
       ],
@@ -394,8 +400,7 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       id: "web",
       label: { fr: "Développement web", en: "Web development" },
       skills: [
-        // LinkedIn : "2 formations à l'ESIG et dans 1 autre école" (TODO: laquelle ?)
-        skill("PHP", "ESIG"),
+        skill("PHP", "ESIG", "CFPT"),
         skill("React", "Projets"),
         skill("Next.js", "Projets"),
         skill("Node.js", "Projets"),
@@ -593,8 +598,8 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
       id: "gaming",
       label: { fr: "Jeux vidéo", en: "Video games" },
       description: {
-        fr: "League of Legends (en mid), Overwatch, Cyberpunk 2077 et Pokopia.",
-        en: "League of Legends (mid lane), Overwatch, Cyberpunk 2077 and Pokopia.",
+        fr: "League of Legends (en mid), Overwatch, Cyberpunk 2077 et Pokémon Pokopia.",
+        en: "League of Legends (mid lane), Overwatch, Cyberpunk 2077 and Pokémon Pokopia.",
       },
     },
     {
@@ -622,7 +627,7 @@ export const profile: Profile = profileSchema.parse(withFrenchTypography({
   },
 
   gaming: {
-    games: ["League of Legends", "Overwatch", "Cyberpunk 2077", "Pokopia"],
+    games: ["League of Legends", "Overwatch", "Cyberpunk 2077", "Pokémon Pokopia"],
     leagueOfLegends: {
       role: same("Mid"),
       peakRank: { fr: "Platine 4", en: "Platinum 4" },

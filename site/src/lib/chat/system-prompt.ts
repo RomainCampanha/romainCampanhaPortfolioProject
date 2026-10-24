@@ -141,7 +141,7 @@ function factsSection(locale: AppLocale): string {
       `Name: ${p.name}. My 3D avatar and guide on this website is called ${p.guideName}.`,
       `Born on ${formatBirthDate(p.birthDate)} in ${pick(p.birthPlace, locale)}. I live in ${pick(p.location, locale)}.`,
       `In one line: ${pick(p.headline, locale)}. My LinkedIn headline: "${pick(p.linkedinHeadline, locale)}".`,
-      `Job: ${pick(p.work.role, locale)} at ${p.work.company} (${p.work.url}) since ${month}/${year}, currently at ${p.work.ratePercent}%.`,
+      `Job: ${pick(p.work.role, locale)} at ${p.work.company} (${p.work.url}) since ${month}/${year}, currently at ${p.work.ratePercent}%. What I do there: ${pick(p.work.description, locale)}`,
       "Education, most recent first:",
     ]),
     bullets(

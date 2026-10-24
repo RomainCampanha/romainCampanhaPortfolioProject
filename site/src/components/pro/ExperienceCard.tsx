@@ -5,7 +5,7 @@ import { ExternalLink } from "@/components/site/ExternalLink";
 import { COMPANY_LOGO } from "./assets";
 import { useWorkFacts } from "./useWorkFacts";
 
-// Emploi actuel (Infomaniak). Missions détaillées : TODO (à fournir par Romain, rien d'inventé).
+// Emploi actuel (Infomaniak) : rôle, ce que Romain y fait (ses mots), taux et écoles en parallèle.
 export function ExperienceCard() {
   const t = useTranslations("pro.path");
   const locale = useLocale();
@@ -42,6 +42,7 @@ export function ExperienceCard() {
             {company}
           </ExternalLink>
         </p>
+        <p className="mt-3">{pick(work.description, locale)}</p>
         <ul className="mt-3 flex flex-wrap gap-2 text-sm">
           <li className="rounded-full border border-line px-3 py-1">{t("experienceSince", { date: since })}</li>
           <li className="rounded-full border border-line px-3 py-1">{t("experienceRate", { rate })}</li>
