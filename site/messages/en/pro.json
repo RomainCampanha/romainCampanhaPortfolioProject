@@ -1,10 +1,10 @@
 {
   "meta": {
     "title": "{name} · Background & skills",
-    "description": "{name}: {headline}. Background, skills, side project and contact."
+    "description": "{name}: {headline}. Background, skills, project and contact."
   },
   "guide": {
-    "bubble": "Hi, I'm Rominou, Romain's avatar! Soon I'll give you the guided tour. Until then, everything's right here in text form."
+    "bubble": "Hi, I'm Rominou, the guide! I'm Romain's avatar: soon I'll show you around the site. Until then, everything's right here in text form."
   },
   "hero": {
     "kicker": "Hi, I'm {firstName}",
@@ -33,7 +33,6 @@
     },
     "period": "{start} – {end}",
     "since": "Since {start}",
-    "nickname": "What I call my “{nickname}”",
     "experienceTitle": "Experience",
     "experienceSince": "Since {date}",
     "experienceRate": "Workload: {rate}",
@@ -41,12 +40,23 @@
   },
   "skills": {
     "title": "Skills",
-    "intro": "The languages, frameworks and tools I've picked up through my studies and my projects.",
+    "intro": "What I've learned in school, at work and on my own projects. Each skill's tag shows where I picked it up.",
+    "sourcePrefix": ", source: ",
+    "sources": {
+      "ESIG": "ESIG",
+      "CFPT": "CFPT",
+      "HEG": "HEG",
+      "Infomaniak": "Infomaniak",
+      "Projets": "Self-taught"
+    },
     "languagesTitle": "Languages"
   },
   "project": {
-    "title": "Side project",
-    "kicker": "Side project",
+    "title": "{count, plural, one {Project} other {Projects}}",
+    "kind": {
+      "school": "School project",
+      "personal": "Side project"
+    },
     "visit": "Visit {name}"
   },
   "contact": {

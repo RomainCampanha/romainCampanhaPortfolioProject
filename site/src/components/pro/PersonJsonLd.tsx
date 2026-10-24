@@ -32,7 +32,7 @@ export function PersonJsonLd({ locale }: { locale: AppLocale }) {
     },
     email: `mailto:${links.email}`,
     sameAs: [links.linkedin, links.instagram, ...(links.github ? [links.github] : [])],
-    knowsAbout: profile.skillGroups.flatMap((g) => g.skills),
+    knowsAbout: profile.skillGroups.flatMap((g) => g.skills.map((skill) => pick(skill.name, locale))),
     knowsLanguage: profile.languages.map((l) => l.name.en),
   };
 

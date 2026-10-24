@@ -4,8 +4,8 @@ Nouveau portfolio de **Romain Campanha** (Genève). Son avatar 3D, **Rominou**, 
 
 Trois pages, en français (par défaut, à la racine) et en anglais (`/en`) :
 
-- **Pro** (`/`) : visite guidée par Rominou (parcours, Infomaniak, compétences, gesoif.ch, contact) + version texte complète.
-- **Hobby** (`/hobby`) : voyages, jeu musical, musique, League of Legends.
+- **Pro** (`/`) : visite guidée par Rominou, le guide (parcours, Infomaniak, compétences, GE-Soif, contact) + version texte complète.
+- **Hobby** (`/hobby`) : voyages, League of Legends, rap français, runner (bientôt).
 - **Chat** (`/chat`) : discussion avec « la version IA de Romain ».
 
 Stack : Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl 4, React Three Fiber, Motion, AI SDK. Hébergement : Vercel (Hobby).
@@ -74,8 +74,12 @@ src/app/[locale]/        pages localisées (layout racine, Pro, Hobby, Chat, 404
 src/i18n/                routing, navigation localisée, chargement des messages
 src/components/site/     shell : header, footer, skip link, providers, thème
 src/components/three/    avatar 3D (Canvas unique et persistant + ancres)
-src/content/             profil (source de vérité du contenu) et photos
+src/content/             profil (source de vérité du contenu : pages + prompt du chat) et photos
 src/lib/                 helpers (pages, SEO, store de l'avatar)
 ```
+
+Rominou communique uniquement par écrit (bulles et chat), sans voix.
+
+Captures des projets : `public/projects/` (WebP ~1280 px, servies sans optimiseur).
 
 Chaque page pose un thème (`data-theme="pro" | "hobby" | "chat"`) qui définit les variables CSS (`--theme-*`) et les utilitaires Tailwind sémantiques (`text-fg`, `text-muted`, `text-accent`, `bg-surface`, `border-line`, `shadow-glow`, `text-shadow-neon`).

@@ -17,7 +17,7 @@ const SECURITY_HEADERS = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // Aucune API sensible utilisée (à ouvrir si une phase en a besoin, ex. micro pour la voix)
+  // Aucune API sensible utilisée (caméra, micro, géolocalisation… : toutes coupées)
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
 ];
 
@@ -49,9 +49,9 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
       {
-        // Modèles 3D, photos, logos et icônes : rarement modifiés. Noms non hashés,
-        // donc pas "immutable" : 1 jour de cache, puis revalidation en arrière-plan.
-        source: "/:dir(models|photos|brand|skills)/:path*",
+        // Modèles 3D, photos, logos, icônes et captures de projets : rarement modifiés.
+        // Noms non hashés, donc pas "immutable" : 1 jour de cache, puis revalidation.
+        source: "/:dir(models|photos|brand|skills|projects)/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
         ],
