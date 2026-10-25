@@ -1,1 +1,75 @@
-{}
+{
+  "dialog": {
+    "kicker": "Visite guidée",
+    "counter": "{current}/{total}",
+    "counterLabel": "Étape {current} sur {total}",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "quit": "Quitter la visite",
+    "minimize": "Réduire la bulle",
+    "expand": "Afficher la bulle ({current}/{total})",
+    "expandLabel": "Afficher la bulle de la visite guidée, étape {current} sur {total}",
+    "keys": "← → pour avancer · Échap pour quitter",
+    "travelling": "En route vers la page {page}…",
+    "live": "Étape {current} sur {total}, {title} : {text}"
+  },
+  "chip": {
+    "label": "Visite en pause",
+    "resume": "Reprendre la visite ({current}/{total})",
+    "resumeLabel": "Reprendre la visite guidée, étape {current} sur {total}"
+  },
+  "card": {
+    "start": "Lancer la visite",
+    "resume": "Reprendre ({current}/{total})",
+    "resumeLabel": "Reprendre la visite guidée, étape {current} sur {total}",
+    "restart": "Refaire la visite",
+    "active": "Visite en cours · {current}/{total}"
+  },
+  "steps": {
+    "hello": {
+      "title": "Bienvenue chez moi !",
+      "text": "Moi c'est {guide}, le mini-moi en pâte à modeler de {name}. Je te fais faire le tour : mon côté pro, mon côté perso, puis ma version IA. Deux minutes, promis !",
+      "next": "C'est parti"
+    },
+    "parcours": {
+      "title": "Mon parcours",
+      "text": "Sur mon mur : d'abord le {first} ({firstSchool}), puis le {second} ({secondSchool}){supplement, select, none {} other {, avec le complément « {supplement} »}}. Comme ce n'est pas un bachelor de haute école, je m'attaque maintenant au {current} ({currentSchool}). Oui, j'aime les diplômes !"
+    },
+    "experience": {
+      "title": "Mon job",
+      "text": "En parallèle des cours, je bosse chez {company} à {rate}, en {role}. {description}"
+    },
+    "competences": {
+      "title": "Mon inventaire",
+      "text": "{count} compétences dans mon sac, chacune avec l'étiquette de l'endroit où je l'ai apprise : école, job ou projets perso. La poche la mieux remplie : {top}, avec {topCount} compétences !"
+    },
+    "projets": {
+      "title": "Mis en pratique",
+      "text": "{project}, {kind, select, school {un projet d'école collectif} other {mon projet perso}}, {context}. {description}{joke, select, ge_soif { Pratique quand la gourde est vide !} other {}}"
+    },
+    "contact": {
+      "title": "On s'écrit ?",
+      "text": "Une question, une opportunité, un bon plan resto ? Tout est ici pour m'écrire. Mais avant ça… viens voir mon côté perso !",
+      "next": "Mon côté perso"
+    },
+    "voyages": {
+      "title": "Mes voyages",
+      "text": "{count, plural, one {# carte d'embarquement} other {# cartes d'embarquement}}, une par voyage dont j'ai ramené des photos. Le dernier en date : {latest}{year, select, none {} other { ({year})}}. Et chaque carte cache un album !"
+    },
+    "musique": {
+      "title": "Musique & jeux",
+      "text": "Dans mes oreilles : du {genre}, surtout {artists}. Je l'écoute, je ne le rappe pas : tout le monde y gagne. Dans mes mains : {games}."
+    },
+    "course": {
+      "title": "La course de {guide}",
+      "text": "Mon petit jeu : je file de {start} à travers mes voyages, et chaque niveau terminé débloque la carte postale d'une ville. Essaie ma course !",
+      "action": "Jouer une partie",
+      "next": "Direction le chat"
+    },
+    "questions": {
+      "title": "À toi la parole !",
+      "text": "Dernière étape : ici, c'est ma version IA. Pose-moi tes questions sur mes études, mon job ou mes voyages, je réponds par écrit. Merci d'avoir suivi la visite !",
+      "next": "Poser ma question"
+    }
+  }
+}

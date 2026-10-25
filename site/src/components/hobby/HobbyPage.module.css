@@ -150,6 +150,14 @@
 .bubble {
   position: relative;
   z-index: 1;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s;
+}
+/* Visite guidée : Rominou a rejoint le compagnon (cadre vide) -> sa bulle de page se tait aussi */
+.guideRow:has([data-away]) > .bubble {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .stage {

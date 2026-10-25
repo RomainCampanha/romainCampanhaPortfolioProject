@@ -5,7 +5,7 @@ import { PAGE_IDS } from "@/lib/pages";
 import { CHAT_ANIMATIONS, CHAT_LIMITS, TOOL_ERROR_TEXT } from "./constants";
 
 // Validation stricte du corps de POST /api/chat.
-// - Liste blanche des parties : texte (user + assistant), step-start et nos 3 outils
+// - Liste blanche des parties : texte (user + assistant), step-start et nos 4 outils
 //   (assistant). Tout le reste (system, fichiers, data, reasoning…) est refusé.
 // - z.object() retire les clés inconnues (providerMetadata, etc.) : le modèle ne
 //   reçoit que du texte et des appels d'outils dont les entrées sont des enums ;
@@ -41,6 +41,7 @@ const assistantPart = z.union([
   toolPart("tool-navigate", z.object({ page: z.enum(PAGE_IDS) })),
   toolPart("tool-playAnimation", z.object({ name: z.enum(CHAT_ANIMATIONS) })),
   toolPart("tool-showTrip", z.object({ destination: z.enum(TRAVEL_IDS) })),
+  toolPart("tool-startTour", z.strictObject({})),
 ]);
 
 const userMessage = z.object({

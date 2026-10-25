@@ -1,1 +1,133 @@
-{}
+{
+  "section": {
+    "kicker": "Mini-game",
+    "title": "Rominou’s Run",
+    "text": "A little runner game you can play right here: Rominou sets off from {city} and runs through my trips. Each level you clear unlocks that city’s postcard."
+  },
+  "start": {
+    "label": "Game title screen",
+    "title": "Rominou’s Run",
+    "tagline": "From {first} to {last}: {count} stops, a postcard at every arrival.",
+    "howTo": "How to play",
+    "howJump": "Jump with Space, ↑ or W (or tap the screen)",
+    "howDouble": "Press again in mid-air: double jump!",
+    "howStamps": "Collect the passport stamps",
+    "howGate": "Dash to the boarding gate",
+    "play": "Play",
+    "next": "Next departure",
+    "loading": "Rominou is lacing up his sneakers…",
+    "error": "The game couldn’t load. Check your connection and try again.",
+    "retry": "Try again"
+  },
+  "mode": {
+    "label": "Chill mode",
+    "hint": "Slower, more space and {hearts} hearts.",
+    "suggested": "Turned on for you: your device asks for less motion.",
+    "nextRun": "Applies from the next departure."
+  },
+  "map": {
+    "title": "Travel map",
+    "intro": "Pick your destination: each stop you clear opens the next one.",
+    "start": "Start",
+    "level": "Stop {n}",
+    "locked": "locked",
+    "done": "postcard earned",
+    "open": "unlocked",
+    "selected": "selected",
+    "best": "Best: {count, plural, =0 {no stamps} one {# stamp} other {# stamps}}",
+    "nodeLabel": "{step} · {name}{year}, {state}"
+  },
+  "hud": {
+    "label": "Game info",
+    "level": "Stop {n}/{total}",
+    "hearts": "{count, plural, =0 {No hearts left} one {# heart} other {# hearts}} out of {max}",
+    "stamps": "{count, plural, =0 {No stamps} one {# stamp} other {# stamps}}",
+    "progress": "Distance covered to the gate: {percent}",
+    "pause": "Pause",
+    "sound": "Sound",
+    "fullscreen": "Full screen",
+    "playArea": "Play area, {name}. Space, up arrow or W to jump, Escape to pause.",
+    "ready": "Ready?",
+    "go": "Go!"
+  },
+  "hints": {
+    "jumpKeys": "An obstacle! Press Space, ↑ or W to jump.",
+    "jumpTouch": "An obstacle! Tap the screen to jump.",
+    "stamps": "Stamps in the air: jump to grab them!",
+    "gap": "Water ahead! Time your jump to keep your feet dry.",
+    "double": "Stamps way up high: press a second time in mid-air to double jump!",
+    "gate": "The boarding gate! Just a few more steps…",
+    "tower": "That pile is too tall! Press again in mid-air to double jump!"
+  },
+  "intro": {
+    "geneve": "Geneva, here we go! An easy start along the lake.",
+    "seoul": "Seoul! Hop over the kimchi jars and the bojagi parcels.",
+    "toronto": "Toronto! Watch out for fire hydrants… and low-flying Canada geese.",
+    "brighton-dubrovnik": "From Brighton Pier to the walls of Dubrovnik: mind the seagulls!",
+    "paris": "Paris! The croissant cart won’t stop for you.",
+    "shanghai": "Shanghai, on the Bund! The kites are flying low tonight.",
+    "tokyo": "Tokyo! Lucky cats are less lucky if you run into them.",
+    "berlin": "Berlin! Jump over pieces of the Wall and parked bikes.",
+    "busan": "Busan, the last stop! Lighthouses, boats and drones: ready?"
+  },
+  "intro2d": "{name}, here we go! Cones, suitcases, benches and pigeons: time your jumps.",
+  "pause": {
+    "title": "Paused",
+    "text": "Rominou is catching his breath. Take your time!",
+    "resume": "Resume",
+    "restart": "Restart",
+    "map": "Back to the map"
+  },
+  "complete": {
+    "kicker": "Stop cleared!",
+    "title": "Postcard unlocked: {name}",
+    "stamps": "Stamps: {count} out of {total}",
+    "best": "Best: {count}",
+    "record": "New record!",
+    "next": "Next stop: {name}",
+    "replay": "Play again",
+    "map": "Back to the map",
+    "allDone": "You’ve completed the whole journey, from {first} to {last}: every postcard is yours!"
+  },
+  "failed": {
+    "title": "Oops, out of hearts!",
+    "text": "Rominou needs a little break… Shall we try again?",
+    "tryTranquille": "Want more room for error? Try chill mode.",
+    "retry": "Try again",
+    "map": "Back to the map"
+  },
+  "announce": {
+    "start": "{name}: here we go!",
+    "hit": "Ouch! {hearts, plural, =0 {No hearts left.} one {Only # heart left.} other {Only # hearts left.}}",
+    "splash": "Splash! {hearts, plural, =0 {No hearts left.} one {Only # heart left.} other {Only # hearts left.}}",
+    "paused": "Game paused.",
+    "resumed": "And we’re off again!"
+  },
+  "postcard": {
+    "greetings": "Greetings from",
+    "stamp": "{name} stamp",
+    "start": "Start",
+    "signature": "Rominou",
+    "illustration": "Illustration of Geneva: the lake, the Jet d’Eau and the Alps"
+  },
+  "collection": {
+    "title": "My postcards",
+    "count": "{count} of {total} unlocked",
+    "intro": "Clear a stop to earn its postcard.",
+    "locked": "{name} postcard: still to unlock",
+    "lockedShort": "To unlock",
+    "open": "See the {name} postcard",
+    "close": "Close"
+  },
+  "captions": {
+    "geneve": "Starting point: Lake Geneva, the Jet d’Eau and the Alps. Next stop: the rest of the world!",
+    "seoul": "A lane of traditional houses with the tower at the end of the street: greetings from Seoul!",
+    "toronto": "The big TORONTO letters among the skyscrapers: the must-have photo!",
+    "brighton-dubrovnik": "A selfie above Dubrovnik’s old town and the sea, at sunset.",
+    "paris": "Arms crossed in front of the Eiffel Tower, even under a grey sky.",
+    "shanghai": "Pudong’s skyscrapers lit up, seen from the waterfront: Shanghai by night!",
+    "tokyo": "Tokyo Tower glowing orange: the city’s prettiest night light.",
+    "berlin": "Suitcase in hand at the Brandenburg Gate: the journey goes on!",
+    "busan": "A neighbourhood of colourful houses clinging to the hillside: greetings from Busan!"
+  }
+}

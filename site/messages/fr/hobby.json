@@ -5,7 +5,7 @@
   },
   "guide": {
     "label": "Rominou en tenue de vacances",
-    "bubble": "En tenue de vacances ! Ici, c'est le côté perso de {name}."
+    "bubble": "En tenue de vacances ! Ici, c'est mon côté perso."
   },
   "hero": {
     "kicker": "Côté perso",
@@ -49,7 +49,6 @@
     "kicker": "Pause détente",
     "title": "Musique & jeux",
     "intro": "Du {genre} dans les oreilles, une manette (ou une souris) dans les mains.",
-    "soon": "Bientôt",
     "music": {
       "kicker": "Dans mes oreilles",
       "title": "Le coin musique",
@@ -62,15 +61,6 @@
       "peak": "Meilleur rang",
       "champions": "Champions préférés",
       "otherGames": "Aussi dans ma ludothèque"
-    },
-    "game": {
-      "kicker": "Prochain jeu",
-      "title": "La course de Rominou",
-      "text": "Un petit runner à jouer directement dans ton navigateur : Rominou court à travers mes voyages, et chaque niveau terminé débloque la carte postale de la ville.",
-      "levelsLabel": "Les niveaux prévus",
-      "start": "Départ",
-      "level": "Niveau {n}",
-      "locked": "Carte postale à débloquer"
     }
   }
 }

@@ -5,7 +5,8 @@
   "framings": {
     "hero": { "top": 2.0, "height": 2.06 },
     "column": { "top": 2.0, "height": 2.06 },
-    "chat": { "top": 2.0, "height": 1.15 }
+    "chat": { "top": 2.0, "height": 1.15 },
+    "companion": { "top": 1.94, "height": 1.34 }
   },
   "poster": { "framing": "hero", "width": 720, "height": 1080 },
   "feet": { "default": 0.072, "vacances": 0.022 },

@@ -18,4 +18,6 @@ export const DEFAULT_SCENE: Record<AvatarAnchorVariant, AvatarScene> = {
   hero: "geneva",
   column: "beach",
   chat: "dusk",
+  // Compagnon de la visite : décor de la page courante (choisi par la visite)
+  companion: "geneva",
 };

@@ -1,0 +1,505 @@
+/* ==========================================================================
+   « La visite de Rominou » (DA Cosy) : bulle de dialogue de la visite (classe globale .bubble
+   du design system + réglages ci-dessous), cadre compagnon, feuille mobile, anneau autour de la
+   section commentée, pastille « Reprendre la visite ». Tokens : src/app/globals.css.
+   Contraste : encre / encre douce sur crème, pastel 200 + teinte 800, blanc sur argile.
+   ========================================================================== */
+
+/* ---------- Bulle de dialogue ---------- */
+.dialog {
+  display: flex;
+  flex-direction: column;
+  padding-block-end: 1.125rem;
+}
+/* Le focus arrive sur la bulle à chaque étape : anneau aux arrondis de la bulle */
+.dialog:focus-visible {
+  outline-offset: 4px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.kicker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--color-peach-800);
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.kicker > svg {
+  inline-size: 0.9375rem;
+  block-size: 0.9375rem;
+  color: var(--color-butter-500);
+}
+.count {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-butter-200);
+  color: var(--color-butter-800);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* Boutons ronds « Réduire » et « Quitter » (cibles 32 px) */
+.headButtons {
+  display: flex;
+  flex: none;
+  gap: 0.375rem;
+}
+.close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-oat);
+  color: var(--color-ink-soft);
+  box-shadow:
+    inset 0 0 0 1.5px var(--color-sand),
+    0 2px 0 var(--color-cream-edge);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.close:hover {
+  background: var(--color-oat-deep);
+  color: var(--color-ink);
+}
+.close > svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+  stroke-width: 2.6;
+}
+
+/* Progression (10 segments, façon jauge HUD) */
+.dots {
+  display: flex;
+  gap: 3px;
+  margin-block-start: 0.5rem;
+}
+.dots > i {
+  flex: 1;
+  block-size: 5px;
+  border-radius: 999px;
+  background: var(--color-oat-deep);
+}
+.dots > i[data-state="done"] {
+  background: var(--color-sage-300);
+}
+.dots > i[data-state="current"] {
+  background: var(--color-clay);
+}
+
+.body {
+  margin-block-start: 0.75rem;
+  animation: step-in 0.35s ease both;
+}
+.body[data-direction="-1"] {
+  animation-name: step-back;
+}
+.title {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-weight: 650;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.text {
+  margin: 0.375rem 0 0;
+  color: var(--color-ink);
+  font-size: 0.96875rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+/* Un clic affiche tout le texte */
+.text[data-typing] {
+  cursor: pointer;
+}
+/* Fin du texte pas encore « tapée » : place réservée, invisible */
+.rest {
+  opacity: 0;
+}
+.travelling {
+  color: var(--color-ink-soft);
+  font-style: italic;
+}
+/* Bouton d'action de l'étape (« Jouer une partie ») : sous le texte, avant la navigation */
+.action {
+  margin-block-start: 0.75rem;
+  min-block-size: 2.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-block-start: 0.875rem;
+}
+.previous,
+.next {
+  min-block-size: 2.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+.previous {
+  margin-inline-end: auto;
+}
+/* Flèche « précédent » (la flèche du jeu d'icônes, retournée) */
+.previous > :global(.icon) {
+  scale: -1 1;
+}
+
+/* Raccourcis clavier : seulement avec souris / trackpad (clavier probable) */
+.keys {
+  margin: 0.625rem 0 0;
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: end;
+}
+@media not ((hover: hover) and (pointer: fine)) {
+  .keys {
+    display: none;
+  }
+}
+
+/* Bulle du hero (1re étape) : plus compacte, elle remplace la bulle habituelle */
+.dialog[data-tour-dialog="hero"] .title {
+  font-size: 1.1875rem;
+}
+
+/* ---------- Cadre compagnon (en bas à droite, ou à gauche sur le chat) ---------- */
+.companion {
+  position: fixed;
+  z-index: 45;
+  inset-inline-end: max(1.25rem, env(safe-area-inset-right));
+  inset-block-end: max(1.25rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  gap: 1.375rem;
+  pointer-events: none;
+  animation: companion-in 0.5s var(--ease-squish) both;
+}
+.companion[data-side="start"] {
+  inset-inline-end: auto;
+  inset-inline-start: max(1.25rem, env(safe-area-inset-left));
+  flex-direction: row-reverse;
+}
+.companionDialog {
+  inline-size: min(23.5rem, calc(100vw - 14rem));
+  pointer-events: auto;
+}
+.companionWindow {
+  flex: none;
+  margin-block-end: 0.375rem;
+}
+/* Taille du cadre (conteneur de requêtes « size » : hauteur explicite) */
+.companionFrame {
+  inline-size: 8.75rem;
+  block-size: 11rem;
+}
+
+/* Grand écran : bulle un peu plus large */
+@media (min-width: 80rem) {
+  .companionDialog {
+    inline-size: 25rem;
+  }
+  .companionFrame {
+    inline-size: 9.5rem;
+    block-size: 12rem;
+  }
+}
+
+/* Mobile : feuille compacte au-dessus du dock (barre d'onglets), portrait de Rominou qui dépasse
+   en haut à gauche ; pas de queue ni de cartouche (le portrait dit qui parle) */
+@media (max-width: 47.99rem) {
+  .companion,
+  .companion[data-side="start"] {
+    inset-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
+    inset-block-end: calc(5.75rem + env(safe-area-inset-bottom));
+    display: block;
+    max-inline-size: 30rem;
+    margin-inline: auto;
+  }
+  .companionDialog {
+    inline-size: auto;
+  }
+  /* Feuille plafonnée (~40 % de l'écran) : la page reste lisible au-dessus. Si le texte est plus
+     long, il défile dans la feuille ; les boutons restent collés en bas, toujours visibles. */
+  .companionDialog > .dialog {
+    max-block-size: min(calc(100dvh - 9.5rem - env(safe-area-inset-bottom)), max(40dvh, 16rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.875rem 1rem 0;
+  }
+  .companionDialog .actions {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: 1;
+    margin-block-start: 0.375rem;
+    padding-block: 0.5rem 0.875rem;
+    background: var(--color-cream);
+  }
+  /* Fondu au-dessus des boutons : le texte qui défile s'efface au lieu d'être coupé net */
+  .companionDialog .actions::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 100%;
+    block-size: 0.75rem;
+    background: linear-gradient(transparent, var(--color-cream));
+    pointer-events: none;
+  }
+  .companionDialog .keys {
+    display: none;
+  }
+  .companionDialog > .dialog::after,
+  .companionDialog .name {
+    display: none;
+  }
+  .companionDialog .head,
+  .companionDialog .dots {
+    margin-inline-start: 4.625rem;
+  }
+  .companionDialog .body {
+    margin-block-start: 0.875rem;
+  }
+  .companionDialog .title {
+    font-size: 1.125rem;
+  }
+  .companionDialog .text {
+    font-size: 0.90625rem;
+    line-height: 1.45;
+  }
+  .companionWindow {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: -1.375rem;
+    inset-inline-start: 0.75rem;
+    margin: 0;
+  }
+  .companionFrame {
+    inline-size: 4.125rem;
+    block-size: 4.875rem;
+  }
+}
+
+/* Le compagnon couvre le bas de l'écran : le footer s'allonge d'autant (sa couleur, celle de la
+   bande de la page), pour que la fin de la page puisse défiler au-dessus de lui. */
+:global(.theme-root):has(.companion) > :global(.site-footer) {
+  padding-block-end: 17rem;
+}
+@media (max-width: 47.99rem) {
+  :global(.theme-root):has(.companion) > :global(.site-footer) {
+    padding-block-end: calc(6.75rem + max(40dvh, 16rem) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Très petits écrans : boutons plus serrés ; dans la feuille, « Visite guidée » reste pour les
+   lecteurs d'écran (le compteur et les boutons tiennent sur une ligne à côté du portrait) */
+@media (max-width: 22.49rem) {
+  .previous,
+  .next {
+    padding-inline: 0.875rem;
+  }
+  .companionDialog .kicker > svg {
+    display: none;
+  }
+  .companionDialog .kickerLabel {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Anneau « projecteur » autour de la section ---------- */
+.ring {
+  position: absolute;
+  z-index: 20;
+  border: 3px dashed var(--color-peach-500);
+  border-radius: 30px;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--color-butter-200) 55%, transparent),
+    0 0 40px 6px color-mix(in srgb, var(--color-butter-300) 32%, transparent);
+  animation: ring-in 0.5s var(--ease-squish) both;
+  transition:
+    top 0.3s ease,
+    left 0.3s ease,
+    width 0.3s ease,
+    height 0.3s ease;
+}
+/* Halo qui « respire » : seule l'opacité d'un calque fixe varie (composité, aucune repeinture) */
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 10px color-mix(in srgb, var(--color-butter-200) 38%, transparent),
+    0 0 64px 14px color-mix(in srgb, var(--color-butter-300) 30%, transparent);
+  opacity: 0;
+  animation: ring-glow 1.4s ease-in-out 0.5s infinite alternate;
+  will-change: opacity;
+}
+.ringTag {
+  position: absolute;
+  inset-block-start: -1.0625rem;
+  inset-inline-start: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-inline-size: calc(100% - 2.5rem);
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-butter-200);
+  color: var(--color-butter-800);
+  font-size: 0.8125rem;
+  font-weight: 900;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 3px 0 var(--color-butter-300);
+  rotate: -2deg;
+}
+/* Étiquette en bas (le haut de l'anneau touche un autre contrôle, ex. suggestions du chat) */
+.ring[data-tag="bottom"] .ringTag {
+  inset-block: auto -1.0625rem;
+}
+.ringTag > svg {
+  flex: none;
+  inline-size: 0.9375rem;
+  block-size: 0.9375rem;
+}
+
+/* ---------- Pastille « Reprendre la visite (4/10) » ---------- */
+.chip {
+  position: fixed;
+  z-index: 45;
+  inset-inline-end: max(1.25rem, env(safe-area-inset-right));
+  inset-block-end: max(1.25rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-inline-size: calc(100vw - 1.5rem);
+  padding: 0.375rem 0.5rem 0.375rem 0.375rem;
+  border-radius: 999px;
+  background: var(--color-cream);
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 5px 0 var(--color-cream-edge),
+    0 18px 30px -14px rgb(92 64 40 / 0.5);
+  animation: companion-in 0.5s var(--ease-squish) both;
+}
+/* Compagnon replié sur le chat : à gauche, comme le compagnon */
+.chip[data-side="start"] {
+  inset-inline: max(1.25rem, env(safe-area-inset-left)) auto;
+}
+.chipHead {
+  flex: none;
+}
+.chipResume {
+  min-block-size: 2.5rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-clay);
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.28),
+    0 3px 0 var(--color-clay-edge);
+  transition: translate 0.15s ease;
+}
+.chipResume:hover {
+  translate: 0 -1px;
+}
+.chipResume:active {
+  translate: 0 2px;
+}
+@media (max-width: 47.99rem) {
+  .chip,
+  .chip[data-side="start"] {
+    inset-inline: auto max(0.75rem, env(safe-area-inset-right));
+    inset-block-end: calc(5.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes companion-in {
+  from {
+    opacity: 0;
+    translate: 0 1.25rem;
+    scale: 0.96;
+  }
+}
+@keyframes step-in {
+  from {
+    opacity: 0;
+    translate: 0.5rem 0;
+  }
+}
+@keyframes step-back {
+  from {
+    opacity: 0;
+    translate: -0.5rem 0;
+  }
+}
+@keyframes ring-in {
+  from {
+    opacity: 0;
+    scale: 1.02;
+  }
+}
+@keyframes ring-glow {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion,
+  .chip,
+  .body,
+  .ring,
+  .ring::before {
+    animation: none;
+  }
+  .ring::before {
+    opacity: 0.5;
+  }
+  .ring,
+  .close,
+  .chipResume {
+    transition: none;
+  }
+}

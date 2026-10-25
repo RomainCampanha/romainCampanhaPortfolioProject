@@ -1,0 +1,39 @@
+/* Invitation à la visite guidée, dans la bulle du hero Pro (sous le texte de Rominou). */
+
+.invite,
+.reply {
+  margin-block-start: 0.875rem;
+  padding-block-start: 0.75rem;
+  border-block-start: 2px dashed var(--color-sand);
+}
+
+.question {
+  margin: 0;
+  color: var(--color-ink);
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem 0.625rem;
+  margin-block-start: 0.625rem;
+  padding-block-end: 0.25rem;
+}
+
+/* Boutons compacts (cible >= 40 px), pleine largeur s'ils passent à la ligne */
+.button {
+  flex: 1 1 auto;
+  min-block-size: 2.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.reply {
+  color: var(--color-ink-soft);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.reply:focus {
+  outline: none;
+}

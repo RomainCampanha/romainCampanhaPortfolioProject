@@ -5,7 +5,7 @@
   },
   "guide": {
     "label": "Rominou in holiday outfit",
-    "bubble": "Holiday outfit on! This is {name}'s personal side."
+    "bubble": "Holiday outfit on! This is my personal side."
   },
   "hero": {
     "kicker": "Personal side",
@@ -49,7 +49,6 @@
     "kicker": "Downtime",
     "title": "Music & games",
     "intro": "{genre} in my ears, a controller (or a mouse) in my hands.",
-    "soon": "Soon",
     "music": {
       "kicker": "On repeat",
       "title": "The music corner",
@@ -62,15 +61,6 @@
       "peak": "Peak rank",
       "champions": "Favourite champions",
       "otherGames": "Also in my game library"
-    },
-    "game": {
-      "kicker": "Next game",
-      "title": "Rominou’s Run",
-      "text": "A little runner game, playable right in your browser: Rominou runs through my trips, and each level you clear unlocks that city's postcard.",
-      "levelsLabel": "Planned levels",
-      "start": "Start",
-      "level": "Level {n}",
-      "locked": "Postcard to unlock"
     }
   }
 }

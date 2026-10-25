@@ -64,20 +64,26 @@ garantir un plafond dur.
 ## Tests
 
 `npm run test:e2e` (après `npm run build`) lance le site et un faux OpenAI
-(`e2e/mock-openai.mjs`) : pages, i18n, 404, en-têtes, API et parcours du chat, sans clé ni coût.
+(`e2e/mock-openai.mjs`) : pages, i18n, 404, en-têtes, API et parcours du chat, sans clé ni coût,
+visite guidée, jeu (`?e2e=1` : niveaux courts et état exposé, cf. `src/lib/game/e2e.ts`) et leur
+interaction (`e2e/tour-game.spec.ts`).
 
 ## Organisation
 
 ```
-messages/{fr,en}/        traductions, un fichier par namespace (common, pro, hobby, chat)
+messages/{fr,en}/        traductions, un fichier par namespace (common, pro, hobby, chat, tour, game)
 src/app/[locale]/        pages localisées (layout racine, Pro, Hobby, Chat, 404)
 src/i18n/                routing, navigation localisée, chargement des messages
 src/components/ui/       design system « Cosy » : primitives (Button, ClayCard, Chip, SpeechBubble…) + README
 src/components/site/     shell : header (+ dock mobile), footer, skip link, providers, thème
 src/components/three/    avatar 3D : Canvas unique et persistant + ancres = cadres « fenêtre » avec décor SVG
                          (Genève / plage / ciel du soir), carte « Visite du site », posters (public/scenes/)
+src/components/tour/     « La visite de Rominou » : visite guidée en 10 étapes (src/lib/tour.ts), interface
+                         chargée au lancement ; Rominou suit le visiteur dans un cadre compagnon
+src/components/game/     « La course de Rominou » (#jeu, Hobby) : écran titre léger ; moteur, rendu 3D/2D et
+                         HUD chargés au clic sur « Jouer » (logique pure dans src/lib/game/)
 src/content/             profil (source de vérité du contenu : pages + prompt du chat) et photos
-src/lib/                 helpers (pages, SEO, store de l'avatar)
+src/lib/                 helpers (pages, SEO, store de l'avatar, visite guidée, jeu)
 ```
 
 Rominou communique uniquement par écrit (bulles et chat), sans voix.

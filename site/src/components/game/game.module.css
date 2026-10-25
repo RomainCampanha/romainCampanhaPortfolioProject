@@ -1,0 +1,1275 @@
+/* « La course de Rominou » (DA Cosy) : écran de jeu en argile, HUD de jeu cosy, carte du
+   voyage, cartes postales. Couleurs = tokens du design system (globals.css) ; le ton de
+   l'étape arrive par data-tone (--tone-100…800). Mouvements doux, coupés par
+   prefers-reduced-motion (règle globale). */
+
+/* ====================================================================== Console */
+
+.console {
+  display: grid;
+  gap: 1.5rem;
+  margin-block-start: 1.5rem;
+}
+
+/* Écran de jeu : ciel du ton de l'étape, bord crème, épaisseur d'argile. Le menu (écran
+   titre) peut l'agrandir si son contenu déborde ; en partie, le format est fixe. */
+.screen,
+.game {
+  --sky: linear-gradient(
+    180deg,
+    var(--tone-200) 0%,
+    color-mix(in srgb, var(--tone-100) 55%, var(--color-cream)) 62%,
+    var(--color-cream) 100%
+  );
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 5px solid var(--color-cream);
+  border-radius: var(--radius-clay-lg);
+  background: var(--sky);
+  box-shadow:
+    0 6px 0 var(--tone-300),
+    0 26px 44px -22px rgb(92 64 40 / 0.38);
+}
+
+@media (max-width: 39.99rem) {
+  .screen {
+    aspect-ratio: auto;
+    border-width: 4px;
+  }
+  .screen[data-open] {
+    aspect-ratio: 3 / 4;
+    max-block-size: calc(100svh - 8rem);
+    min-block-size: 22rem;
+  }
+}
+
+/* Fin d'étape (carte postale) ou partie perdue : l'écran garde au moins sa hauteur de jeu
+   (--play-h, mesurée par GamePanel), mais s'agrandit si la carte ne tient pas (téléphone, long
+   nom de ville) : rien de coupé, pas de défilement dans une petite boîte. La carte est amenée
+   dans la vue (au-dessus du dock mobile). */
+.screen[data-open]:has(> .game:is([data-phase="complete"], [data-phase="failed"]):not([data-fullscreen])) {
+  aspect-ratio: auto;
+  min-block-size: 0;
+  max-block-size: none;
+}
+.game:is([data-phase="complete"], [data-phase="failed"]):not([data-fullscreen]) {
+  position: relative;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  min-block-size: var(--play-h, 22rem);
+}
+.game:is([data-phase="complete"], [data-phase="failed"]):not([data-fullscreen]) > .overlay {
+  position: relative;
+  inset: auto;
+  flex: 1 0 auto;
+  overflow: visible;
+  scroll-margin-block: 1rem 1rem;
+}
+@media (max-width: 47.99rem) {
+  .game:is([data-phase="complete"], [data-phase="failed"]):not([data-fullscreen]) > .overlay {
+    scroll-margin-block-end: calc(6.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.875rem;
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-ink);
+  background: var(--sky);
+}
+.loadingHead {
+  animation: var(--animate-float);
+  animation-duration: 1.6s;
+}
+
+/* ====================================================================== Écran titre */
+
+.start {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+  min-block-size: 100%;
+  padding: 1.25rem 1rem 5rem;
+}
+@media (min-width: 40rem) {
+  .start {
+    grid-template-columns: minmax(0, 1.3fr) minmax(13rem, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem 1.75rem 3.5rem;
+  }
+}
+
+.startDecor {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  inline-size: 100%;
+  block-size: 100%;
+}
+.decorCloud {
+  fill: var(--color-cream);
+  opacity: 0.9;
+}
+.decorMountains {
+  fill: color-mix(in srgb, var(--color-lilac-300) 70%, var(--color-cream));
+}
+.decorHills {
+  fill: var(--color-sage-200);
+}
+.decorLake {
+  fill: var(--color-lake-300);
+}
+.decorJet {
+  fill: var(--color-cream);
+}
+.decorPath {
+  fill: none;
+  stroke: var(--color-clay);
+  stroke-width: 3;
+  stroke-dasharray: 2 11;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+
+.startText {
+  min-inline-size: 0;
+}
+
+/* Titre « logo » (décoratif : le vrai titre est le h3 de la section) */
+.logo {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 1.5rem + 2.4vw, 3.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--tone-800);
+  text-shadow: 0 3px 0 var(--color-cream);
+  text-wrap: balance;
+}
+
+.tagline {
+  margin-block-start: 0.625rem;
+  max-inline-size: 36ch;
+  font-weight: 750;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.howTo {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  line-height: 1.3;
+}
+.howTo > li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.howIcon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-cream);
+  color: var(--tone-800);
+  box-shadow: 0 2px 0 var(--tone-300);
+}
+
+.startAction {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem 1rem;
+  border-radius: var(--radius-clay-lg);
+  background: color-mix(in srgb, var(--color-cream) 88%, transparent);
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 5px 0 var(--tone-300);
+  text-align: center;
+}
+.startHead {
+  margin-block-start: -0.25rem;
+}
+.nextStop {
+  display: grid;
+  gap: 0.15rem;
+}
+.nextYear {
+  color: var(--color-ink-soft);
+}
+.playButton {
+  min-inline-size: 11rem;
+  font-size: 1.125rem;
+}
+
+/* Interrupteur « Mode tranquille » */
+.mode {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.375rem 0.625rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.switchTrack {
+  position: relative;
+  flex: none;
+  inline-size: 2.75rem;
+  block-size: 1.5rem;
+  border-radius: 999px;
+  background: var(--color-oat-deep);
+  box-shadow: inset 0 0 0 2px var(--color-ink-soft);
+  transition: background-color 0.18s ease;
+}
+.switchKnob {
+  position: absolute;
+  inset-block-start: 0.25rem;
+  inset-inline-start: 0.25rem;
+  inline-size: 1rem;
+  block-size: 1rem;
+  border-radius: 50%;
+  background: var(--color-ink-soft);
+  transition:
+    translate 0.18s var(--ease-squish),
+    background-color 0.18s ease;
+}
+.switch[aria-checked="true"] .switchTrack {
+  background: var(--tone-800);
+  box-shadow: none;
+}
+.switch[aria-checked="true"] .switchKnob {
+  translate: 1.25rem 0;
+  background: var(--color-cream);
+}
+.modeHint {
+  max-inline-size: 32ch;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-ink-soft);
+}
+
+/* ====================================================================== Carte du voyage */
+
+.map {
+  container-type: inline-size;
+  padding: 1rem 0.75rem 1.125rem;
+  border-radius: var(--radius-clay-lg);
+  background: var(--color-oat-deep);
+  box-shadow: var(--shadow-well);
+}
+@media (min-width: 30rem) {
+  .map {
+    padding-inline: 1.25rem;
+  }
+}
+
+.mapList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.875rem 0.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+@container (min-width: 30rem) {
+  .mapList {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+@container (min-width: 46rem) {
+  .mapList {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+  }
+}
+
+.mapItem {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+/* Trajet en pointillés jusqu'à l'étape suivante (pas en fin de ligne) */
+.mapItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-block-start: calc(0.25rem + 1.5rem - 1.5px);
+  inset-inline: calc(50% + 1.75rem) calc(-50% - 0.25rem + 1.75rem);
+  border-block-start: 3px dashed var(--theme-dash);
+}
+.mapItem:nth-child(3n)::after {
+  display: none;
+}
+@container (min-width: 30rem) {
+  .mapItem:nth-child(3n)::after {
+    display: block;
+  }
+  .mapItem:nth-child(5n)::after,
+  .mapItem:last-child::after {
+    display: none;
+  }
+}
+@container (min-width: 46rem) {
+  .mapItem:nth-child(5n)::after {
+    display: block;
+  }
+  .mapItem:last-child::after {
+    display: none;
+  }
+}
+
+.mapNode {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.375rem;
+  inline-size: 100%;
+  padding: 0.25rem 0.125rem;
+  border: 0;
+  border-radius: var(--radius-clay-sm);
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.mapNode[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.mapPin {
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: 50%;
+  background: var(--tone-200);
+  color: var(--tone-800);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.7),
+    0 4px 0 var(--tone-300);
+  transition: translate 0.15s ease;
+}
+.mapNode:not([aria-disabled]):hover .mapPin {
+  translate: 0 -2px;
+}
+.mapNode[data-state="done"] .mapPin {
+  background: var(--tone-300);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.55),
+    0 4px 0 var(--tone-500);
+}
+.mapNode[data-state="locked"] .mapPin {
+  background: var(--color-oat);
+  color: var(--color-ink-soft);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.7),
+    0 3px 0 var(--color-sand);
+}
+.mapNode[aria-pressed="true"] .mapPin {
+  background: var(--color-cream);
+  box-shadow:
+    0 0 0 3px var(--color-clay),
+    0 5px 0 3px var(--color-clay-edge);
+}
+.mapHead {
+  --coin-size: 2.5rem;
+}
+
+.mapLabel {
+  display: grid;
+  gap: 0.05rem;
+  max-inline-size: 100%;
+}
+.mapName {
+  font-size: 0.8125rem;
+  font-weight: 850;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.mapYear {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: var(--color-ink-soft);
+}
+.mapNode[data-state="locked"] .mapName {
+  color: var(--color-ink-soft);
+}
+.mapStamp {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% + 0.85rem);
+  display: grid;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-sage-800);
+  color: var(--color-cream);
+}
+
+/* ====================================================================== Partie */
+
+.game {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Ciel de la ville (themes.ts : --sky-*, --sun-*) derrière le Canvas transparent : soleil
+     (ou lune), puis dégradé jusqu'à l'horizon (même couleur que le brouillard 3D). Sans
+     thème (chargement) : le ciel du ton de l'étape. */
+  background:
+    radial-gradient(
+      circle at var(--sun-x, 74%) var(--sun-y, 30%),
+      var(--sun, var(--color-butter-300)) 0 var(--sun-size, 2.25rem),
+      color-mix(in srgb, var(--sun-glow, var(--color-butter-200)) 60%, transparent) calc(var(--sun-size, 2.25rem) + 0.15rem),
+      transparent calc(var(--sun-size, 2.25rem) * 2.1)
+    ),
+    linear-gradient(
+      180deg,
+      var(--sky-top, var(--tone-200)) 0%,
+      var(--sky-mid, color-mix(in srgb, var(--tone-100) 55%, var(--color-cream))) 24%,
+      var(--sky-horizon, var(--color-cream)) 42%,
+      var(--sky-horizon, var(--color-cream)) 100%
+    );
+  color: var(--color-ink);
+}
+/* Ciel du soir : quelques étoiles crème (Tokyo). */
+.game[data-stars]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 55%;
+  background:
+    radial-gradient(circle at 12% 18%, var(--color-cream) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 31% 9%, var(--color-cream) 0 1px, transparent 2px),
+    radial-gradient(circle at 46% 27%, var(--color-cream) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 63% 12%, var(--color-cream) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 31%, var(--color-cream) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 91% 16%, var(--color-cream) 0 1px, transparent 2px),
+    radial-gradient(circle at 56% 42%, var(--color-cream) 0 1px, transparent 2px),
+    radial-gradient(circle at 24% 40%, var(--color-cream) 0 1px, transparent 2px);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.game:fullscreen {
+  border-radius: 0;
+}
+.game[data-expanded] {
+  position: fixed;
+  z-index: 90;
+  border-radius: 0;
+}
+.game[data-fullscreen] .topStack {
+  padding-block-start: max(0.75rem, env(safe-area-inset-top));
+  padding-inline: max(0.875rem, env(safe-area-inset-left)) max(0.875rem, env(safe-area-inset-right));
+}
+
+.playArea {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* En course : un glissé du doigt sur le jeu ne fait pas défiler la page (le jeu continuerait hors
+   de la vue). En pause ou à l'écran de fin, la page défile à nouveau normalement. */
+.game:is([data-phase="playing"], [data-phase="countdown"]) .playArea {
+  touch-action: none;
+}
+.playArea:focus-visible {
+  outline: 3px solid var(--theme-focus);
+  outline-offset: -7px;
+  border-radius: var(--radius-clay-md);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* ---------- HUD ---------- */
+.topStack {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 3;
+  display: grid;
+  gap: 0.625rem;
+  pointer-events: none;
+}
+.hud {
+  display: grid;
+  gap: 0.375rem;
+  padding: 0.625rem 0.625rem 0;
+  pointer-events: none;
+}
+@media (min-width: 40rem) {
+  .hud {
+    padding: 0.875rem 0.875rem 0;
+  }
+}
+.hudRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.hudStats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  min-inline-size: 0;
+}
+.hudChip,
+.hearts {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-block-size: 2.125rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--color-cream);
+  color: var(--tone-800);
+  font-size: 0.875rem;
+  font-weight: 850;
+  line-height: 1.15;
+  box-shadow: 0 3px 0 var(--tone-300);
+}
+@media (max-width: 39.99rem) {
+  .hudStats {
+    gap: 0.25rem;
+  }
+  .hudChip,
+  .hearts {
+    min-block-size: 2rem;
+    padding-inline: 0.5rem;
+    font-size: 0.8125rem;
+  }
+  .hearts > svg {
+    inline-size: 15px;
+    block-size: 15px;
+  }
+}
+.hudStep {
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+@media (max-width: 29.99rem) {
+  .hudStep {
+    display: none;
+  }
+}
+.hearts {
+  gap: 0.125rem;
+  padding-inline: 0.5rem;
+  color: var(--color-clay);
+}
+.hearts > [data-empty] {
+  color: var(--color-ink-soft);
+}
+/* Petit rebond quand un compteur change (tampon ramassé, cœur perdu). */
+.bump {
+  display: inline-block;
+  animation: bump 0.4s var(--ease-squish) both;
+}
+@keyframes bump {
+  from {
+    scale: 1.6;
+  }
+}
+.hearts[data-hurt] {
+  animation: hurt 0.4s ease-out both;
+}
+@keyframes hurt {
+  20% {
+    translate: -3px 0;
+  }
+  45% {
+    translate: 3px 0;
+  }
+  70% {
+    translate: -2px 0;
+  }
+}
+.hearts > [data-empty] path {
+  fill: none;
+}
+
+.hudButtons {
+  display: flex;
+  flex: none;
+  gap: 0.375rem;
+}
+.hudButton {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-cream);
+  color: var(--tone-800);
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 4px 0 var(--tone-300);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: translate 0.12s ease;
+}
+.hudButton:active {
+  translate: 0 3px;
+  box-shadow: 0 1px 0 var(--tone-300);
+}
+.hudButton:disabled {
+  cursor: default;
+  color: var(--color-ink-soft);
+}
+@media (max-width: 39.99rem) {
+  .hudButtons {
+    gap: 0.3125rem;
+  }
+  .hudButton {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+  }
+  .hudButton > :global(.icon) {
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+  }
+}
+
+.progress {
+  position: relative;
+  block-size: 1.75rem;
+  margin-inline: 0.25rem;
+}
+.progressTrack {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0.75rem 1.75rem;
+  block-size: 0.5rem;
+  translate: 0 -50%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-cream) 80%, transparent);
+  box-shadow: inset 0 1px 3px color-mix(in srgb, var(--tone-800) 25%, transparent);
+}
+.progressFill {
+  display: block;
+  inline-size: calc(var(--progress, 0) * 100%);
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--tone-500), var(--tone-800));
+}
+.progressHead {
+  position: absolute;
+  inset-block-start: 0.0625rem;
+  inset-inline-start: calc(var(--progress, 0) * (100% - 3.25rem));
+}
+.progressGate {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.625rem;
+  block-size: 1.625rem;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: var(--color-clay);
+  color: #fff;
+}
+
+/* ---------- Conseils, compte à rebours ---------- */
+/* Sous le HUD, dans le ciel : ne cache ni le HUD ni le chemin */
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  inline-size: min(25rem, calc(100% - 1.5rem));
+  margin-inline: auto;
+  pointer-events: none;
+  animation: pop 0.35s var(--ease-squish) both;
+}
+.hintHead {
+  flex: none;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-display);
+  font-size: clamp(2.5rem, 1.8rem + 4vw, 4.75rem);
+  font-weight: 700;
+  color: var(--tone-800);
+  text-shadow:
+    0 4px 0 var(--color-cream),
+    0 14px 24px rgb(92 64 40 / 0.3);
+  pointer-events: none;
+  animation: pop 0.4s var(--ease-squish) both;
+}
+.countdown[data-step="go"] {
+  color: var(--color-clay);
+}
+
+@keyframes pop {
+  from {
+    scale: 0.6;
+    opacity: 0;
+  }
+}
+
+/* ---------- Pause / fin ---------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--color-oat) 62%, transparent);
+  backdrop-filter: blur(3px);
+}
+.panelCard,
+.resultCard {
+  /* margin auto : centré, mais défilable depuis le haut si l'écran est trop bas */
+  margin-block: auto;
+  inline-size: min(100%, 30rem);
+  padding: 1.5rem 1.25rem;
+  border-radius: var(--radius-clay-lg);
+  background: var(--color-cream);
+  text-align: center;
+  box-shadow:
+    inset 0 2px 0 #fff,
+    0 6px 0 var(--tone-300),
+    0 26px 44px -22px rgb(92 64 40 / 0.45);
+  animation: pop 0.35s var(--ease-squish) both;
+}
+.resultCard {
+  container-type: inline-size;
+  /* Assez large pour les trois boutons sur une ligne (desktop) */
+  inline-size: min(100%, 38rem);
+  padding: 0.875rem 1rem 1rem;
+}
+.resultTitle {
+  margin-block-start: 0.25rem;
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-title);
+  font-size: clamp(1.3rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: 650;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+/* Dévoilement de la carte postale : elle glisse depuis le bas en se redressant (comme sortie
+   d'une boîte aux lettres), un reflet passe sur la photo, le timbre tombe en place, puis le
+   cachet de la poste s'imprime (petit choc de la carte). Rien de tout ça en mouvement réduit. */
+.resultCard .reveal {
+  max-inline-size: 31rem;
+  margin-block-start: 0.75rem;
+  transform-origin: 50% 100%;
+  animation:
+    deal 0.8s var(--ease-squish) 0.08s both,
+    thump 0.24s ease-out 1.02s;
+}
+@keyframes deal {
+  0% {
+    translate: 0 70%;
+    rotate: -12deg;
+    scale: 0.72;
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+@keyframes thump {
+  40% {
+    translate: 0 3px;
+    scale: 0.99;
+  }
+}
+.resultCard .reveal .cardFront::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.5) 50%, transparent 65%);
+  translate: -110% 0;
+  animation: sheen 0.9s ease-in-out 0.55s both;
+  pointer-events: none;
+}
+@keyframes sheen {
+  to {
+    translate: 110% 0;
+  }
+}
+.resultCard .reveal .stamp {
+  animation: stamp-land 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) 0.78s both;
+}
+@keyframes stamp-land {
+  0% {
+    translate: -30% -45%;
+    rotate: -30deg;
+    scale: 2.4;
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+}
+.resultCard .reveal .postmark {
+  animation: postmark 0.3s ease-out 1.02s both;
+}
+@keyframes postmark {
+  0% {
+    scale: 1.8;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resultCard .reveal,
+  .resultCard .reveal .stamp,
+  .resultCard .reveal .postmark,
+  .resultCard .reveal .cardFront::after,
+  .bump,
+  .hearts[data-hurt] {
+    animation: none;
+  }
+  .resultCard .reveal .cardFront::after {
+    display: none;
+  }
+}
+.resultStats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  margin-block-start: 0.75rem;
+  color: var(--tone-800);
+  font-weight: 850;
+}
+.resultStats > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-block-start: 1rem;
+}
+@media (max-width: 29.99rem) {
+  .actions > :global(.btn) {
+    inline-size: 100%;
+  }
+}
+
+/* ====================================================================== Carte postale */
+
+.postcard {
+  /* Recto | verso, toujours côte à côte (carte postale à l'italienne) ; compact sur téléphone */
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  max-inline-size: 38rem;
+  margin: 0 auto;
+  padding: 0.375rem;
+  border-radius: 10px;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  text-align: start;
+  box-shadow:
+    0 4px 0 var(--tone-300),
+    0 18px 30px -16px rgb(92 64 40 / 0.45);
+  rotate: var(--card-tilt, 0deg);
+}
+
+.cardFront {
+  position: relative;
+  overflow: hidden;
+  align-self: start;
+  aspect-ratio: 4 / 5;
+  border-radius: 6px;
+  background: var(--tone-200);
+}
+.cardPhoto {
+  object-fit: cover;
+  object-position: center 35%;
+}
+.greetings {
+  position: absolute;
+  inset-block-end: 0.375rem;
+  inset-inline-start: 0.375rem;
+  display: grid;
+  max-inline-size: calc(100% - 0.75rem);
+  padding: 0.1875rem 0.5rem 0.25rem;
+  border-radius: 8px;
+  background: var(--color-cream);
+  color: var(--tone-800);
+  line-height: 1.05;
+  box-shadow: 0 3px 0 var(--tone-300);
+  rotate: -3deg;
+}
+.greetingsSmall {
+  font-size: 0.5625rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.greetingsCity {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-title);
+  font-size: 1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.cardBack {
+  position: relative;
+  display: flow-root;
+  margin-inline-start: 0.5rem;
+  padding: 0.25rem 0.125rem 0.125rem 0.5rem;
+  border-inline-start: 2px dashed var(--tone-300);
+}
+
+/* Timbre dentelé : points crème sur le cadre = perforations */
+.stamp {
+  display: block;
+  float: inline-end;
+  inline-size: 2.75rem;
+  block-size: 3.25rem;
+  margin: 0 0 0.25rem 0.375rem;
+  padding: 4px;
+  background: radial-gradient(circle, var(--color-cream) 1.8px, var(--tone-100) 2.3px) -1px -1px / 7px 7px;
+  rotate: 4deg;
+  filter: drop-shadow(0 2px 0 var(--tone-300));
+}
+.stampInner {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.15rem;
+  block-size: 100%;
+  border: 1.5px solid var(--tone-300);
+  background: var(--tone-200);
+  color: var(--tone-800);
+}
+.stampYear {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 0.75rem;
+  font-weight: 750;
+  line-height: 1;
+}
+.stamp[data-size="sm"] {
+  float: none;
+  inline-size: 2.5rem;
+  block-size: 2.9rem;
+  margin: 0;
+  padding: 3.5px;
+  background-size: 6px 6px;
+  background-image: radial-gradient(circle, var(--color-cream) 1.6px, var(--tone-100) 2px);
+  rotate: none;
+}
+.stamp[data-size="sm"] .stampYear {
+  font-size: 0.6875rem;
+}
+
+.cardFoot {
+  clear: both;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.sign {
+  flex: 1;
+  min-inline-size: 0;
+}
+.postmark {
+  flex: none;
+  display: none;
+  place-content: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: 2px solid color-mix(in srgb, var(--tone-800) 40%, transparent);
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--tone-800) 65%, transparent);
+  font-size: 0.5rem;
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  rotate: -14deg;
+  pointer-events: none;
+}
+
+.caption {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 0.8125rem;
+  font-weight: 560;
+  line-height: 1.3;
+  text-wrap: pretty;
+  /* Pas de césure (« Eif-fel ») : la légende passe à la ligne entre les mots. */
+  hyphens: manual;
+}
+.signature {
+  padding-block-start: 0.375rem;
+  font-family: var(--font-display);
+  font-variation-settings: var(--fvs-label);
+  font-size: 0.875rem;
+  font-style: italic;
+  font-weight: 650;
+  color: var(--tone-800);
+  text-align: end;
+}
+.addressLines {
+  display: none;
+  inline-size: 80%;
+  block-size: 1.5rem;
+  margin: 0.25rem 0 0 auto;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 0.6rem,
+    var(--tone-300) 0.6rem calc(0.6rem + 1.5px)
+  );
+}
+
+@container (min-width: 27rem) {
+  .postcard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0.5rem;
+  }
+  .cardFront {
+    aspect-ratio: 4 / 3;
+  }
+  .greetings {
+    inset-block-end: 0.5rem;
+    inset-inline-start: 0.5rem;
+    padding: 0.25rem 0.625rem 0.375rem;
+  }
+  .greetingsSmall {
+    font-size: 0.625rem;
+  }
+  .greetingsCity {
+    font-size: 1.3rem;
+  }
+  .cardBack {
+    min-block-size: 9rem;
+    margin-inline-start: 0.75rem;
+    padding: 0.5rem 0.25rem 0.25rem 0.875rem;
+  }
+  .stamp {
+    inline-size: 4rem;
+    block-size: 4.75rem;
+    padding: 5px;
+    background-size: 8px 8px;
+    background-image: radial-gradient(circle, var(--color-cream) 2.3px, var(--tone-100) 2.8px);
+  }
+  .stampYear {
+    font-size: 0.9375rem;
+  }
+  .caption {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+  }
+  .signature {
+    font-size: 1rem;
+  }
+  .postmark {
+    display: grid;
+  }
+  .addressLines {
+    display: block;
+  }
+}
+
+/* Carte dévoilée sur un petit téléphone (≤ 390 px) : recto au-dessus du verso, pour une légende
+   lisible (côte à côte, la colonne du texte serait trop étroite). */
+@container (max-width: 17.99rem) {
+  .resultCard .postcard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .resultCard .cardFront {
+    aspect-ratio: 16 / 10;
+  }
+  .resultCard .cardBack {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.25rem 0.125rem;
+    border-inline-start: 0;
+    border-block-start: 2px dashed var(--tone-300);
+  }
+}
+
+/* Genève illustrée : le décor SVG du cadre de Rominou (page Pro), sous son ciel */
+.genevaArt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--color-lake-200) 0%,
+    color-mix(in srgb, var(--color-oat) 70%, var(--color-peach-100)) 62%,
+    color-mix(in srgb, var(--color-peach-100) 70%, var(--color-peach-200)) 100%
+  );
+}
+
+/* ====================================================================== Collection */
+
+.collection {
+  padding-block-start: 1.25rem;
+  border-block-start: 2px dashed var(--theme-dash);
+}
+.collectionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: 1rem 0.75rem;
+  margin: 1.125rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 48rem) {
+  .collectionList {
+    grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
+  }
+}
+
+.miniCard {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  padding: 0.375rem 0.375rem 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: start;
+  box-shadow:
+    0 4px 0 var(--tone-300),
+    0 14px 22px -16px rgb(92 64 40 / 0.5);
+}
+button.miniCard {
+  cursor: pointer;
+  transition: translate 0.15s ease;
+}
+button.miniCard:hover {
+  translate: 0 -3px;
+}
+.miniCard[data-locked] {
+  background: var(--color-oat);
+  box-shadow: inset 0 0 0 2px var(--color-sand);
+}
+.miniFront {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  background: var(--tone-200);
+}
+.miniCard[data-locked] .miniFront {
+  border: 2px dashed var(--tone-300);
+  background: repeating-linear-gradient(-45deg, var(--tone-100) 0 8px, color-mix(in srgb, var(--tone-200) 60%, var(--tone-100)) 8px 16px);
+}
+.silhouette {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--tone-800);
+}
+.miniStamp {
+  position: absolute;
+  inset-block-start: -0.5rem;
+  inset-inline-end: -0.375rem;
+  rotate: 8deg;
+}
+.miniName {
+  display: block;
+  margin-block-start: 0.5rem;
+  padding-inline: 0.125rem;
+  font-size: 0.875rem;
+  font-weight: 850;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.miniLocked {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: var(--color-ink-soft);
+}
+
+.postcardDialog {
+  inline-size: min(40rem, calc(100vw - 2rem));
+  max-inline-size: none;
+  max-block-size: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+.postcardDialog::backdrop {
+  background: rgb(43 36 51 / 0.55);
+  backdrop-filter: blur(3px);
+}
+.dialogBody {
+  container-type: inline-size;
+  max-block-size: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 0.75rem;
+}

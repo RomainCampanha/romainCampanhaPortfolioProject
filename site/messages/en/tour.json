@@ -1,1 +1,75 @@
-{}
+{
+  "dialog": {
+    "kicker": "Guided tour",
+    "counter": "{current}/{total}",
+    "counterLabel": "Step {current} of {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "quit": "Quit the tour",
+    "minimize": "Minimise the bubble",
+    "expand": "Show the bubble ({current}/{total})",
+    "expandLabel": "Show the guided tour bubble, step {current} of {total}",
+    "keys": "← → to move on · Esc to quit",
+    "travelling": "On my way to the {page} page…",
+    "live": "Step {current} of {total}, {title}: {text}"
+  },
+  "chip": {
+    "label": "Tour paused",
+    "resume": "Resume the tour ({current}/{total})",
+    "resumeLabel": "Resume the guided tour, step {current} of {total}"
+  },
+  "card": {
+    "start": "Start the tour",
+    "resume": "Resume ({current}/{total})",
+    "resumeLabel": "Resume the guided tour, step {current} of {total}",
+    "restart": "Take the tour again",
+    "active": "Tour in progress · {current}/{total}"
+  },
+  "steps": {
+    "hello": {
+      "title": "Welcome to my place!",
+      "text": "I’m {guide}, {name}’s mini-me made of modelling clay. Let me show you around: my work side, my personal side, then my AI version. Two minutes, I promise!",
+      "next": "Let’s go"
+    },
+    "parcours": {
+      "title": "My path",
+      "text": "On my wall: first the {first} ({firstSchool}), then the {second} ({secondSchool}){supplement, select, none {} other {, now with the “{supplement}” supplement}}. Since that isn’t a university-level bachelor, I’m now tackling the {current} ({currentSchool}). Yes, I like diplomas!"
+    },
+    "experience": {
+      "title": "My job",
+      "text": "Alongside my studies, I work at {company} ({rate}) in {role}. {description}"
+    },
+    "competences": {
+      "title": "My inventory",
+      "text": "{count} skills in my bag, each tagged with where I learned it: school, work or personal projects. The fullest pocket: {top}, with {topCount} skills!"
+    },
+    "projets": {
+      "title": "Put into practice",
+      "text": "{project}: {kind, select, school {a group school project} other {my personal project}}, {context}. {description}{joke, select, ge_soif { Handy when your water bottle runs dry!} other {}}"
+    },
+    "contact": {
+      "title": "Shall we talk?",
+      "text": "A question, an opportunity, a good restaurant tip? Everything you need to write to me is right here. But first… come and see my personal side!",
+      "next": "My personal side"
+    },
+    "voyages": {
+      "title": "My travels",
+      "text": "{count, plural, one {# boarding pass} other {# boarding passes}}, one for each trip I brought photos back from. The latest: {latest}{year, select, none {} other { ({year})}}. And every card hides a photo album!"
+    },
+    "musique": {
+      "title": "Music & games",
+      "text": "In my ears: {genre}, especially {artists}. I listen, I don’t rap: everyone’s better off. In my hands: {games}."
+    },
+    "course": {
+      "title": "{guide}’s Run",
+      "text": "My little game: I dash from {start} through my trips, and every level you clear unlocks a city’s postcard. Give my run a try!",
+      "action": "Play a round",
+      "next": "On to the chat"
+    },
+    "questions": {
+      "title": "Over to you!",
+      "text": "Last stop: this is my AI version. Ask me anything about my studies, my job or my travels, I answer in writing. Thanks for taking the tour!",
+      "next": "Ask a question"
+    }
+  }
+}

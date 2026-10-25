@@ -6,14 +6,14 @@ import { Chip } from "@/components/ui/Chip";
 import { ClayCard } from "@/components/ui/ClayCard";
 import { Coin } from "@/components/ui/Coin";
 import { cx } from "@/components/ui/cx";
+import { GameSection } from "@/components/game/GameSection";
 import { FEATURED_GAME, LOL } from "./games";
 import { CassetteArt, RankGem } from "./icons";
-import { RunnerTeaser } from "./RunnerTeaser";
 
 // #musique-jeux (ids stables pour la visite guidée et le chat) :
 // #musique (rap français qu'il ÉCOUTE : il ne fait pas de musique ; sons préférés à venir),
 // #lol (carte League of Legends : rôle, meilleur rang, champions — JAMAIS de pseudo — et les
-// autres jeux), #jeu (« La course de Rominou », bientôt).
+// autres jeux), #jeu (« La course de Rominou », le mini-jeu : components/game).
 export function MusicGamesSection({ className }: { className?: string }) {
   const t = useTranslations("hobby.passions");
   const locale = useLocale();
@@ -24,19 +24,22 @@ export function MusicGamesSection({ className }: { className?: string }) {
       aria-labelledby="musique-jeux-title"
       className={cx("scroll-mt-6 pt-20 sm:pt-28", className)}
     >
-      <SectionHeading
-        id="musique-jeux-title"
-        kicker={t("kicker")}
-        kickerIcon="headphones"
-        title={t("title")}
-        intro={t("intro", { genre: inSentence(pick(profile.music.genre, locale), locale) })}
-      />
+      {/* Titre + cartes musique / LoL : zone commentée par la visite (le jeu a sa propre étape) */}
+      <div data-tour-anchor="musique-jeux">
+        <SectionHeading
+          id="musique-jeux-title"
+          kicker={t("kicker")}
+          kickerIcon="headphones"
+          title={t("title")}
+          intro={t("intro", { genre: inSentence(pick(profile.music.genre, locale), locale) })}
+        />
 
-      <div className="grid gap-x-7 gap-y-10 md:grid-cols-2">
-        <MusicCard />
-        <LolCard />
-        <RunnerTeaser className="md:col-span-2" />
+        <div className="grid gap-x-7 gap-y-10 md:grid-cols-2">
+          <MusicCard />
+          <LolCard />
+        </div>
       </div>
+      <GameSection className="mt-10" />
     </section>
   );
 }

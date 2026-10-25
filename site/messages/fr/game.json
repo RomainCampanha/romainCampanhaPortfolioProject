@@ -1,1 +1,133 @@
-{}
+{
+  "section": {
+    "kicker": "Mini-jeu",
+    "title": "La course de Rominou",
+    "text": "Un petit runner à jouer directement ici : Rominou part de {city} et court à travers mes voyages. Chaque niveau terminé débloque la carte postale de la ville."
+  },
+  "start": {
+    "label": "Écran titre du jeu",
+    "title": "La course de Rominou",
+    "tagline": "De {first} à {last} : {count} étapes, une carte postale à chaque arrivée.",
+    "howTo": "Comment jouer",
+    "howJump": "Saute avec Espace, ↑ ou W (ou touche l'écran)",
+    "howDouble": "Appuie encore en l'air : double saut !",
+    "howStamps": "Ramasse les tampons de passeport",
+    "howGate": "Fonce jusqu'à la porte d'embarquement",
+    "play": "Jouer",
+    "next": "Prochain départ",
+    "loading": "Rominou enfile ses baskets…",
+    "error": "Le jeu n'a pas pu se charger. Vérifie ta connexion et réessaie.",
+    "retry": "Réessayer"
+  },
+  "mode": {
+    "label": "Mode tranquille",
+    "hint": "Plus lent, plus d'espace et {hearts} cœurs.",
+    "suggested": "Activé pour toi : ton appareil demande moins d'animations.",
+    "nextRun": "S'applique au prochain départ."
+  },
+  "map": {
+    "title": "Carte du voyage",
+    "intro": "Choisis ta destination : chaque étape terminée ouvre la suivante.",
+    "start": "Départ",
+    "level": "Étape {n}",
+    "locked": "verrouillée",
+    "done": "carte postale gagnée",
+    "open": "débloquée",
+    "selected": "sélectionnée",
+    "best": "Record : {count, plural, =0 {aucun tampon} one {# tampon} other {# tampons}}",
+    "nodeLabel": "{step} · {name}{year}, {state}"
+  },
+  "hud": {
+    "label": "Infos de la partie",
+    "level": "Étape {n}/{total}",
+    "hearts": "{count, plural, =0 {Plus aucun cœur} one {# cœur} other {# cœurs}} sur {max}",
+    "stamps": "{count, plural, =0 {Aucun tampon} one {# tampon} other {# tampons}}",
+    "progress": "Distance parcourue jusqu'à la porte : {percent}",
+    "pause": "Pause",
+    "sound": "Son",
+    "fullscreen": "Plein écran",
+    "playArea": "Zone de jeu, {name}. Espace, flèche haut ou W pour sauter, Échap pour la pause.",
+    "ready": "Prêt ?",
+    "go": "Partez !"
+  },
+  "hints": {
+    "jumpKeys": "Un obstacle ! Appuie sur Espace, ↑ ou W pour sauter.",
+    "jumpTouch": "Un obstacle ! Touche l'écran pour sauter.",
+    "stamps": "Des tampons en l'air : saute pour les attraper !",
+    "gap": "De l'eau ! Saute au bon moment pour garder les pieds au sec.",
+    "double": "Tampons tout là-haut : appuie une deuxième fois en l'air pour un double saut !",
+    "gate": "La porte d'embarquement ! Plus que quelques pas…",
+    "tower": "Une pile trop haute ! Appuie une deuxième fois en l'air : double saut !"
+  },
+  "intro": {
+    "geneve": "Genève, c'est parti ! On commence en douceur au bord du lac.",
+    "seoul": "Séoul ! Saute par-dessus les jarres de kimchi et les paquets bojagi.",
+    "toronto": "Toronto ! Gare aux bornes à incendie… et aux bernaches qui volent bas.",
+    "brighton-dubrovnik": "De la jetée de Brighton aux remparts de Dubrovnik : attention aux mouettes !",
+    "paris": "Paris ! Le chariot de croissants ne s'arrêtera pas pour toi.",
+    "shanghai": "Shanghai, sur le Bund ! Les cerfs-volants volent bas ce soir.",
+    "tokyo": "Tokyo ! Les chats porte-bonheur portent moins bonheur si tu fonces dedans.",
+    "berlin": "Berlin ! Saute par-dessus les morceaux du Mur et les vélos garés.",
+    "busan": "Busan, dernière étape ! Phares, bateaux et drones : on y va ?"
+  },
+  "intro2d": "{name}, c'est parti ! Cônes, valises, bancs et pigeons : saute au bon moment.",
+  "pause": {
+    "title": "Pause",
+    "text": "Rominou reprend son souffle. Prends ton temps !",
+    "resume": "Reprendre",
+    "restart": "Recommencer",
+    "map": "Retour à la carte"
+  },
+  "complete": {
+    "kicker": "Étape terminée !",
+    "title": "Carte postale débloquée : {name}",
+    "stamps": "Tampons : {count} sur {total}",
+    "best": "Record : {count}",
+    "record": "Nouveau record !",
+    "next": "Étape suivante : {name}",
+    "replay": "Rejouer",
+    "map": "Retour à la carte",
+    "allDone": "Tu as bouclé tout le voyage, de {first} à {last} : toutes les cartes postales sont à toi !"
+  },
+  "failed": {
+    "title": "Oups, plus de cœurs !",
+    "text": "Rominou a besoin d'une petite pause… On retente ?",
+    "tryTranquille": "Envie de plus de marge ? Essaie le mode tranquille.",
+    "retry": "Réessayer",
+    "map": "Retour à la carte"
+  },
+  "announce": {
+    "start": "{name} : c'est parti !",
+    "hit": "Aïe ! {hearts, plural, =0 {Plus aucun cœur.} one {Plus que # cœur.} other {Plus que # cœurs.}}",
+    "splash": "Plouf ! {hearts, plural, =0 {Plus aucun cœur.} one {Plus que # cœur.} other {Plus que # cœurs.}}",
+    "paused": "Jeu en pause.",
+    "resumed": "C'est reparti !"
+  },
+  "postcard": {
+    "greetings": "Bons baisers de",
+    "stamp": "Tampon de {name}",
+    "start": "Départ",
+    "signature": "Rominou",
+    "illustration": "Illustration de Genève : le Léman, le jet d'eau et les Alpes"
+  },
+  "collection": {
+    "title": "Mes cartes postales",
+    "count": "{count} sur {total} débloquées",
+    "intro": "Termine une étape pour gagner sa carte postale.",
+    "locked": "Carte postale de {name} : à débloquer",
+    "lockedShort": "À débloquer",
+    "open": "Voir la carte postale de {name}",
+    "close": "Fermer"
+  },
+  "captions": {
+    "geneve": "Point de départ : le Léman, le jet d'eau et les Alpes. Prochain arrêt : le reste du monde !",
+    "seoul": "Une ruelle de maisons traditionnelles et la tour au bout de la rue : bons baisers de Séoul !",
+    "toronto": "Les grandes lettres TORONTO au milieu des gratte-ciel : la photo obligatoire !",
+    "brighton-dubrovnik": "Selfie au-dessus de la vieille ville de Dubrovnik et de la mer, au coucher du soleil.",
+    "paris": "Bras croisés devant la tour Eiffel, même sous un ciel gris.",
+    "shanghai": "Les gratte-ciel de Pudong illuminés, vus depuis les quais : Shanghai by night !",
+    "tokyo": "La tour de Tokyo illuminée en orange : la plus belle veilleuse de la ville.",
+    "berlin": "Valise à la main devant la porte de Brandebourg : le voyage continue !",
+    "busan": "Un quartier de maisons colorées accroché à la colline : bons baisers de Busan !"
+  }
+}

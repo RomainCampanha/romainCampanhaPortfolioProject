@@ -9,12 +9,17 @@ import styles from "./Chat.module.css";
 
 export type ChatToolPart = Extract<
   ChatUIPart,
-  { type: "tool-navigate" | "tool-playAnimation" | "tool-showTrip" }
+  { type: "tool-navigate" | "tool-playAnimation" | "tool-showTrip" | "tool-startTour" }
 >;
 
 /** Partie d'outil client du chat (navigation, animation, voyage). */
 export function isChatToolPart(part: ChatUIPart): part is ChatToolPart {
-  return part.type === "tool-navigate" || part.type === "tool-playAnimation" || part.type === "tool-showTrip";
+  return (
+    part.type === "tool-navigate" ||
+    part.type === "tool-playAnimation" ||
+    part.type === "tool-showTrip" ||
+    part.type === "tool-startTour"
+  );
 }
 
 /** Mêmes icônes que les onglets du site. */
@@ -27,7 +32,8 @@ const PAGE_ICONS: Record<PageId, IconName> = {
 type ChatToolActivityProps = { part: ChatToolPart; tripLabels: TripLabels };
 
 // Notification « façon jeu » de ce que Rominou fait dans le navigateur (outil client) :
-// « Rominou ouvre le voyage : Séoul », « Rominou te fait coucou », « Direction la page Hobby ».
+// « Rominou ouvre le voyage : Séoul », « Rominou te fait coucou », « Direction la page Hobby »,
+// « Rominou lance la visite du site ».
 export function ChatToolActivity({ part, tripLabels }: ChatToolActivityProps) {
   const t = useTranslations("chat.tools");
   const tNav = useTranslations("common.nav");
@@ -58,6 +64,10 @@ export function ChatToolActivity({ part, tripLabels }: ChatToolActivityProps) {
       break;
     case "tool-playAnimation":
       label = t(`playAnimation.${part.input.name}`);
+      icon = "sparkle";
+      break;
+    case "tool-startTour":
+      label = t("startTour");
       icon = "sparkle";
       break;
   }

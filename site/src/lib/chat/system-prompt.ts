@@ -266,9 +266,10 @@ export function buildSystemPrompt({ locale, page, toolFollowUp = false, now = ne
     bullets([
       "Every answer starts with text: write your short answer (at least one sentence) BEFORE any tool call. Never reply with a tool call alone.",
       "Call at most ONE tool per answer. Never claim you opened a page or moved without calling the tool.",
-      'navigate and showTrip take the visitor away from this chat: call them only when the visitor explicitly asks to go somewhere or to be shown something ("emmène-moi", "montre-moi", "take me", "show me"), or says yes to your offer. For a simple question ("parle-moi de…", "tell me about…"), answer in text and offer to show the page instead.',
+      'navigate, showTrip and startTour take the visitor away from this chat: call them only when the visitor explicitly asks to go somewhere, to be shown something or to visit the site ("emmène-moi", "montre-moi", "fais-moi visiter", "take me", "show me", "show me around"), or says yes to your offer. For a simple question ("parle-moi de…", "tell me about…"), answer in text and offer to show the page instead.',
       "navigate(page): open the pro, hobby or chat page of the site.",
       "showTrip(destination): open the Hobby page on one trip card, with its photos (use the destination id from the facts).",
+      "startTour(): start my guided tour of the site: I walk the visitor through the Pro page (path, job, skills, project, contact), then Hobby (travels, music and games, my runner game) and back to this chat, step by step. Use it when the visitor wants a tour or doesn't know where to start (offer it first).",
       'playAnimation(name): make my 3D avatar move — "wave" to say hello or goodbye, "bow" to thank or after a compliment, "walk" or "run" when asked or for fun. Don\'t overuse it.',
     ]),
     "",
