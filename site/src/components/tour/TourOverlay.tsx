@@ -23,28 +23,34 @@ import { cx } from "@/components/ui/cx";
 import { Icon } from "@/components/ui/Icon";
 import { RominouHead } from "@/components/ui/RominouHead";
 import type { BubbleTail } from "@/components/ui/SpeechBubble";
-import { scrollToElement, waitForElement } from "./dom";
+import { useTourPlacement, type CompanionSide } from "./placement";
 import { TourSpotlight } from "./TourSpotlight";
 import { useTour } from "./useTour";
 import type { TourLabels, TourStepText } from "./types";
 import styles from "./Tour.module.css";
 
 // Interface de « La visite de Rominou » (chargée à la demande par TourLoader) :
-// - la bulle de dialogue (non modale) : titre, texte tapé à la machine, Précédent / Suivant /
-//   Quitter, compteur « 3/10 », ← → et Échap ; dans le hero Pro à la 1re étape (portail dans
-//   TourSlot), sinon dans le cadre compagnon (Rominou en buste, en bas à droite ; feuille
-//   au-dessus du dock sur mobile) où le Canvas persistant le suit ; « Réduire » le replie en
-//   pastille (tête de Rominou) pour lire la page en dessous ;
-// - l'anneau autour de la section commentée, le défilement jusqu'à elle, les gestes de Rominou
-//   (coucou au début, petite marche entre deux étapes, révérence à la fin) ;
+// - la bulle de dialogue (non modale, compacte) : titre, texte court révélé par mots, fine barre de
+//   progression, Précédent (icône) / compteur / Suivant, Réduire / Quitter, ← → et Échap ; dans le
+//   hero Pro à la 1re étape (portail dans TourSlot), sinon dans le compagnon : bulle fixée en bas
+//   de l'écran avec le portrait de Rominou qui dépasse en haut à gauche (le Canvas persistant le
+//   suit) ; sur mobile, feuille basse au-dessus du dock ; « Réduire » la replie en pastille ;
+// - le placement (placement.ts) : la page défile et le compagnon change de côté pour que la bulle
+//   ne recouvre jamais le contenu clé de l'étape (TOUR_STEPS[i].keep) ;
+// - l'anneau autour de la section commentée, les gestes de Rominou (coucou au début, petite
+//   marche entre deux étapes, révérence à la fin) ;
 // - une région live polie qui annonce chaque étape quand le focus n'est pas allé à la bulle (la
 //   bulle qui prend le focus est lue avec sa description : pas de doublon) ; la pastille
 //   « Reprendre la visite (4/10) » quand le visiteur est parti ailleurs.
 
 /** Décor du cadre compagnon selon la page (comme les cadres des pages). */
 const SCENES: Record<PageId, AvatarScene> = { pro: "geneva", hobby: "beach", chat: "dusk" };
-/** Vitesse du texte « tapé » (ms par caractère). */
-const MS_PER_CHAR = 15;
+/**
+ * Révélation du texte : durée par caractère, plafonnée à 0,8 s (texte entier en moins de 0,9 s,
+ * même avec des images en retard sur un appareil chargé).
+ */
+const REVEAL_MS_PER_CHAR = 8;
+const REVEAL_MAX_MS = 800;
 /** Petite marche entre deux étapes (ms), plus longue quand Rominou change de page. */
 const WALK_MS = 1200;
 const WALK_PAGE_MS = 2400;
@@ -78,7 +84,15 @@ export default function TourOverlay({ steps, labels }: TourOverlayProps) {
   // Rominou est arrivé sur la page de l'étape (sinon : en route, ou visite en pause). Étape sur la
   // même page : arrivé d'emblée (pas de « En route… » d'une image, lu à tort par les lecteurs d'écran).
   const here = active && page === config.page && (pending === null || pending === page);
-  const scrollSelector = "scroll" in config ? config.scroll : config.target;
+  const preferredSide: CompanionSide = "side" in config ? config.side : "end";
+
+  // Côté du compagnon et défilement : le contenu clé de l'étape reste visible, hors de la bulle
+  const side = useTourPlacement({
+    enabled: here && !suspended && (config.dock === "hero" ? slot !== null : !minimized),
+    step,
+    keep: config.keep,
+    preferred: preferredSide,
+  });
 
   // La bulle du hero peut céder la place à celle de la visite (TourSlot)
   useEffect(() => {
@@ -86,24 +100,12 @@ export default function TourOverlay({ steps, labels }: TourOverlayProps) {
     return () => tourStore.setOverlay(false);
   }, []);
 
-  // Arrivée sur une étape : page cochée, défilement jusqu'à la section, coucou au (re)départ.
-  // Sens et mouvement réduit lus à l'arrivée (sans la rejouer s'ils changent ensuite).
+  // Arrivée sur une étape : page cochée, coucou au (re)départ (sens lu à l'arrivée)
   useEffect(() => {
     if (!here) return;
     if (page) markVisited(page);
     if (tourStore.getState().direction === 0) avatarStore.play("wave");
-    if (!scrollSelector) return;
-    const controller = new AbortController();
-    void waitForElement(scrollSelector, controller.signal).then((element) => {
-      if (!element || controller.signal.aborted) return;
-      // Après le défilement automatique de la navigation (haut de page)
-      requestAnimationFrame(() => {
-        if (controller.signal.aborted) return;
-        scrollToElement(element, window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-      });
-    });
-    return () => controller.abort();
-  }, [here, step, page, scrollSelector]);
+  }, [here, step, page]);
 
   // Région live : chaque étape est annoncée une fois (vidée puis remplie, pour être relue), sauf
   // si la bulle a pris le focus pour cette étape (le lecteur d'écran la lit déjà).
@@ -195,7 +197,6 @@ export default function TourOverlay({ steps, labels }: TourOverlayProps) {
         ? createPortal(<TourDialog {...dialogProps} variant="hero" tail={slotTail(slot)} />, slot)
         : null;
     } else {
-      const side = "side" in config ? config.side : "end";
       dialog = minimized ? (
         <MiniCompanion side={side} text={text} labels={labels} page={page} onExpand={expand} onQuit={quit} />
       ) : (
@@ -204,7 +205,7 @@ export default function TourOverlay({ steps, labels }: TourOverlayProps) {
             {...dialogProps}
             variant="companion"
             travelling={here ? null : labels.travelling[config.page]}
-            tail={{ tail: side === "start" ? "left" : "right", tailOffset: "calc(100% - 5.25rem)" }}
+            tail={{ tail: "none" }}
             onMinimize={minimize}
           />
         </Companion>
@@ -244,42 +245,56 @@ function slotTail(slot: HTMLElement): Tail {
 }
 
 /* ------------------------------------------------------------------ */
-/* Cadre compagnon                                                    */
+/* Compagnon                                                          */
 /* ------------------------------------------------------------------ */
 
 type CompanionProps = {
-  side: "start" | "end";
+  side: CompanionSide;
   scene: AvatarScene;
   step: number;
   children: ReactNode;
 };
 
 /**
- * Rominou accompagne le visiteur : petite fenêtre (décor de la page) + sa bulle, fixées en bas
- * de l'écran (à droite, ou à gauche sur le chat) ; sur mobile, feuille compacte au-dessus du dock.
+ * Rominou accompagne le visiteur : sa bulle fixée en bas de l'écran (à droite ou à gauche, selon
+ * le contenu à garder visible), son portrait (décor de la page) qui dépasse en haut à gauche ;
+ * sur mobile, feuille basse au-dessus du dock.
  */
 function Companion({ side, scene, step, children }: CompanionProps) {
-  const windowRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const portraitRef = useRef<HTMLDivElement>(null);
   const first = useRef(true);
+  const lastSide = useRef(side);
 
-  // Petit saut de la fenêtre à chaque nouvelle étape (pas au premier affichage)
+  // Petit saut du portrait à chaque nouvelle étape (pas au premier affichage)
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    windowRef.current?.animate(
-      [{ translate: "0 0" }, { translate: "0 -10px", offset: 0.4 }, { translate: "0 0" }],
-      { duration: 480, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
+    portraitRef.current?.animate(
+      [{ translate: "0 0" }, { translate: "0 -8px", offset: 0.4 }, { translate: "0 0" }],
+      { duration: 420, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
     );
   }, [step]);
 
+  // Changement de côté : le compagnon réapparaît en douceur plutôt que de sauter d'un bord à l'autre
+  useEffect(() => {
+    if (lastSide.current === side) return;
+    lastSide.current = side;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    ref.current?.animate([{ opacity: 0, translate: "0 0.75rem" }, { opacity: 1, translate: "0 0" }], {
+      duration: 320,
+      easing: "ease-out",
+    });
+  }, [side]);
+
   return (
-    <div className={styles.companion} data-side={side} data-tour-companion="">
-      <div className={styles.companionDialog}>{children}</div>
-      <div ref={windowRef} className={styles.companionWindow}>
-        <CompanionAnchor scene={scene} className={styles.companionFrame} />
+    <div ref={ref} className={styles.companion} data-side={side} data-tour-companion="">
+      {children}
+      <div ref={portraitRef} className={styles.portrait} data-tour-portrait="">
+        <CompanionAnchor scene={scene} framing="portrait" className={styles.portraitFrame} />
       </div>
     </div>
   );
@@ -294,7 +309,7 @@ type TourDialogProps = {
   text: TourStepText;
   labels: TourLabels;
   direction: -1 | 0 | 1;
-  /** Texte tapé à la machine (sinon affiché d'un coup : mouvement réduit). */
+  /** Texte révélé par mots (sinon affiché d'un coup : mouvement réduit). */
   animate: boolean;
   /** Étape (et trajet) ayant déjà reçu le focus, gardée par TourOverlay entre deux montages. */
   focusedKeyRef: RefObject<string | null>;
@@ -369,6 +384,7 @@ function TourDialog({
       aria-modal="false"
       aria-labelledby={titleId}
       aria-describedby={textId}
+      aria-keyshortcuts="ArrowRight ArrowLeft Escape"
       tabIndex={-1}
       onKeyDown={onKeyDown}
       data-tour-dialog={variant}
@@ -382,17 +398,14 @@ function TourDialog({
       }
       className={cx("bubble", styles.dialog)}
     >
-      <p className={cx("bubble-name", styles.name)}>{labels.guide}</p>
+      {/* Cartouche dans le hero (Rominou est à côté) ; dans le compagnon, son portrait suffit */}
+      {variant === "hero" ? <p className="bubble-name">{labels.guide}</p> : null}
 
       <div className={styles.head}>
-        <p className={styles.kicker}>
-          <Icon name="sparkle" />
-          <span className={styles.kickerLabel}>{labels.kicker}</span>
-          <span aria-hidden="true" className={styles.count}>
-            {text.counter}
-          </span>
-          <span className="sr-only">, {text.counterLabel}</span>
-        </p>
+        {/* Remonté à chaque étape (entrée en douceur) ; les boutons, eux, gardent le focus */}
+        <h2 key={`${step}-${moving}`} id={titleId} className={styles.title} data-direction={direction}>
+          {text.title}
+        </h2>
         <span className={styles.headButtons}>
           {onMinimize ? (
             <button
@@ -411,24 +424,19 @@ function TourDialog({
           </button>
         </span>
       </div>
-      <span aria-hidden="true" className={styles.dots}>
-        {Array.from({ length: TOUR_LENGTH }, (_, index) => (
-          <i key={index} data-state={index < step ? "done" : index === step ? "current" : undefined} />
-        ))}
+      {/* Progression : fine jauge (le compteur « 3/10 » est à côté des boutons) */}
+      <span aria-hidden="true" className={styles.progress}>
+        <i style={{ inlineSize: `${((step + 1) / TOUR_LENGTH) * 100}%` }} />
       </span>
 
-      {/* Remonté à chaque étape (entrée en douceur) ; les boutons, eux, gardent le focus */}
       <div key={`${step}-${moving}`} className={styles.body} data-direction={direction}>
-        <h2 id={titleId} className={styles.title}>
-          {text.title}
-        </h2>
         {moving ? (
           <p id={textId} className={cx(styles.text, styles.travelling)}>
             {travelling}
           </p>
         ) : (
           <>
-            <TypedText text={text.text} animate={animate} />
+            <RevealedText text={text.text} animate={animate} />
             <p id={textId} className="sr-only">
               {text.text}
             </p>
@@ -441,52 +449,74 @@ function TourDialog({
         )}
       </div>
 
-      {moving ? null : (
-        <div className={styles.actions}>
-          {step > 0 ? (
-            <Button size="sm" variant="secondary" icon="arrow-right" onClick={onPrevious} className={styles.previous}>
-              {labels.previous}
-            </Button>
-          ) : null}
-          <Button size="sm" iconEnd={last ? "check" : "arrow-right"} onClick={onNext} className={styles.next}>
+      <div className={styles.actions}>
+        {step > 0 && !moving ? (
+          <Button
+            size="icon"
+            variant="secondary"
+            icon="arrow-right"
+            onClick={onPrevious}
+            aria-label={labels.previous}
+            title={labels.previous}
+            className={styles.previous}
+          />
+        ) : null}
+        <p className={styles.count}>
+          <span aria-hidden="true">{text.counter}</span>
+          <span className="sr-only">
+            {labels.kicker}, {text.counterLabel}
+          </span>
+        </p>
+        {moving ? null : (
+          <Button
+            size="sm"
+            iconEnd={last ? "check" : "arrow-right"}
+            onClick={onNext}
+            title={labels.keys}
+            className={styles.next}
+          >
             {text.next}
           </Button>
-        </div>
-      )}
-      <p className={styles.keys}>{labels.keys}</p>
+        )}
+      </div>
+      {/* Raccourcis clavier : affichés à la 1re étape ; ensuite, en infobulle de « Suivant » */}
+      {step === 0 && !moving ? <p className={styles.keys}>{labels.keys}</p> : null}
     </div>
   );
 }
 
 /**
- * Texte de l'étape, tapé à la machine pendant que Rominou « parle » (hochements de tête).
- * Un clic affiche tout. La place finale est réservée (pas de saut de mise en page) ; le texte
- * complet est lu par les lecteurs d'écran (copie sr-only + région live).
+ * Texte de l'étape, révélé par mots (moins d'une seconde) pendant que Rominou « parle »
+ * (hochements de tête). Un clic affiche tout. La place finale est réservée (pas de saut de mise
+ * en page) ; le texte complet est lu par les lecteurs d'écran (copie sr-only + région live).
  */
-function TypedText({ text, animate }: { text: string; animate: boolean }) {
+function RevealedText({ text: raw, animate }: { text: string; animate: boolean }) {
+  const text = keepLastWordsTogether(raw);
   const [count, setCount] = useState(0);
   const [skipped, setSkipped] = useState(false);
-  const typing = animate && !skipped;
+  const revealing = animate && !skipped;
 
   useEffect(() => {
-    if (!typing) return;
+    if (!revealing) return;
     avatarStore.setSpeaking(true);
+    const duration = Math.min(REVEAL_MAX_MS, text.length * REVEAL_MS_PER_CHAR);
     const started = performance.now();
-    const timer = window.setInterval(() => {
-      const next = Math.min(text.length, Math.ceil((performance.now() - started) / MS_PER_CHAR));
-      setCount(next);
-      if (next >= text.length) {
-        window.clearInterval(timer);
-        avatarStore.setSpeaking(false);
-      }
-    }, 32);
+    let frame = requestAnimationFrame(function tick(now) {
+      const progress = Math.min(1, (now - started) / duration);
+      // Jusqu'à la fin du mot en cours : les mots apparaissent entiers, sans lettre coupée
+      const target = Math.ceil(text.length * progress);
+      const space = text.indexOf(" ", target);
+      setCount(progress >= 1 || space === -1 ? text.length : space);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+      else avatarStore.setSpeaking(false);
+    });
     return () => {
-      window.clearInterval(timer);
+      cancelAnimationFrame(frame);
       avatarStore.setSpeaking(false);
     };
-  }, [text, typing]);
+  }, [text, revealing]);
 
-  const shown = typing ? count : text.length;
+  const shown = revealing ? count : text.length;
   return (
     <p
       aria-hidden="true"
@@ -500,12 +530,21 @@ function TypedText({ text, animate }: { text: string; animate: boolean }) {
   );
 }
 
+/**
+ * Pas de mot seul sur la dernière ligne (« IA ! », « Mid ! ») : les deux derniers mots sont liés
+ * par une espace insécable, à toutes les largeurs de bulle (text-wrap: pretty ne suffit pas).
+ */
+function keepLastWordsTogether(text: string): string {
+  const space = text.lastIndexOf(" ");
+  return space > 0 ? `${text.slice(0, space)} ${text.slice(space + 1)}` : text;
+}
+
 /* ------------------------------------------------------------------ */
 /* Compagnon replié (« Réduire »)                                     */
 /* ------------------------------------------------------------------ */
 
 type MiniCompanionProps = {
-  side: "start" | "end";
+  side: CompanionSide;
   text: TourStepText;
   labels: TourLabels;
   page: PageId | null;

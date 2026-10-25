@@ -70,10 +70,15 @@ export type TourStepConfig = {
   page: PageId;
   /** Section mise en avant par l'anneau (sélecteur CSS) ; null = aucun anneau. */
   target: string | null;
-  /** Élément vers lequel défiler (défaut : target). */
-  scroll?: string;
+  /**
+   * Contenu clé de l'étape (sélecteurs CSS), que la bulle ne recouvre jamais : d'abord l'élément
+   * que montre le texte, puis le contexte (en-tête de la section…), par importance. La page
+   * défile et le compagnon change de côté pour tout garder à l'écran, hors de la bulle ; si tout
+   * ne tient pas (petit écran), le contexte est lâché en partant de la fin (placement.ts).
+   */
+  keep: readonly [string, ...string[]];
   dock: TourDock;
-  /** Côté du compagnon dès 48rem (défaut : à droite). À gauche sur le chat (fenêtre à droite). */
+  /** Côté préféré du compagnon dès 48rem (défaut : à droite) ; l'autre côté si le contenu clé l'exige. */
   side?: "start" | "end";
   /**
    * Bouton d'action dans la bulle (libellé : tour.steps.<id>.action) : clique cet élément de la
@@ -84,20 +89,89 @@ export type TourStepConfig = {
   tag?: "top" | "bottom";
 };
 
+/** En-tête d'une section (sur-titre, titre, intro), par l'id de son titre. */
+const heading = (titleId: string) => `header:has(> #${titleId})`;
+
 /** Les étapes, dans l'ordre (ids des sections : stables, cf. les pages). */
 export const TOUR_STEPS = [
-  { id: "hello", page: "pro", target: null, scroll: "[data-tour-anchor='hero']", dock: "hero" },
-  { id: "parcours", page: "pro", target: "#parcours", dock: "companion" },
-  { id: "experience", page: "pro", target: "#experience", dock: "companion" },
-  { id: "competences", page: "pro", target: "#competences", dock: "companion" },
-  { id: "projets", page: "pro", target: "#projets", dock: "companion" },
-  { id: "contact", page: "pro", target: "#contact", dock: "companion" },
-  { id: "voyages", page: "hobby", target: "#voyages", dock: "companion" },
-  // Titre + cartes musique / LoL (sans le jeu, qui a sa propre étape)
-  { id: "musique", page: "hobby", target: "[data-tour-anchor='musique-jeux']", dock: "companion" },
-  { id: "course", page: "hobby", target: "#jeu", dock: "companion", action: "#jeu [data-play-button]" },
-  // Étiquette en bas : au-dessus du formulaire, les suggestions du chat
-  { id: "questions", page: "chat", target: "form:has(#chat-input)", dock: "companion", side: "start", tag: "bottom" },
+  // La bulle est dans le hero (elle ne recouvre rien) : elle et le titre de la page à l'écran
+  { id: "hello", page: "pro", target: null, keep: ["[data-tour-slot='hero']", "#pro-title"], dock: "hero" },
+  // « Le dernier cadre est encore en cours » : le cadre du diplôme en cours (le dernier du mur)
+  {
+    id: "parcours",
+    page: "pro",
+    target: "#parcours",
+    keep: ["#parcours ol > li:last-child", heading("parcours-title")],
+    dock: "companion",
+  },
+  // « Le post-it scotché au mur »
+  { id: "experience", page: "pro", target: "#experience", keep: ["#experience"], dock: "companion" },
+  // Résumé « D'où viennent mes compétences » (l'étiquette gagnante)
+  {
+    id: "competences",
+    page: "pro",
+    target: "#competences",
+    keep: ["#competences figure", heading("competences-title")],
+    dock: "companion",
+  },
+  // « Clique Visiter » : le bouton (lien externe) de la carte du projet, son nom, l'en-tête
+  {
+    id: "projets",
+    page: "pro",
+    target: "#projets",
+    keep: ["#projets article a[href^='http']", "#projets article h3", heading("projets-title")],
+    dock: "companion",
+  },
+  // « Un clic sur M'écrire » : les boutons de contact
+  {
+    id: "contact",
+    page: "pro",
+    target: "#contact",
+    keep: ["#contact ul", heading("contact-title")],
+    dock: "companion",
+  },
+  // « Ouvre l'album de <dernier voyage> » : le bouton photos de la 1re carte et sa ville
+  {
+    id: "voyages",
+    page: "hobby",
+    target: "#voyages",
+    keep: [
+      "#voyages ul > li:first-child button[aria-expanded]",
+      "#voyages ul > li:first-child h3",
+      heading("voyages-title"),
+    ],
+    dock: "companion",
+  },
+  // Anneau : titre + cartes musique / LoL (sans le jeu, qui a sa propre étape). Contenu clé : la
+  // carte musique, dont le texte parle d'abord (LoL est à côté dès 48rem, juste dessous sur mobile)
+  {
+    id: "musique",
+    page: "hobby",
+    target: "[data-tour-anchor='musique-jeux']",
+    keep: ["#musique", heading("musique-jeux-title")],
+    dock: "companion",
+  },
+  // Le bouton « Jouer » du jeu (que « Jouer une partie » clique) et le titre du jeu
+  {
+    id: "course",
+    page: "hobby",
+    target: "#jeu",
+    keep: ["#jeu [data-play-button]", "#jeu-title"],
+    dock: "companion",
+    action: "#jeu [data-play-button]",
+  },
+  // Anneau autour de toute la fenêtre du chat : autour du seul formulaire, son trait barrait la
+  // dernière suggestion juste au-dessus (contenu clé aussi). Étiquette en bas : sur mobile, le
+  // haut de la fenêtre est hors de l'écran.
+  {
+    id: "questions",
+    page: "chat",
+    target: "div:has(> form #chat-input)",
+    keep: ["form:has(#chat-input)", "div:has(> #chat-suggestions-label)"],
+    dock: "companion",
+    side: "start",
+    tag: "bottom",
+  },
 ] as const satisfies readonly TourStepConfig[];
 
 export type TourStepId = (typeof TOUR_STEPS)[number]["id"];

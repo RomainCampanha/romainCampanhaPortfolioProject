@@ -9,8 +9,11 @@ import { cx } from "@/components/ui/cx";
 import { GenevaDecor } from "@/components/three/scenes/Geneva";
 import styles from "./game.module.css";
 
-// Carte postale d'une étape : recto (photo du voyage, ou Genève illustrée avec le décor SVG
-// du cadre de Rominou de la page Pro) + verso (timbre avec l'année, cachet, légende, signature).
+// Carte postale d'une étape : recto (la photo du voyage tirée en polaroïd, scotchée et un peu
+// penchée, « Bons baisers de… » sur sa marge ; Genève illustrée avec le décor SVG du cadre de
+// Rominou de la page Pro) + verso (timbre avec l'année, cachet, légende, signature).
+// Le tirage a le format de la photo (portrait pour les photos d'iPhone ; cf. catalog.ts) : la
+// photo reste presque entière, Romain et le monument de la ville ne sont pas coupés.
 
 export function Postcard({ level, className, tilt = 0 }: { level: LevelCard; className?: string; tilt?: number }) {
   const t = useTranslations("game.postcard");
@@ -18,34 +21,47 @@ export function Postcard({ level, className, tilt = 0 }: { level: LevelCard; cla
     <figure
       className={cx(styles.postcard, className)}
       data-tone={level.tone}
-      style={{ "--card-tilt": `${tilt}deg` } as CSSProperties}
+      data-print={level.photo?.shape ?? "landscape"}
+      style={
+        {
+          "--card-tilt": `${tilt}deg`,
+          // Tirages penchés d'un côté puis de l'autre, d'une étape à l'autre.
+          "--print-tilt": level.index % 2 === 0 ? "-2.5deg" : "2deg",
+        } as CSSProperties
+      }
     >
       <div className={styles.cardFront}>
-        <PostcardPicture level={level} sizes="(min-width: 48rem) 18rem, 45vw" />
-        <p className={styles.greetings}>
-          <span className={styles.greetingsSmall}>{t("greetings")}</span>
-          <span className={styles.greetingsCity}>{level.name}</span>
-        </p>
+        <div className={styles.print}>
+          <span aria-hidden="true" className={styles.tape} />
+          <div className={styles.printPhoto}>
+            <PostcardPicture level={level} sizes="(min-width: 48rem) 16rem, 40vw" />
+          </div>
+          <p className={styles.greetings}>
+            <span className={styles.greetingsSmall}>{t("greetings")}</span>
+            <span className={styles.greetingsCity}>{level.name}</span>
+          </p>
+        </div>
       </div>
       <div className={styles.cardBack}>
-        <PostStamp level={level} />
-        <figcaption className={styles.caption}>{level.caption}</figcaption>
-        <div className={styles.cardFoot}>
-          <span aria-hidden="true" className={styles.postmark}>
+        <div className={styles.message}>
+          <PostStamp level={level} />
+          <figcaption className={styles.caption}>{level.caption}</figcaption>
+          <p className={styles.signature}>— {t("signature")}</p>
+        </div>
+        {/* Bas de la carte : cachet de la poste et lignes d'adresse (décor) */}
+        <div aria-hidden="true" className={styles.cardFoot}>
+          <span className={styles.postmark}>
             <span>{level.name}</span>
             <span>{level.year ?? t("start")}</span>
           </span>
-          <div className={styles.sign}>
-            <p className={styles.signature}>— {t("signature")}</p>
-            <span aria-hidden="true" className={styles.addressLines} />
-          </div>
+          <span className={styles.addressLines} />
         </div>
       </div>
     </figure>
   );
 }
 
-/** Recto : la photo du voyage (ou Genève illustrée). */
+/** Photo du voyage (ou Genève illustrée), recadrée sur son point d'intérêt. */
 export function PostcardPicture({ level, sizes, className }: { level: LevelCard; sizes: string; className?: string }) {
   const t = useTranslations("game.postcard");
   if (!level.photo) {
@@ -64,6 +80,7 @@ export function PostcardPicture({ level, sizes, className }: { level: LevelCard;
       placeholder="blur"
       blurDataURL={level.photo.blurDataURL}
       className={cx(styles.cardPhoto, className)}
+      style={{ objectPosition: level.photo.focus }}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
-import { pick, profile, type Education } from "@/content/profile";
+import { pick, profile, type SkillSource, type Travel } from "@/content/profile";
 import { PAGE_IDS, type PageId } from "@/lib/pages";
 import { inSentence } from "@/lib/text";
 import { TOUR_LENGTH, TOUR_STEPS, type TourStepId } from "@/lib/tour";
@@ -28,85 +28,69 @@ const ACTION_KEYS = {
   course: "steps.course.action",
 } as const satisfies Partial<Record<TourStepId, string>>;
 
-/** Première lettre en minuscule (milieu de phrase), sauf sigle (« CFPT », « L2 »). */
-function lowerFirst(text: string): string {
-  const second = text[1] ?? "";
-  const acronym = /\d/.test(second) || (second !== second.toLowerCase() && second === second.toUpperCase());
-  return acronym ? text : `${text[0]?.toLowerCase() ?? ""}${text.slice(1)}`;
-}
-
-/**
- * Complément de titre d'un diplôme (ex. « Professional Bachelor ») : ce qui suit le titre
- * protégé (nativeTitle) dans le titre complet. "none" s'il n'y en a pas.
- */
-function titleSupplement(education: Education | undefined): string {
-  const native = education?.nativeTitle;
-  const full = education?.title.fr;
-  if (!native || !full?.startsWith(native)) return "none";
-  return full.slice(native.length).replace(/^[\s,]+/, "") || "none";
-}
+/** Provenance d'une compétence -> clin d'œil de l'étape « inventaire » (école, job, autodidacte). */
+const SOURCE_KIND: Record<SkillSource, "school" | "job" | "self"> = {
+  ESIG: "school",
+  CFPT: "school",
+  HEG: "school",
+  Infomaniak: "job",
+  Projets: "self",
+};
 
 /** Faits injectés dans chaque étape (paramètres ICU de tour.steps.<id>.text). */
 async function stepValues(locale: AppLocale): Promise<Record<TourStepId, Values>> {
   const format = await getFormatter({ locale });
   const tSources = await getTranslations({ locale, namespace: "pro.skills.sources" });
+  const tContact = await getTranslations({ locale, namespace: "pro.contact" });
   const { work } = profile;
 
+  // Le mur des diplômes, du plus ancien au plus récent : « le dernier » = le cadre de droite
   const diplomas = [...profile.education].sort((a, b) => a.startYear - b.startYear);
-  const current = diplomas.find((e) => e.status === "in-progress") ?? diplomas.at(-1);
-  const [first, second] = diplomas.filter((e) => e !== current);
-  const diploma = (e: Education | undefined) => (e ? inSentence(pick(e.shortTitle, locale), locale) : "");
-
-  const { total, counts } = skillSourceStats();
-  const top = counts[0];
+  const last = diplomas.at(-1);
+  const top = skillSourceStats().counts[0];
   const project = profile.projects[0];
-  const withPhotos = profile.travels.filter((trip) => trip.photos === "available");
+  // profile.travels : du plus récent au plus ancien (le jeu va du plus ancien au plus récent)
   const latest = profile.travels[0];
+  const lol = profile.gaming.leagueOfLegends;
 
   return {
     hello: { guide: profile.guideName, name: profile.firstName },
     parcours: {
-      first: diploma(first),
-      firstSchool: first?.school.shortName ?? "",
-      second: diploma(second),
-      secondSchool: second?.school.shortName ?? "",
-      supplement: titleSupplement(second),
-      current: diploma(current),
-      currentSchool: current?.school.shortName ?? "",
+      count: diplomas.length,
+      currentSchool: last?.school.shortName ?? "",
+      status: last?.status === "in-progress" ? "ongoing" : "done",
     },
     experience: {
       company: work.company,
       rate: format.number(work.ratePercent / 100, { style: "percent" }),
-      role: inSentence(pick(work.role, locale), locale),
-      description: pick(work.description, locale),
     },
     competences: {
-      count: total,
       top: top ? tSources(top.source) : "",
       topCount: top?.count ?? 0,
+      topKind: top ? SOURCE_KIND[top.source] : "self",
     },
     projets: {
       project: project?.name ?? "",
       kind: project?.kind ?? "personal",
-      context: project ? lowerFirst(pick(project.context, locale)) : "",
-      description: project ? pick(project.description, locale) : "",
       // Clin d'œil propre à un projet (ICU select : id sans tiret), rien pour les autres
       joke: project ? project.id.replace(/-/g, "_") : "none",
     },
-    contact: {},
-    voyages: {
-      count: withPhotos.length,
-      latest: latest ? latest.places.map((place) => pick(place.city, locale)).join(" & ") : "",
-      year: latest?.year ?? "none",
-    },
+    // Libellé du bouton « M'écrire » de la section (même texte que la page)
+    contact: { button: tContact("email") },
+    voyages: { latest: latest ? tripLabel(latest, locale) : "" },
     musique: {
       genre: inSentence(pick(profile.music.genre, locale), locale),
-      artists: format.list(profile.music.favoriteArtists, { type: "conjunction" }),
-      games: format.list(profile.gaming.games, { type: "conjunction" }),
+      role: lol ? pick(lol.role, locale) : "none",
     },
-    course: { guide: profile.guideName, start: pick(profile.location, locale) },
-    questions: { name: profile.firstName },
+    // Dernier niveau du jeu = voyage le plus récent (catalog.ts)
+    course: { last: latest ? tripLabel(latest, locale) : "" },
+    questions: {},
   };
+}
+
+/** « Busan », « Brighton & Dubrovnik ». */
+function tripLabel(trip: Travel, locale: AppLocale): string {
+  return trip.places.map((place) => pick(place.city, locale)).join(" & ");
 }
 
 export async function TourRoot({ locale }: { locale: AppLocale }) {

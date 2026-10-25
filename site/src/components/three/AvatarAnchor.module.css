@@ -228,11 +228,30 @@
   inset-block-start: auto;
   inset-block-end: -4cqh;
 }
+/* Portrait (petit cadre qui dépasse de la bulle de la visite) : tête et épaules. La boîte (poster
+   + Canvas) est agrandie et remontée : le haut des cheveux juste sous le bord, les épaules en bas. */
+.frame[data-avatar-anchor="companion"][data-framing="portrait"] .figure {
+  --fig-h: 205cqh;
+  inset-block-start: -9cqh;
+  inset-block-end: auto;
+}
+/* Tenue vacances (Hobby) : modèle à grosse tête, cadré un peu plus large */
+.frame[data-avatar-anchor="companion"][data-framing="portrait"] .figure[data-outfit="vacances"] {
+  --fig-h: 184cqh;
+  inset-block-start: -22cqh;
+}
 @container (max-width: 6rem) {
   .frame[data-avatar-anchor="companion"] .window {
     --frame-border: 4px;
     --frame-radius: 18px;
     --frame-depth: 4px;
+  }
+}
+@container (max-width: 4rem) {
+  .frame[data-avatar-anchor="companion"] .window {
+    --frame-border: 3px;
+    --frame-radius: 15px;
+    --frame-depth: 3px;
   }
 }
 

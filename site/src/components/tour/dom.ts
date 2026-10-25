@@ -41,29 +41,3 @@ export function paddingInsets(element: Element): { top: number; bottom: number }
   };
   return { top: inset(style.paddingTop), bottom: inset(style.paddingBottom) };
 }
-
-/**
- * Marge au-dessus de la cible après défilement (le header n'est pas collant) : assez pour
- * l'anneau (12 px autour de la section) et son étiquette, qui dépasse au-dessus.
- */
-function scrollOffset(): number {
-  return window.matchMedia("(min-width: 48rem)").matches ? 44 : 36;
-}
-
-/**
- * Amène un élément en haut de l'écran (avec une marge), en douceur sauf mouvement réduit.
- * Un élément déjà dans le premier tiers de la page : retour tout en haut. Déjà entièrement à
- * l'écran sans que le compagnon le recouvre (ex. saisie du chat, compagnon à gauche) : on ne
- * bouge pas (le défilement cacherait ce qui est au-dessus).
- */
-export function scrollToElement(element: Element, reducedMotion: boolean) {
-  const rect = element.getBoundingClientRect();
-  const cover = document.querySelector("[data-tour-companion]")?.getBoundingClientRect();
-  const onScreen = rect.top >= scrollOffset() && rect.bottom <= window.innerHeight;
-  const covered =
-    !!cover && rect.left < cover.right && rect.right > cover.left && rect.top < cover.bottom && rect.bottom > cover.top;
-  if (onScreen && !covered) return;
-  const top = rect.top + window.scrollY + paddingInsets(element).top;
-  const y = top < window.innerHeight * 0.3 ? 0 : Math.max(0, top - scrollOffset());
-  window.scrollTo({ top: y, behavior: reducedMotion ? "instant" : "smooth" });
-}

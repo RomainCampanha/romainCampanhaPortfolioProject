@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { TOUR_STEPS } from "@/lib/tour";
 
 // « La visite de Rominou » : visite guidée en 10 étapes sur les trois pages (desktop + mobile).
 // Les textes français portent des espaces fines insécables (« ! », « ? ») : on cible par regex.
@@ -25,12 +26,78 @@ async function nextStep(page: Page, title: RegExp) {
   await expect(tourDialog(page, title)).toBeVisible();
 }
 
+/** Attend la fin du défilement (doux) de la visite et de l'entrée du compagnon. */
+async function settle(page: Page) {
+  let last = -1;
+  await expect
+    .poll(async () => {
+      const y = await page.evaluate(() => window.scrollY);
+      const stable = y === last;
+      last = y;
+      return stable;
+    }, { intervals: [250], timeout: 10_000 })
+    .toBe(true);
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Ce que la bulle (et le portrait de Rominou qui en dépasse, et le dock mobile) recouvre du
+ * contenu clé de l'étape (TOUR_STEPS[i].keep) : liste vide attendue. Titres : rectangle de leur
+ * texte (leur boîte fait toute la colonne), comme le placement de la visite (placement.ts).
+ */
+function coveredKeyContent(page: Page, keep: readonly string[]) {
+  return page.evaluate((selectors) => {
+    type Box = { left: number; top: number; right: number; bottom: number };
+    const visible = (element: Element): Box => {
+      if (/^H[1-6]$/.test(element.tagName)) {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getBoundingClientRect();
+      }
+      return element.getBoundingClientRect();
+    };
+    const dialog = document.querySelector("[role=dialog]");
+    const covers: [string, Box][] = [];
+    if (dialog) covers.push(["bulle", dialog.getBoundingClientRect()]);
+    const portrait = document.querySelector("[data-tour-portrait]");
+    if (portrait) covers.push(["portrait", portrait.getBoundingClientRect()]);
+    const dock = document.querySelector(".page-nav");
+    if (dock && getComputedStyle(dock).position === "fixed") covers.push(["dock", dock.getBoundingClientRect()]);
+    // Trait pointillé de l'anneau (3 px) : il entoure la section, il ne barre pas son contenu clé
+    const ring = document.querySelector("[data-tour-spotlight]")?.getBoundingClientRect();
+    if (ring) {
+      covers.push(
+        ["anneau (haut)", { left: ring.left, right: ring.right, top: ring.top, bottom: ring.top + 3 }],
+        ["anneau (bas)", { left: ring.left, right: ring.right, top: ring.bottom - 3, bottom: ring.bottom }],
+      );
+    }
+    const hits: string[] = [];
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (!element) {
+        hits.push(`${selector} : absent`);
+        continue;
+      }
+      // 1re étape : la bulle est dans le hero (elle EST une partie du contenu clé)
+      if (dialog && element.contains(dialog)) continue;
+      const box = visible(element);
+      for (const [name, cover] of covers) {
+        if (box.left < cover.right && box.right > cover.left && box.top < cover.bottom && box.bottom > cover.top) {
+          hits.push(`${selector} sous ${name}`);
+        }
+      }
+    }
+    return hits;
+  }, keep);
+}
+
 test("lancée depuis le hero : bulle sur l'île, puis compagnon, Suivant / Précédent", async ({ page }) => {
   test.setTimeout(60_000);
   await page.unroute("**/*.glb");
   await startFromHero(page);
   const hello = tourDialog(page, /Bienvenue chez moi/);
-  await expect(hello).toBeVisible();
+  // Interface de la visite chargée à la demande, pendant que la 3D se compile (WebGL logiciel)
+  await expect(hello).toBeVisible({ timeout: 15_000 });
   await expect(hello).toBeFocused();
   await expect(hello).toContainText("1/10");
   await expect(hello).toContainText("Rominou, le mini-moi");
@@ -42,10 +109,11 @@ test("lancée depuis le hero : bulle sur l'île, puis compagnon, Suivant / Préc
   const path = tourDialog(page, /Mon parcours/);
   await expect(path).toBeVisible();
   await expect(path).toContainText("2/10");
-  // Faits injectés depuis profile.ts
-  await expect(path).toContainText("CFC (CFPT)");
-  await expect(path).toContainText("Professional Bachelor");
-  await expect(path).toContainText("HES-SO (HEG)");
+  // Faits injectés depuis profile.ts (nombre de diplômes, école et statut du dernier)
+  await expect(path).toContainText("3 cadres au mur");
+  await expect(path).toContainText("(HEG) est encore en cours");
+  // Texte court, révélé par mots en moins de ~1 s
+  await expect(path.locator("[data-typing]")).toHaveCount(0, { timeout: 1_500 });
   // Compagnon + anneau autour de la section, section amenée à l'écran
   await expect(page.locator("[data-tour-companion]")).toBeVisible();
   // Le Canvas persistant (s'il a démarré : WebGL 2) suit Rominou dans le compagnon
@@ -55,7 +123,7 @@ test("lancée depuis le hero : bulle sur l'île, puis compagnon, Suivant / Préc
   await expect(page.locator("#parcours")).toBeInViewport();
   // La bulle prend le focus et se lit avec sa description (le texte) : pas d'annonce en double
   await expect(path).toBeFocused();
-  await expect(path).toHaveAccessibleDescription(/Sur mon mur/);
+  await expect(path).toHaveAccessibleDescription(/cadres au mur/);
   await page.waitForTimeout(600);
   await expect(page.locator("[aria-live=polite]").filter({ hasText: "Étape 2 sur 10" })).toHaveCount(0);
   // Focus resté sur « Suivant » : la région live annonce l'étape suivante
@@ -102,7 +170,7 @@ test("continue sur Hobby (même après rechargement) puis Chat, et se termine", 
     await nextStep(page, title);
   }
   await expect(tourDialog(page)).toContainText("GE-Soif");
-  await expect(tourDialog(page)).toContainText("projet d'école");
+  await expect(tourDialog(page)).toContainText("Projet d'école");
   await nextStep(page, /On s.écrit/);
   await tourDialog(page).getByRole("button", { name: "Mon côté perso" }).click();
 
@@ -110,8 +178,8 @@ test("continue sur Hobby (même après rechargement) puis Chat, et se termine", 
   const travels = tourDialog(page, /Mes voyages/);
   await expect(travels).toBeVisible();
   await expect(travels).toContainText("7/10");
-  await expect(travels).toContainText("8 cartes d'embarquement");
-  await expect(travels).toContainText("Busan (2026)");
+  // Dernier voyage (profile.travels[0])
+  await expect(travels).toContainText("Ouvre celui de Busan");
   await expect(page.locator("#voyages")).toBeInViewport();
 
   // Rechargement : la visite reprend à la même étape (sessionStorage)
@@ -120,7 +188,8 @@ test("continue sur Hobby (même après rechargement) puis Chat, et se termine", 
   await expect(tourDialog(page, /Mes voyages/)).toBeFocused();
 
   await nextStep(page, /Musique & jeux/);
-  await expect(tourDialog(page)).toContainText("Vald et Damso");
+  await expect(tourDialog(page)).toContainText("rap français");
+  await expect(tourDialog(page)).toContainText("Mid");
   await nextStep(page, /La course de Rominou/);
   await expect(page.locator("#jeu")).toBeInViewport();
   await tourDialog(page).getByRole("button", { name: "Direction le chat" }).click();
@@ -165,7 +234,7 @@ test("mouvement réduit : texte entier d'emblée, défilement immédiat", async 
   await expect(page.locator("#parcours")).toBeInViewport();
 });
 
-test("mobile : feuille au-dessus du dock, rien qui déborde", async ({ page, isMobile }) => {
+test("mobile : feuille compacte au-dessus du dock, rien qui déborde", async ({ page, isMobile }) => {
   test.skip(!isMobile, "mise en page mobile");
   for (const width of [412, 320]) {
     await page.setViewportSize({ width, height: width === 320 ? 640 : 915 });
@@ -174,6 +243,7 @@ test("mobile : feuille au-dessus du dock, rien qui déborde", async ({ page, isM
     const sheet = page.locator("[data-tour-companion]");
     await expect(tourDialog(page, /Mon parcours/)).toBeVisible();
 
+    await settle(page);
     const dock = await page.locator(".page-nav").boundingBox();
     const box = await sheet.boundingBox();
     expect(dock && box, `${width}px`).toBeTruthy();
@@ -182,6 +252,11 @@ test("mobile : feuille au-dessus du dock, rien qui déborde", async ({ page, isM
     expect(box.y + box.height, `${width}px`).toBeLessThanOrEqual(dock.y + 1);
     expect(box.y, `${width}px`).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width, `${width}px`).toBeLessThanOrEqual(width);
+    // Compacte : au plus ~28 % de l'écran (32 % sur 320 × 640), texte sans défilement interne
+    const height = width === 320 ? 640 : 915;
+    expect(box.height, `${width}px`).toBeLessThanOrEqual(height * (width === 320 ? 0.32 : 0.28));
+    const inner = await tourDialog(page).evaluate((dialog) => dialog.scrollHeight - dialog.clientHeight);
+    expect(inner, `${width}px`).toBeLessThanOrEqual(1);
     // Boutons atteignables (pas sous le dock)
     const next = await tourDialog(page).getByRole("button", { name: "Suivant" }).boundingBox();
     expect(next && next.y + next.height <= dock.y, `${width}px`).toBeTruthy();
@@ -236,8 +311,8 @@ test("en anglais (textes et faits traduits)", async ({ page }) => {
   await hello.getByRole("button", { name: /Let.s go/ }).click();
   const path = tourDialog(page, /My path/);
   await expect(path).toBeVisible();
-  await expect(path).toContainText("Professional Bachelor");
-  await expect(path).toContainText("HES-SO Bachelor (HEG)");
+  await expect(path).toContainText("3 frames on the wall");
+  await expect(path).toContainText("(HEG) is still in progress");
   await expect(path.getByRole("button", { name: "Previous" })).toBeVisible();
   await expect(path.getByRole("button", { name: "Quit the tour" })).toBeVisible();
 });
@@ -251,3 +326,37 @@ test("chat : « fais-moi visiter » lance la visite (outil startTour)", async ({
   await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
   await expect(tourDialog(page, /Bienvenue chez moi/)).toBeVisible();
 });
+
+// La bulle ne cache jamais ce qu'elle présente : à chaque étape, le contenu clé (TOUR_STEPS[i].keep :
+// élément montré par le texte, en-tête de section…) n'est ni sous la bulle, ni sous le portrait de
+// Rominou, ni sous le dock ; l'élément principal est entièrement à l'écran.
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 1280, height: 720 },
+  { width: 390, height: 844 },
+]) {
+  const mobile = viewport.width < 768;
+  test(`contenu clé jamais sous la bulle, ${viewport.width} × ${viewport.height}`, async ({ page, isMobile }) => {
+    test.skip(isMobile !== mobile, mobile ? "taille mobile" : "taille desktop");
+    // 10 étapes sur 3 pages, défilements doux
+    test.setTimeout(90_000);
+    await page.setViewportSize(viewport);
+    await startFromHero(page);
+    for (const [index, step] of TOUR_STEPS.entries()) {
+      if (index > 0) await page.keyboard.press("ArrowRight");
+      const dialog = tourDialog(page);
+      await expect(dialog).toContainText(`${index + 1}/10`);
+      await settle(page);
+      const label = `${step.id} (${viewport.width} × ${viewport.height})`;
+      await expect.poll(() => coveredKeyContent(page, step.keep), { message: label, timeout: 5_000 }).toEqual([]);
+      await expect(page.locator(step.keep[0]).first(), label).toBeInViewport({ ratio: 0.99 });
+      // Compagnon ouvert : la carte « Visite du site » du cadre de Rominou s'efface (pas sous le portrait)
+      if (step.dock === "companion") {
+        const shownCards = await page
+          .locator("[data-tour-card]")
+          .evaluateAll((cards) => cards.filter((card) => getComputedStyle(card).visibility !== "hidden").length);
+        expect(shownCards, label).toBe(0);
+      }
+    }
+  });
+}

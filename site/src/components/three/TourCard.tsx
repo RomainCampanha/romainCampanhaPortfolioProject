@@ -72,6 +72,7 @@ export function TourCard({ title, doneTitle, steps, progress, progressLabel, gui
       role="group"
       aria-label={`${heading} ${progressLabel[index] ?? ""}`}
       data-done={done || undefined}
+      data-tour-card=""
       className={styles.tour}
     >
       <p aria-hidden="true" className={styles.tourTitle}>
