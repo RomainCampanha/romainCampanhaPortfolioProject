@@ -4,7 +4,13 @@
     "description": "{name} : {headline}. Parcours, compétences, projet et contact."
   },
   "guide": {
-    "bubble": "Salut, moi c'est Rominou, le guide ! Je suis l'avatar de {name} et je t'accompagne sur les trois pages du site. Ici, son côté pro !"
+    "bubble": "Salut, moi c'est Rominou, le guide ! Je suis l'avatar de {name} et je t'accompagne sur les trois pages du site. Ici, mon côté pro !",
+    "invite": {
+      "question": "Je te fais visiter ?",
+      "start": "C'est parti !",
+      "decline": "Je préfère lire",
+      "declined": "Ça marche, bonne lecture ! Si tu changes d'avis, la carte « Visite du site » t'attend juste en dessous."
+    }
   },
   "hero": {
     "lede": "{role} chez <lake>{company}</lake> et étudiant en {field} à la <lilac>{school}</lilac>.",

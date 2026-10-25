@@ -1,0 +1,75 @@
+{
+  "dialog": {
+    "kicker": "Visite guidée",
+    "counter": "{current}/{total}",
+    "counterLabel": "Étape {current} sur {total}",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "quit": "Quitter la visite",
+    "minimize": "Réduire la bulle",
+    "expand": "Afficher la bulle ({current}/{total})",
+    "expandLabel": "Afficher la bulle de la visite guidée, étape {current} sur {total}",
+    "keys": "← → pour avancer · Échap pour quitter",
+    "travelling": "En route vers la page {page}…",
+    "live": "Étape {current} sur {total}, {title} : {text}"
+  },
+  "chip": {
+    "label": "Visite en pause",
+    "resume": "Reprendre la visite ({current}/{total})",
+    "resumeLabel": "Reprendre la visite guidée, étape {current} sur {total}"
+  },
+  "card": {
+    "start": "Lancer la visite",
+    "resume": "Reprendre ({current}/{total})",
+    "resumeLabel": "Reprendre la visite guidée, étape {current} sur {total}",
+    "restart": "Refaire la visite",
+    "active": "Visite en cours · {current}/{total}"
+  },
+  "steps": {
+    "hello": {
+      "title": "Bienvenue chez moi !",
+      "text": "Moi c'est {guide}, le mini-moi en pâte à modeler de {name}. Visite express : côté pro, côté perso, puis IA !",
+      "next": "C'est parti"
+    },
+    "parcours": {
+      "title": "Mon parcours",
+      "text": "{count, plural, one {# cadre} other {# cadres}} au mur. Le dernier ({currentSchool}) {status, select, ongoing {est encore en cours : croise les doigts pour moi !} other {est tout frais : j'en suis fier !}}"
+    },
+    "experience": {
+      "title": "Mon job",
+      "text": "Le post-it scotché au mur, c'est mon job : {rate} chez {company}, en parallèle des cours. Oui, je jongle !"
+    },
+    "competences": {
+      "title": "Mon inventaire",
+      "text": "Fouille mon sac ! L'étiquette {top} bat tous les records : {topCount} compétences. {topKind, select, school {Merci les profs !} job {Merci les collègues !} other {Merci les tutos !}}"
+    },
+    "projets": {
+      "title": "Mis en pratique",
+      "text": "{kind, select, school {Projet d'école à plusieurs mains} other {Mon projet perso}} : clique « Visiter » pour tester {project}{joke, select, ge_soif {, idéal quand la gourde est vide} other {}} !"
+    },
+    "contact": {
+      "title": "On s'écrit ?",
+      "text": "Un clic sur « {button} » et ma boîte mail s'allume. Mais avant… viens voir mon côté perso !",
+      "next": "Mon côté perso"
+    },
+    "voyages": {
+      "title": "Mes voyages",
+      "text": "Chaque carte d'embarquement cache un album photo. Ouvre celui de {latest}, mon dernier voyage !"
+    },
+    "musique": {
+      "title": "Musique & jeux",
+      "text": "Le {genre}, je l'écoute sans le rapper : tout le monde y gagne.{role, select, none {} other { Et sur LoL, ne me pique pas la {role} !}}"
+    },
+    "course": {
+      "title": "La course de {guide}",
+      "text": "Les cartes postales à gagner sont mes vraies photos de voyage. Tu iras jusqu'à {last} ?",
+      "action": "Jouer une partie",
+      "next": "Direction le chat"
+    },
+    "questions": {
+      "title": "À toi la parole !",
+      "text": "Ma version IA t'attend : tape ta question ou pioche une idée dans les suggestions. Merci pour la visite !",
+      "next": "Poser ma question"
+    }
+  }
+}

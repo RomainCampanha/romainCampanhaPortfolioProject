@@ -20,6 +20,7 @@ function sanitizePart(part: ChatUIPart): ChatUIPart | null {
     case "tool-navigate":
     case "tool-playAnimation":
     case "tool-showTrip":
+    case "tool-startTour":
       if (part.state === "output-available") return part;
       // Erreur renvoyée par le navigateur uniquement ; une erreur du serveur (entrée
       // invalide du modèle) n'est pas signée : on l'écarte.

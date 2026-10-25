@@ -32,6 +32,12 @@ export function AvatarFigure({ variant, label, underlay, extra }: AvatarFigurePr
       s.readyOutfit === outfit &&
       s.anchor?.element.dataset.avatarAnchorId === id,
   );
+  // Visite guidée : Rominou a quitté son cadre pour accompagner le visiteur (cadre compagnon).
+  // Le décor reste (île vide, serviette libre) ; il revient à la fin de la visite.
+  const away = useAvatar((s) => variant !== "companion" && s.anchor?.variant === "companion");
+  // Jeu ouvert (Canvas suspendu) : Rominou en poster, posé, plutôt qu'une image 3D figée en plein
+  // geste (ou vide, si le modèle a fini de charger pendant la pause).
+  const suspended = useAvatar((s) => s.suspended);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -50,6 +56,7 @@ export function AvatarFigure({ variant, label, underlay, extra }: AvatarFigurePr
     <div
       className={styles.figure}
       data-outfit={outfit}
+      data-away={away || undefined}
       style={
         {
           "--feet-frac": feet.toFixed(4),
@@ -65,8 +72,9 @@ export function AvatarFigure({ variant, label, underlay, extra }: AvatarFigurePr
           ref={ref}
           data-avatar-anchor-id={id}
           className={styles.box}
+          data-suspended={suspended || undefined}
           style={{ "--poster-scale": scale, "--poster-top": offsetTop } as CSSProperties}
-          {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
+          {...(label && !away ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
         >
           <Image
             src={POSTERS[outfit]}

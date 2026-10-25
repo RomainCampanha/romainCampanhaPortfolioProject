@@ -116,7 +116,7 @@ test("Hobby : carte LoL, rap français et jeux (sans pseudo)", async ({ page }) 
   }
   await expect(lol).toContainText("Pokopia");
   await expect(page.locator("#musique")).toContainText("Vald et Damso");
-  await expect(page.locator("#jeu")).toContainText("Bientôt");
+  await expect(page.locator("#jeu").getByRole("heading", { name: "La course de Rominou" })).toBeVisible();
 
   await page.goto("/en/hobby");
   await expect(page.locator("#lol")).toContainText("Platinum 4");

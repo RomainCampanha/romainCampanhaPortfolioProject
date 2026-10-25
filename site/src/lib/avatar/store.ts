@@ -17,7 +17,11 @@ export const LOOP_CLIP_MS = 4000;
 const LOOPED_CLIPS: ReadonlySet<AvatarClip> = new Set<AvatarClip>(["walk", "run"]);
 export type AvatarOutfit = "default" | "vacances";
 export type AvatarPage = PageId; // "pro" | "hobby" | "chat"
-export type AvatarAnchorVariant = "hero" | "column" | "chat";
+/**
+ * Ancres de Rominou : hero (Pro), column (Hobby), chat (Chat) = cadres des pages ;
+ * companion = petit cadre de la visite guidée (fixé à l'écran), qui l'emporte tant qu'il est monté.
+ */
+export type AvatarAnchorVariant = "hero" | "column" | "chat" | "companion";
 /**
  * État du rendu 3D (écrit par AvatarStage) :
  * - idle : pas (encore) de 3D affichée -> poster ;
@@ -46,12 +50,14 @@ export type AvatarState = {
   outfit: AvatarOutfit;
   /** Page courante (synchronisée depuis l'URL par PageThemeRoot). */
   page: AvatarPage;
-  /** Ancre visible où dessiner l'avatar (dernière <AvatarAnchor> montée). */
+  /** Ancre où dessiner l'avatar : dernière <AvatarAnchor> montée (compagnon de la visite prioritaire). */
   anchor: AvatarAnchorInfo | null;
   /** État du rendu 3D (cf. AvatarStageStatus). */
   status: AvatarStageStatus;
   /** Tenue effectivement affichée en 3D quand status = "ready". */
   readyOutfit: AvatarOutfit | null;
+  /** Rendu du Canvas suspendu (ex. pendant le jeu, qui a son propre Canvas). */
+  suspended: boolean;
 };
 
 const initialState: AvatarState = {
@@ -63,6 +69,7 @@ const initialState: AvatarState = {
   anchor: null,
   status: "idle",
   readyOutfit: null,
+  suspended: false,
 };
 
 let state: AvatarState = initialState;
@@ -71,6 +78,11 @@ const listeners = new Set<() => void>();
 let anchors: AvatarAnchorInfo[] = [];
 // Minuteur de fin des clips en boucle (walk, run).
 let loopTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Ancre où dessiner Rominou : le dernier compagnon monté, sinon la dernière ancre. */
+function currentAnchor(): AvatarAnchorInfo | null {
+  return anchors.findLast((a) => a.variant === "companion") ?? anchors.at(-1) ?? null;
+}
 
 function setState(patch: Partial<AvatarState>) {
   const next = { ...state, ...patch };
@@ -124,6 +136,11 @@ export const avatarStore = {
     setState({ outfit });
   },
 
+  /** Suspend (ou reprend) le rendu du Canvas de Rominou, sans le démonter. */
+  setSuspended(suspended: boolean) {
+    setState({ suspended });
+  },
+
   /** Change de page ; la tenue reprend la valeur par défaut de la page. */
   setPage(page: AvatarPage) {
     if (page === state.page) return;
@@ -135,14 +152,18 @@ export const avatarStore = {
     setState({ status, readyOutfit: status === "ready" ? readyOutfit : null });
   },
 
-  /** Enregistre une ancre DOM ; retourne la fonction de désinscription. */
+  /**
+   * Enregistre une ancre DOM ; retourne la fonction de désinscription. La plus récente gagne,
+   * sauf le compagnon de la visite guidée : prioritaire tant qu'il est monté (les cadres des pages
+   * montés pendant la visite, après une navigation, ne lui reprennent pas Rominou).
+   */
   registerAnchor(element: HTMLElement, variant: AvatarAnchorVariant): () => void {
     const entry: AvatarAnchorInfo = { element, variant };
     anchors = [...anchors, entry];
-    setState({ anchor: entry });
+    setState({ anchor: currentAnchor() });
     return () => {
       anchors = anchors.filter((a) => a !== entry);
-      setState({ anchor: anchors.at(-1) ?? null });
+      setState({ anchor: currentAnchor() });
     };
   },
 };

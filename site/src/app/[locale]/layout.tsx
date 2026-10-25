@@ -10,6 +10,7 @@ import { SkipLink } from "@/components/site/SkipLink";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { AvatarStageLoader } from "@/components/three/AvatarStageLoader";
+import { TourRoot } from "@/components/tour/TourRoot";
 import { fontVariables } from "../fonts";
 import "../globals.css";
 
@@ -77,6 +78,9 @@ export default async function LocaleLayout({
             <SiteHeader name={profile.name} guide={profile.guideName} />
             {/* Canvas 3D unique, persistant entre les pages (client only) */}
             <AvatarStageLoader />
+            {/* Visite guidée de Rominou : textes de la langue + chargeur (interface à la demande).
+                Avant <main> : la bulle (fixée en bas de l'écran) suit le header dans l'ordre du clavier. */}
+            <TourRoot locale={locale} />
             <main id="main" tabIndex={-1} className="site-main">
               {children}
             </main>

@@ -1,4 +1,4 @@
-import { tool, type InferUITools, type UIDataTypes, type UIMessage } from "ai";
+import { jsonSchema, tool, type InferUITools, type UIDataTypes, type UIMessage } from "ai";
 import { z } from "zod";
 import { profile, TRAVEL_IDS } from "@/content/profile";
 import { PAGE_IDS } from "@/lib/pages";
@@ -33,6 +33,21 @@ export const chatTools = {
   playAnimation: tool({
     description: `Play an animation on ${guideName}, ${firstName}'s 3D avatar: wave (hello/goodbye), bow (thanks/compliment), walk, run.`,
     inputSchema: z.object({ name: z.enum(CHAT_ANIMATIONS) }),
+    outputSchema: toolOutputSchema,
+    strict: true,
+  }),
+  startTour: tool({
+    description: `Start ${guideName}'s guided tour of the website in the visitor's browser, right after your text: it opens the home page and ${guideName} walks the visitor through the Pro, Hobby and Chat pages, step by step (it leaves this chat). Only when the visitor asks for a tour of the site ("fais-moi visiter le site", "show me around") or says yes to your offer.`,
+    // Aucun paramètre. Schéma explicite (required: []) : accepté tel quel en mode strict.
+    inputSchema: jsonSchema<Record<string, never>>(
+      { type: "object", properties: {}, required: [], additionalProperties: false },
+      {
+        validate: (value) =>
+          value !== null && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0
+            ? { success: true, value: {} }
+            : { success: false, error: new Error("startTour takes no input") },
+      },
+    ),
     outputSchema: toolOutputSchema,
     strict: true,
   }),

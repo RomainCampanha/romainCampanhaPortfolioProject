@@ -8,6 +8,7 @@ import {
 import type { AppLocale } from "@/i18n/routing";
 import { avatarStore } from "@/lib/avatar/store";
 import { PAGE_PATHS } from "@/lib/pages";
+import { tourStore } from "@/lib/tour";
 import { CHAT_API_PATH, TOOL_ERROR_TEXT } from "./constants";
 import { prepareHistory } from "./history";
 import type { ChatUIMessage } from "./tools";
@@ -32,6 +33,8 @@ const MAX_ASSISTANT_STEPS = 2;
 type ChatBridge = { navigate: (href: string) => void; locale: AppLocale };
 let bridge: ChatBridge | null = null;
 let pendingHref: string | null = null;
+/** Visite guidée demandée (outil startTour), lancée à la fin de la réponse. */
+let pendingTour = false;
 
 /**
  * Enregistré par l'interface du chat (useRouter de next-intl + useLocale).
@@ -67,6 +70,10 @@ function runTool(toolCall: ChatToolCall): boolean {
       if (!SLUG.test(toolCall.input.destination)) return false;
       pendingHref = `${PAGE_PATHS.hobby}#${toolCall.input.destination}`;
       return true;
+    case "startTour":
+      // La visite navigue elle-même vers sa première étape (page Pro), cf. TourLoader
+      pendingTour = true;
+      return true;
     default:
       return false;
   }
@@ -74,9 +81,17 @@ function runTool(toolCall: ChatToolCall): boolean {
 
 function flushNavigation() {
   const href = pendingHref;
+  const tour = pendingTour;
   pendingHref = null;
-  if (!href) return;
-  window.setTimeout(() => bridge?.navigate(href), NAVIGATION_DELAY_MS);
+  pendingTour = false;
+  if (tour) window.setTimeout(() => tourStore.start(), NAVIGATION_DELAY_MS);
+  else if (href) window.setTimeout(() => bridge?.navigate(href), NAVIGATION_DELAY_MS);
+}
+
+/** Abandonne les actions en attente (réponse interrompue ou en erreur). */
+function clearPending() {
+  pendingHref = null;
+  pendingTour = false;
 }
 
 /**
@@ -156,7 +171,7 @@ function createChat(): Chat<ChatUIMessage> {
     onFinish: ({ messages, isAbort, isError, isDisconnect }) => {
       avatarStore.setSpeaking(false);
       if (isAbort || isError || isDisconnect) {
-        pendingHref = null;
+        clearPending();
         return;
       }
       // Une relance automatique va suivre : on navigue après elle
@@ -165,7 +180,7 @@ function createChat(): Chat<ChatUIMessage> {
     },
     onError: () => {
       avatarStore.setSpeaking(false);
-      pendingHref = null;
+      clearPending();
     },
   });
   return chat;

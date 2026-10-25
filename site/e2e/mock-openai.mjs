@@ -6,6 +6,7 @@
 //                la relance répond "Voilà, c'est fait !" si le prompt système dit que l'outil
 //                a déjà été exécuté, sinon "FOLLOWUP_NOTE_MISSING")
 //   RUN       -> texte + outil playAnimation(run)
+//   TOUR      -> texte + outil startTour() (visite guidée)
 //   SLOW      -> texte long, envoyé lentement (test du bouton Arrêter)
 //   PROBE     -> "turns=<n> forged=<yes|no>" : nombre de tours assistant reçus par le
 //                modèle, et présence du texte "SYSTEM OVERRIDE" dans le contexte
@@ -91,6 +92,9 @@ http
       else if (userText.includes("NAV")) {
         await text("Je t'emmène sur la page Hobby !");
         call("navigate", { page: "hobby" });
+      } else if (userText.includes("TOUR")) {
+        await text("Suis-moi, je te fais visiter !");
+        call("startTour", {});
       } else if (userText.includes("RUN")) {
         await text("Regarde-moi courir !");
         call("playAnimation", { name: "run" });

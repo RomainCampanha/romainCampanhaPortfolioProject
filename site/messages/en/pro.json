@@ -4,7 +4,13 @@
     "description": "{name}: {headline}. Background, skills, project and contact."
   },
   "guide": {
-    "bubble": "Hi, I'm Rominou, the guide! I'm {name}'s avatar and I'll keep you company across the site's three pages. This is his professional side!"
+    "bubble": "Hi, I'm Rominou, the guide! I'm {name}'s avatar and I'll keep you company across the site's three pages. This is my work side!",
+    "invite": {
+      "question": "Shall I show you around?",
+      "start": "Let's go!",
+      "decline": "I'd rather read",
+      "declined": "Sure thing, happy reading! If you change your mind, the “Site tour” card is waiting just below."
+    }
   },
   "hero": {
     "lede": "{role} at <lake>{company}</lake> and {field} student at <lilac>{school}</lilac>.",

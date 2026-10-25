@@ -5,11 +5,12 @@ import { pick, profile } from "@/content/profile";
 import { cx } from "@/components/ui/cx";
 import { Icon } from "@/components/ui/Icon";
 import { PAGE_IDS, type PageId } from "@/lib/pages";
+import { TOUR_LENGTH, TOUR_STEPS } from "@/lib/tour";
 import { DEFAULT_SCENE, type AvatarScene } from "@/lib/avatar/scenes";
 import type { AvatarAnchorVariant } from "@/lib/avatar/store";
 import { AvatarFigure } from "./AvatarFigure";
 import { SceneDecor, SceneUnderlay } from "./scenes/SceneDecor";
-import { TourCard } from "./TourCard";
+import { TourCard, type TourCardGuideLabels } from "./TourCard";
 import { TypingBubble } from "./TypingBubble";
 import styles from "./AvatarAnchor.module.css";
 
@@ -68,6 +69,19 @@ export function AvatarAnchor({
   // Textes de la carte : namespace « pro » (présent côté serveur ; absent d'un arbre client).
   const withTour = (tour ?? scene !== "none") && t.has("pro.stage.quest");
   const total = String(PAGE_IDS.length);
+  // Visite guidée (namespace « tour ») : lancer / reprendre depuis la carte
+  const guide: TourCardGuideLabels | undefined =
+    withTour && t.has("tour.card.start")
+      ? {
+          start: t("tour.card.start"),
+          restart: t("tour.card.restart"),
+          resume: TOUR_STEPS.map((_, index) => t("tour.card.resume", { current: index + 1, total: TOUR_LENGTH })),
+          resumeLabel: TOUR_STEPS.map((_, index) =>
+            t("tour.card.resumeLabel", { current: index + 1, total: TOUR_LENGTH }),
+          ),
+          active: TOUR_STEPS.map((_, index) => t("tour.card.active", { current: index + 1, total: TOUR_LENGTH })),
+        }
+      : undefined;
   const placeLabel = place === undefined ? (geneva ? pick(profile.location, locale) : null) : place;
 
   return (
@@ -111,6 +125,7 @@ export function AvatarAnchor({
           steps={Object.fromEntries(PAGE_IDS.map((id) => [id, t(`common.nav.${id}`)])) as Record<PageId, string>}
           progress={PAGE_IDS.map((_, index) => t("pro.stage.progress", { current: String(index + 1), total }))}
           progressLabel={PAGE_IDS.map((_, index) => t("pro.stage.progressLabel", { current: index + 1, total }))}
+          guide={guide}
         />
       ) : null}
     </div>

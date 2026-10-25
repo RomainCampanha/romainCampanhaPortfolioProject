@@ -1,0 +1,75 @@
+{
+  "dialog": {
+    "kicker": "Guided tour",
+    "counter": "{current}/{total}",
+    "counterLabel": "Step {current} of {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "quit": "Quit the tour",
+    "minimize": "Minimise the bubble",
+    "expand": "Show the bubble ({current}/{total})",
+    "expandLabel": "Show the guided tour bubble, step {current} of {total}",
+    "keys": "← → to move on · Esc to quit",
+    "travelling": "On my way to the {page} page…",
+    "live": "Step {current} of {total}, {title}: {text}"
+  },
+  "chip": {
+    "label": "Tour paused",
+    "resume": "Resume the tour ({current}/{total})",
+    "resumeLabel": "Resume the guided tour, step {current} of {total}"
+  },
+  "card": {
+    "start": "Start the tour",
+    "resume": "Resume ({current}/{total})",
+    "resumeLabel": "Resume the guided tour, step {current} of {total}",
+    "restart": "Take the tour again",
+    "active": "Tour in progress · {current}/{total}"
+  },
+  "steps": {
+    "hello": {
+      "title": "Welcome to my place!",
+      "text": "I’m {guide}, {name}’s modelling-clay mini-me. Quick tour: work side, personal side, then AI!",
+      "next": "Let’s go"
+    },
+    "parcours": {
+      "title": "My path",
+      "text": "{count, plural, one {# frame} other {# frames}} on the wall. The last one ({currentSchool}) {status, select, ongoing {is still in progress: fingers crossed for me!} other {is brand new: I’m proud of it!}}"
+    },
+    "experience": {
+      "title": "My job",
+      "text": "The sticky note on the wall is my job: {rate} at {company}, alongside my studies. Yes, I juggle!"
+    },
+    "competences": {
+      "title": "My inventory",
+      "text": "Dig through my bag! The {top} tag beats every record: {topCount} skills. {topKind, select, school {Thanks, teachers!} job {Thanks, colleagues!} other {Thanks, tutorials!}}"
+    },
+    "projets": {
+      "title": "Put into practice",
+      "text": "{kind, select, school {A school project with many hands} other {My personal project}}: hit “Visit” to try {project}{joke, select, ge_soif {, handy when your bottle runs dry} other {}}!"
+    },
+    "contact": {
+      "title": "Shall we talk?",
+      "text": "One click on “{button}” and my inbox lights up. But first… come and see my personal side!",
+      "next": "My personal side"
+    },
+    "voyages": {
+      "title": "My travels",
+      "text": "Every boarding pass hides a photo album. Open the one from {latest}, my latest trip!"
+    },
+    "musique": {
+      "title": "Music & games",
+      "text": "I listen to {genre}, I don’t rap it: everyone’s better off.{role, select, none {} other { And on LoL, hands off my {role} lane!}}"
+    },
+    "course": {
+      "title": "{guide}’s Run",
+      "text": "The postcards you win are my real travel photos. Can you make it all the way to {last}?",
+      "action": "Play a round",
+      "next": "On to the chat"
+    },
+    "questions": {
+      "title": "Over to you!",
+      "text": "My AI version is all ears: type your question or pick one of the suggestions. Thanks for the tour!",
+      "next": "Ask a question"
+    }
+  }
+}

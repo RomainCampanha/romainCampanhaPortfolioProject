@@ -43,6 +43,7 @@
   "tools": {
     "navigate": "Direction la page {page}",
     "showTrip": "Rominou ouvre le voyage : {destination}",
+    "startTour": "Rominou lance la visite du site",
     "playAnimation": {
       "wave": "Rominou te fait coucou",
       "bow": "Rominou fait une révérence",
